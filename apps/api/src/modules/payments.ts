@@ -1,4 +1,4 @@
-import { randomUUID, randomBytes } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import { pool, transaction, audit, type DB } from '../../../../packages/db/index.js';
 import { DomainError, hash } from '../../../../packages/domain/src/index.js';
 import { type Actor } from '../common/auth.js';
@@ -8,6 +8,21 @@ import { signPayload } from '../integrations/signing.js';
 export { stripeClient } from '../integrations/stripe.js';
 import { stripeCheckout } from './stripe-checkout.js';
 import { isRightsPolicy, policyContentHash } from './rights-core-path.js';
+
+/** Human-readable public id: RN-LIC-YYYY-###### (UTC year + per-year sequence). */
+export async function nextPublicLicenseToken(db: DB): Promise<string> {
+  const year = new Date().getUTCFullYear();
+  const row = (
+    await db.query(
+      `INSERT INTO license_public_seq(year, last_value) VALUES($1, 1)
+       ON CONFLICT (year) DO UPDATE SET last_value = license_public_seq.last_value + 1
+       RETURNING last_value`,
+      [year],
+    )
+  ).rows[0] as { last_value: number };
+  return `RN-LIC-${year}-${String(row.last_value).padStart(6, '0')}`;
+}
+
 export async function checkout(user: Actor, id: string) {
   if (config.payments === 'stripe') return stripeCheckout(user, id);
   const attempt = await transaction(async (db) => {
@@ -253,7 +268,7 @@ export async function issueLicenses() {
           return;
         }
         const id = randomUUID(),
-          token = randomBytes(24).toString('base64url'),
+          token = await nextPublicLicenseToken(db),
           end = new Date(
             Date.parse(o.scope.starts_at) + o.scope.duration_days * 86400000,
           ).toISOString();
@@ -264,6 +279,7 @@ export async function issueLicenses() {
           schema_version: 'rightsnet.license/0.1',
           issuer: 'rightsnet.sandbox',
           license_id: id,
+          public_token: token,
           asset_id: o.asset_id,
           order_reference: hash(o.id),
           policy_hash: policyHash,

@@ -93,7 +93,10 @@ import {
 import { verifyPayload, signingKeys } from '../integrations/signing.js';
 const uuid = (id: string) => z.uuid().parse(id);
 const reasonSchema = z.object({ reason: z.string().trim().min(10).max(1000) }).strict();
-const tokenSchema = z.string().regex(/^[A-Za-z0-9_-]{32}$/);
+/** Legacy base64url (32) or RN-LIC-YYYY-######. */
+const tokenSchema = z
+  .string()
+  .regex(/^(?:[A-Za-z0-9_-]{32}|RN-LIC-\d{4}-\d{6})$/);
 const idem = (req: Request) =>
   typeof req.headers['idempotency-key'] === 'string' ? req.headers['idempotency-key'] : undefined;
 @Controller('v1')
@@ -133,6 +136,7 @@ export class PublicController {
     const valid = verifyPayload(l.payload, l.signature, l.key_id);
     return {
       license_id: l.id,
+      public_token: l.public_token,
       status: licenseStatus(l, valid),
       signature_valid: valid,
       starts_at: l.starts_at,
@@ -531,9 +535,39 @@ export class CommerceController {
   @Get('orders/:id') async orderDetail(@Req() req: Request, @Param('id') id: string) {
     const o = await getOrder(pool, await actor(req), uuid(id));
     const license = (
-      await pool.query('SELECT id,public_token,status FROM licenses WHERE order_id=$1', [id])
+      await pool.query(
+        'SELECT id,public_token,status,starts_at,ends_at FROM licenses WHERE order_id=$1',
+        [id],
+      )
     ).rows[0];
-    return { ...o, license };
+    const awaitingPaymentConfirm = Boolean(
+      (
+        await pool.query(
+          `SELECT 1 FROM provider_events
+           WHERE status='pending' AND payload->>'order_id'=$1
+           LIMIT 1`,
+          [id],
+        )
+      ).rowCount,
+    );
+    const awaitingLicense = Boolean(
+      !license &&
+        ((
+          await pool.query(
+            `SELECT 1 FROM outbox
+             WHERE order_id=$1 AND status='pending' AND kind='license.issue'
+             LIMIT 1`,
+            [id],
+          )
+        ).rowCount ||
+          ['paid', 'issuing'].includes(o.status)),
+    );
+    return {
+      ...o,
+      license,
+      awaiting_payment_confirm: awaitingPaymentConfirm,
+      awaiting_license: awaitingLicense,
+    };
   }
   @Post('orders/:id/acceptance') async accept(
     @Req() req: Request,

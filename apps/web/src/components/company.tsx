@@ -319,6 +319,7 @@ export function OrderDetail({ id, paymentPage = false }: { id: string; paymentPa
     [accepted, setAccepted] = useState(false),
     [showFullTerms, setShowFullTerms] = useState(false),
     [busy, setBusy] = useState(false),
+    [registerStubOpen, setRegisterStubOpen] = useState(false),
     [payments, setPayments] = useState<'sandbox' | 'stripe' | string>('sandbox');
   const load = useCallback(async () => {
     try {
@@ -337,14 +338,19 @@ export function OrderDetail({ id, paymentPage = false }: { id: string; paymentPa
     if (user) void load();
   }, [user, load]);
   useEffect(() => {
-    if (order && ['payment_processing', 'paid', 'issuing'].includes(order.status)) {
-      const timer = setInterval(() => void load(), 1500);
-      return () => clearInterval(timer);
-    }
+    if (!order || order.license) return;
+    const waiting =
+      order.awaiting_payment_confirm ||
+      order.awaiting_license ||
+      ['payment_processing', 'paid', 'issuing'].includes(order.status);
+    if (!waiting) return;
+    const timer = setInterval(() => void load(), 1500);
+    return () => clearInterval(timer);
   }, [order, load]);
   // Stripe: if we landed on the local checkout page, resume hosted Checkout immediately.
   useEffect(() => {
     if (!paymentPage || !order || payments !== 'stripe') return;
+    if (order.awaiting_payment_confirm || order.awaiting_license || order.license) return;
     if (order.status !== 'payment_processing' && order.status !== 'awaiting_payment') return;
     let cancelled = false;
     void (async () => {
@@ -364,12 +370,19 @@ export function OrderDetail({ id, paymentPage = false }: { id: string; paymentPa
     return () => {
       cancelled = true;
     };
-  }, [paymentPage, order?.status, payments, id]);
+  }, [paymentPage, order?.status, order?.awaiting_payment_confirm, order?.license, payments, id]);
   if (sessionLoading) return <Loading />;
   if (!user) return <AuthRequired />;
   if (!order) return error ? <ErrorPanel message={error} /> : <Loading />;
   const o = order;
   const stripeMode = payments === 'stripe';
+  const waitingFulfillment =
+    !o.license &&
+    (Boolean(o.awaiting_payment_confirm) ||
+      Boolean(o.awaiting_license) ||
+      ['paid', 'issuing'].includes(o.status));
+  const canSimulatePay =
+    paymentPage && o.status === 'payment_processing' && !stripeMode && !waitingFulfillment;
   async function pay() {
     setBusy(true);
     setError('');
@@ -400,7 +413,7 @@ export function OrderDetail({ id, paymentPage = false }: { id: string; paymentPa
       await api('orders/' + id + '/simulate-payment', { method: 'POST', body: { success } });
       toast(
         success
-          ? 'Pago simulado recibido. Preparando la licencia…'
+          ? 'Pago recibido. Confirmando y emitiendo la licencia…'
           : 'Pago rechazado de prueba. Puedes volver a intentarlo.',
       );
       router.push('/company/orders/' + id);
@@ -411,6 +424,94 @@ export function OrderDetail({ id, paymentPage = false }: { id: string; paymentPa
       setBusy(false);
     }
   }
+
+  if (o.license) {
+    const lic = o.license;
+    const starts = lic.starts_at ?? o.scope.starts_at;
+    const ends =
+      lic.ends_at ??
+      new Date(
+        Date.parse(o.scope.starts_at) + o.scope.duration_days * 86400000,
+      ).toISOString();
+    return (
+      <>
+        <Link href="/company" className="back-link">
+          <ArrowLeft size={16} />
+          Mis campañas
+        </Link>
+        <section className="license-success" aria-live="polite">
+          <p className="license-success-eyebrow">RIGHTSNET</p>
+          <div className="license-success-mark">
+            <CheckCircle2 size={40} aria-hidden />
+            <h1>Licencia emitida</h1>
+          </div>
+          <p className="license-success-token">
+            <code>{lic.public_token}</code>
+          </p>
+          <h2 className="license-success-creator">{o.creator_name ?? o.display_name}</h2>
+          <p className="license-success-product">
+            {o.scope.campaign_name}
+            <span className="muted"> · {usageLabel(o.scope)}</span>
+          </p>
+          <dl className="license-success-meta">
+            <div>
+              <dt>Vigencia</dt>
+              <dd>
+                {date(starts)} – {date(ends)}
+              </dd>
+            </div>
+            <div>
+              <dt>Territorio</dt>
+              <dd>{(o.scope.territories ?? []).join(', ') || '—'}</dd>
+            </div>
+            <div>
+              <dt>Canales</dt>
+              <dd>{(o.scope.channels ?? []).join(', ') || '—'}</dd>
+            </div>
+            <div>
+              <dt>Estado</dt>
+              <dd>
+                <Badge value="issued" />
+              </dd>
+            </div>
+          </dl>
+          <div className="license-success-actions">
+            <Button asChild>
+              <Link href={'/verify/' + lic.public_token}>
+                Ver licencia
+                <ArrowUpRight size={16} />
+              </Link>
+            </Button>
+            <a className="download-link" href={'/api/licenses/' + lic.id + '/certificate'}>
+              <Download size={15} />
+              Descargar certificado
+            </a>
+            <Button asChild variant="ghost">
+              <Link href={'/verify/' + lic.public_token}>Verificar licencia</Link>
+            </Button>
+          </div>
+          <div className="license-success-register">
+            <Button
+              variant="ghost"
+              className="full-width"
+              type="button"
+              onClick={() => setRegisterStubOpen((v) => !v)}
+            >
+              Registrar contenido IA
+            </Button>
+            {registerStubOpen ? (
+              <p className="muted small register-ai-stub" role="status">
+                Próximamente: vincularás el contenido generado a esta licencia. El registro de
+                generación (§22) aún no está activo en el MVP.
+              </p>
+            ) : null}
+          </div>
+        </section>
+        <SandboxNote />
+      </>
+    );
+  }
+
   return (
     <>
       <Link href="/company" className="back-link">
@@ -534,50 +635,44 @@ export function OrderDetail({ id, paymentPage = false }: { id: string; paymentPa
           )}
         </section>
         <aside className="panel order-summary">
-          <h2>Tu campaña, con permiso.</h2>
+          <h2>Totales</h2>
           <dl className="summary-list">
             <div>
               <dt>Licencia</dt>
               <dd>{money(o.price.total_minor)}</dd>
             </div>
             <div>
-              <dt>Para el creador</dt>
-              <dd>{money(o.price.creator_minor)}</dd>
-            </div>
-            <div>
-              <dt>Comisión incluida</dt>
+              <dt>Comisión plataforma (incluida)</dt>
               <dd>{money(o.price.fee_minor)}</dd>
             </div>
           </dl>
           <div className="price-total">
-            <span>Total de prueba</span>
+            <span>Total</span>
             <b>{money(o.price.total_minor)}</b>
           </div>
           <p className="muted small">
-            Fiscalidad pendiente de configuración. Documento DEMO sin derechos reales.
+            La comisión está incluida en el total. Fiscalidad pendiente · DEMO sin derechos reales.
           </p>
           {error ? (
             <p role="alert" className="inline-error">
               {error}
             </p>
           ) : null}
-          {o.license ? (
-            <div className="success-block">
-              <CheckCircle2 size={36} />
-              <h3>Licencia emitida</h3>
-              <p>El certificado ya está firmado. Su vigencia comienza en la fecha acordada.</p>
-              <Button asChild>
-                <Link href={'/verify/' + o.license.public_token}>
-                  Verificar licencia
-                  <ArrowUpRight size={16} />
-                </Link>
-              </Button>
-              <a className="download-link" href={'/api/licenses/' + o.license.id + '/certificate'}>
-                <Download size={15} />
-                Descargar certificado JSON
-              </a>
+          {waitingFulfillment ? (
+            <div className="payment-wait" role="status" aria-live="polite">
+              <RefreshCw size={22} className="spin" aria-hidden />
+              <h3>
+                {o.awaiting_license || ['paid', 'issuing'].includes(o.status)
+                  ? 'Emitiendo licencia…'
+                  : 'Confirmando pago…'}
+              </h3>
+              <p className="muted">
+                No cierres esta pantalla. La licencia solo aparece cuando el pago está confirmado y
+                el certificado firmado.
+              </p>
+              <Loading />
             </div>
-          ) : paymentPage && o.status === 'payment_processing' && !stripeMode ? (
+          ) : canSimulatePay ? (
             <>
               <Button className="full-width" disabled={busy} onClick={() => void simulate(true)}>
                 {busy ? 'Procesando…' : 'Simular pago correcto'}
@@ -643,8 +738,6 @@ export function OrderDetail({ id, paymentPage = false }: { id: string; paymentPa
                 <ArrowRight size={16} />
               </Button>
             </>
-          ) : ['paid', 'issuing'].includes(o.status) ? (
-            <Loading />
           ) : (
             <p className="muted">Esta orden requiere seguimiento desde administración.</p>
           )}
@@ -658,3 +751,4 @@ export function OrderDetail({ id, paymentPage = false }: { id: string; paymentPa
     </>
   );
 }
+

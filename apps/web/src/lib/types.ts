@@ -127,10 +127,20 @@ export type Order = {
   contract_hash: string;
   policy_snapshot?: AnyPolicy;
   created_at: string;
-  license?: { id: string; public_token: string; status: string };
+  license?: {
+    id: string;
+    public_token: string;
+    status: string;
+    starts_at?: string;
+    ends_at?: string;
+  };
   license_id?: string;
   public_token?: string;
   license_status?: string;
+  /** Pago confirmado en cola; aún no emitir éxito en UI. */
+  awaiting_payment_confirm?: boolean;
+  /** Emisión de licencia en curso. */
+  awaiting_license?: boolean;
 };
 export type License = {
   id: string;
@@ -162,6 +172,7 @@ export type LicenseRequest = {
 };
 export type Verification = {
   license_id: string;
+  public_token?: string;
   status: string;
   signature_valid: boolean;
   starts_at: string;

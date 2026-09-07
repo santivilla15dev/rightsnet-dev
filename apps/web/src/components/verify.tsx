@@ -54,7 +54,7 @@ export function Verify({ token }: { token: string }) {
             <div>
               <dt>Licencia</dt>
               <dd>
-                <code>{data.license_id}</code>
+                {data.public_token ? <code>{data.public_token}</code> : <code>{data.license_id}</code>}
               </dd>
             </div>
             <div>

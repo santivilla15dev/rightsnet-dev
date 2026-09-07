@@ -65,13 +65,18 @@ test('buyer journey: contract, failed payment, retry, signed license, admin refu
   await expect(page.getByRole('button', { name: 'Continuar al pago' })).toBeVisible();
   await page.getByRole('button', { name: 'Continuar al pago' }).click();
   await page.getByRole('button', { name: 'Simular pago correcto' }).click();
-  await expect(page.getByRole('heading', { name: 'Licencia emitida' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Licencia emitida' })).toBeVisible({
+    timeout: 45_000,
+  });
+  await expect(page.locator('.license-success-token code')).toHaveText(/^RN-LIC-\d{4}-\d{6}$/);
+  await expect(page.getByRole('button', { name: 'Registrar contenido IA' })).toBeVisible();
   await page.screenshot({ path: 'docs/screenshots/order-issued.png', fullPage: true });
   const download = page.waitForEvent('download');
-  await page.getByRole('link', { name: 'Descargar certificado JSON' }).click();
+  await page.getByRole('link', { name: 'Descargar certificado' }).click();
   expect((await download).suggestedFilename()).toContain('rightsnet-');
   await page.getByRole('link', { name: 'Verificar licencia' }).click();
   await expect(page.getByText('Firma criptográfica verificada')).toBeVisible();
+  await expect(page.getByText(/RN-LIC-\d{4}-\d{6}/)).toBeVisible();
   await expect(page.getByText('Programada', { exact: true })).toBeVisible();
   await page.screenshot({ path: 'docs/screenshots/license-verification.png', fullPage: true });
   const publicUrl = page.url();

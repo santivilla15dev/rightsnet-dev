@@ -187,6 +187,12 @@ describe.sequential('PostgreSQL boundaries and commerce', () => {
     await Promise.all([processPaymentEvents(), processPaymentEvents()]);
     await Promise.all([issueLicenses(), issueLicenses()]);
     expect((await pool.query('SELECT * FROM licenses WHERE order_id=$1', [o.id])).rowCount).toBe(1);
+    const token = (
+      await pool.query<{ public_token: string }>('SELECT public_token FROM licenses WHERE order_id=$1', [
+        o.id,
+      ])
+    ).rows[0].public_token;
+    expect(token).toMatch(/^RN-LIC-\d{4}-\d{6}$/);
     expect(
       (await pool.query("SELECT * FROM journals WHERE order_id=$1 AND kind='payment'", [o.id]))
         .rowCount,

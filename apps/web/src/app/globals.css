@@ -1851,6 +1851,123 @@ td small {
   color: #94a37c;
   margin: 11px 0 20px;
 }
+.license-success {
+  max-width: 560px;
+  margin: 24px auto 40px;
+  padding: 36px 28px 32px;
+  text-align: center;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(90, 120, 70, 0.12), transparent 55%),
+    linear-gradient(180deg, #f7f9f2 0%, #eef2e6 100%);
+  border: 1px solid var(--line, #d7dfc8);
+  border-radius: 4px;
+}
+.license-success-eyebrow {
+  letter-spacing: 0.14em;
+  font-size: 11px;
+  font-weight: 700;
+  color: #5a6450;
+  margin: 0 0 16px;
+}
+.license-success-mark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.license-success-mark svg {
+  color: #3d5a2a;
+}
+.license-success-mark h1 {
+  margin: 0;
+  font-size: clamp(1.6rem, 3vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.license-success-token {
+  margin: 8px 0 20px;
+}
+.license-success-token code {
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid var(--line, #d7dfc8);
+}
+.license-success-creator {
+  margin: 0 0 6px;
+  font-size: 1.25rem;
+}
+.license-success-product {
+  margin: 0 0 24px;
+  color: #3d4633;
+}
+.license-success-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 18px;
+  text-align: left;
+  margin: 0 0 28px;
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid var(--line, #e1e7d5);
+}
+.license-success-meta dt {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6b7460;
+  margin: 0 0 4px;
+}
+.license-success-meta dd {
+  margin: 0;
+  font-weight: 600;
+}
+.license-success-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 18px;
+}
+.license-success-register {
+  border-top: 1px solid var(--line, #e1e7d5);
+  padding-top: 16px;
+  margin-top: 8px;
+}
+.register-ai-stub {
+  margin: 10px 0 0;
+  text-align: left;
+  line-height: 1.5;
+}
+.payment-wait {
+  text-align: center;
+  margin: 16px 0;
+  padding: 16px 12px;
+  border: 1px dashed var(--line, #d7dfc8);
+  background: rgba(255, 255, 255, 0.4);
+}
+.payment-wait h3 {
+  margin: 10px 0 8px;
+  font-size: 1.05rem;
+}
+.payment-wait > svg.spin {
+  animation: rn-spin 1.1s linear infinite;
+  color: #5a6450;
+}
+@keyframes rn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (max-width: 560px) {
+  .license-success-meta {
+    grid-template-columns: 1fr;
+  }
+}
 .download-link {
   font-size: 10px;
   display: flex;

@@ -63,6 +63,14 @@ Auth en **Continuar** (o al persistir solicitud de aprobación), no al explorar.
 
 Onboarding: exactamente 7 pasos (Perfil, Identidad, Likeness, Derechos con editor Rights Core, Precio, Consentimiento, Revisión).
 
+## Pago → Success (Fase 3)
+
+- Totales de checkout: **Licencia** · **Comisión plataforma (incluida)** · **Total** (la fee no se suma encima).
+- UI de espera («Confirmando pago…» / «Emitiendo licencia…») mientras hay evento/outbox pendiente — **sin** éxito prematuro.
+- `public_token` de licencia: `RN-LIC-YYYY-######` (secuencia por año UTC).
+- Success screen: token, creador, campaña, vigencia, territorio, canales + Ver / Descargar / Verificar.
+- **Registrar contenido IA** = stub (§22 no implementado).
+
 ## STOP
 
 Sin email/push, sin live commerce, sin §22 Generation/Output real (Verification sí).

@@ -72,15 +72,19 @@ test('§28 journeys 5–10: discover use engine pay license verify', async ({ pa
     await page.getByRole('checkbox', { name: /Acepto los términos de la licencia/ }).check();
     await page.getByRole('button', { name: 'Continuar al pago' }).click();
     await page.getByRole('button', { name: 'Simular pago correcto' }).click();
-    await expect(page.getByRole('heading', { name: 'Licencia emitida' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Licencia emitida' })).toBeVisible({
+      timeout: 45_000,
+    });
+    await expect(page.locator('.license-success-token code')).toHaveText(/^RN-LIC-\d{4}-\d{6}$/);
     const download = page.waitForEvent('download');
-    await page.getByRole('link', { name: 'Descargar certificado JSON' }).click();
+    await page.getByRole('link', { name: 'Descargar certificado' }).click();
     expect((await download).suggestedFilename()).toContain('rightsnet-');
   });
 
   await test.step('10 verify association anonymous', async () => {
     await page.getByRole('link', { name: 'Verificar licencia' }).click();
     await expect(page.getByText('Firma criptográfica verificada')).toBeVisible();
+    await expect(page.getByText(/RN-LIC-\d{4}-\d{6}/)).toBeVisible();
     const publicUrl = page.url();
     const anonymous = await browser.newPage();
     await anonymous.goto(publicUrl);
