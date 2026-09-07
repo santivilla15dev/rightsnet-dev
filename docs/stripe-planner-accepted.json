@@ -1,0 +1,13 @@
+{
+  "integration_shape": {
+    "checkout_type": "hosted",
+    "provider": "checkout_studio",
+    "origin_context": "web"
+  },
+  "type": "guide",
+  "instructions": "Use the doc_links from your chosen decision tree path to guide the merchant's Stripe integration. Each link points to the recommended integration approach for their use case.",
+  "decision_trees": [],
+  "status": "accepted",
+  "use_cases": [],
+  "guide_id": "iguide_61VM6AgsBMYNGfRVL41PvfIhIOx1O"
+}

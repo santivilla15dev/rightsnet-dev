@@ -1,0 +1,162 @@
+'use client';
+import { useEffect, useState, type FormEvent } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { ArrowRight } from 'lucide-react';
+import { api } from '@/lib/api';
+import { redirectAfterAuth } from '@/lib/auth-redirect';
+import { useSession } from './session';
+import { Button } from './ui/button';
+import { OAuthButtons } from './oauth-buttons';
+
+type AuthMode = 'sandbox' | 'supabase' | string;
+
+export function Login() {
+  const { refresh, user, toast } = useSession(),
+    router = useRouter(),
+    [busy, setBusy] = useState(false),
+    [authMode, setAuthMode] = useState<AuthMode | null>(null),
+    [email, setEmail] = useState(''),
+    [password, setPassword] = useState(''),
+    [resolvingContinue, setResolvingContinue] = useState(false);
+
+  useEffect(() => {
+    void api<{ auth?: string }>('config')
+      .then((cfg) => setAuthMode(cfg.auth ?? 'sandbox'))
+      .catch(() => setAuthMode('sandbox'));
+  }, []);
+
+  async function continueSession() {
+    setResolvingContinue(true);
+    try {
+      await redirectAfterAuth(user, (href) => router.push(href));
+    } finally {
+      setResolvingContinue(false);
+    }
+  }
+
+  async function emailLogin(e: FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      await api('auth/supabase/login', {
+        method: 'POST',
+        body: { email, password },
+      });
+      await refresh();
+      await redirectAfterAuth(null, (href) => router.push(href));
+    } catch (err) {
+      toast((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function logout() {
+    await api('auth/logout', { method: 'POST', body: {} });
+    await refresh();
+    toast('Sesión cerrada.');
+    router.push('/');
+  }
+
+  if (authMode === null) {
+    return (
+      <div className="login-page">
+        <div className="login-wrap">
+          <p className="muted">Cargando…</p>
+        </div>
+      </div>
+    );
+  }
+
+  const sessionBlock = user ? (
+    <section className="login-session" aria-label="Sesión activa">
+      <p className="login-session-label">Sesión activa</p>
+      <p className="login-session-name">{user.display_name}</p>
+      <p className="login-session-role">{user.role}</p>
+      <div className="login-session-actions">
+        <Button disabled={resolvingContinue} onClick={() => void continueSession()}>
+          {resolvingContinue ? 'Continuando…' : 'Continuar'}
+          <ArrowRight size={16} />
+        </Button>
+        <Button variant="outline" onClick={() => void logout()}>
+          Cerrar sesión
+        </Button>
+      </div>
+    </section>
+  ) : null;
+
+  return (
+    <div className="login-page">
+      <div className="login-wrap">
+        <p className="login-brand">
+          RightsNet<span>.</span>
+        </p>
+        <h1>Bienvenido de nuevo</h1>
+        <p className="login-lead">Accede con tu cuenta de RightsNet.</p>
+        {sessionBlock}
+        {authMode === 'supabase' ? (
+          <>
+            <OAuthButtons onError={(msg) => toast(msg)} />
+            <form className="login-form" onSubmit={(ev) => void emailLogin(ev)}>
+              <label>
+                Correo
+                <input
+                  type="email"
+                  autoComplete="username"
+                  required
+                  value={email}
+                  onChange={(ev) => setEmail(ev.target.value)}
+                  placeholder="tu@empresa.com"
+                />
+              </label>
+              <label>
+                Contraseña
+                <input
+                  type="password"
+                  autoComplete="current-password"
+                  required
+                  minLength={8}
+                  value={password}
+                  onChange={(ev) => setPassword(ev.target.value)}
+                />
+              </label>
+              <Button className="full-width" disabled={busy} type="submit">
+                {busy ? 'Entrando…' : 'Iniciar sesión'}
+                <ArrowRight size={16} />
+              </Button>
+            </form>
+            <p className="login-demo-note">
+              <Link href="/forgot-password" className="login-help-link">
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </p>
+          </>
+        ) : (
+          <section className="login-sandbox-notice panel" style={{ padding: '1.25rem' }}>
+            <p>
+              Modo prueba CI: el acceso con correo y OAuth no está activo (
+              <code>AUTH_PROVIDER=sandbox</code>).
+            </p>
+            <Button asChild className="full-width" style={{ marginTop: '1rem' }}>
+              <Link href="/demo">
+                Ir a Demo
+                <ArrowRight size={16} />
+              </Link>
+            </Button>
+          </section>
+        )}
+        <p className="login-demo-note">
+          ¿Nuevo en RightsNet?{' '}
+          <Link href="/signup" className="login-help-link">
+            Crear cuenta
+          </Link>
+          {' · '}
+          <Link href="/help" className="login-help-link">
+            Guía
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+}

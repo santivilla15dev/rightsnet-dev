@@ -1,0 +1,54 @@
+import { existsSync, mkdirSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import path from 'node:path';
+const data = path.resolve('.local/postgres');
+const bin = process.env.POSTGRES_BIN ?? '/opt/homebrew/opt/postgresql@16/bin';
+const run = (cmd, args) => {
+  const r = spawnSync(cmd, args, { stdio: 'inherit' });
+  if (r.status !== 0) throw new Error(cmd + ' failed');
+};
+if (!existsSync(bin + '/initdb')) {
+  console.error('PostgreSQL no encontrado. Usa docker compose up -d o configura POSTGRES_BIN.');
+  process.exit(1);
+}
+mkdirSync('.local', { recursive: true });
+if (!existsSync(data + '/PG_VERSION'))
+  run(bin + '/initdb', [
+    '-D',
+    data,
+    '-U',
+    'rightsnet',
+    '--auth-local=trust',
+    '--auth-host=trust',
+    '--encoding=UTF8',
+    '--locale=C',
+  ]);
+const status = spawnSync(bin + '/pg_ctl', ['-D', data, 'status'], { stdio: 'ignore' });
+if (status.status !== 0)
+  run(bin + '/pg_ctl', [
+    '-D',
+    data,
+    '-l',
+    path.resolve('.local/postgres.log'),
+    '-o',
+    '-p 55432 -h 127.0.0.1',
+    'start',
+  ]);
+const db = spawnSync(
+  bin + '/psql',
+  [
+    '-h',
+    '127.0.0.1',
+    '-p',
+    '55432',
+    '-U',
+    'rightsnet',
+    '-d',
+    'postgres',
+    '-tAc',
+    "SELECT 1 FROM pg_database WHERE datname='rightsnet'",
+  ],
+  { encoding: 'utf8' },
+);
+if (!db.stdout.trim())
+  run(bin + '/createdb', ['-h', '127.0.0.1', '-p', '55432', '-U', 'rightsnet', 'rightsnet']);

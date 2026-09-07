@@ -1,0 +1,11 @@
+services:
+  postgres:
+    image: postgres:16.6
+    environment:
+      POSTGRES_USER: rightsnet
+      POSTGRES_PASSWORD: local-rightsnet-only
+      POSTGRES_DB: rightsnet
+    ports: ["127.0.0.1:55432:5432"]
+    volumes: ["rightsnet_db:/var/lib/postgresql/data"]
+volumes:
+  rightsnet_db:

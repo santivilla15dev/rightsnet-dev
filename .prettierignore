@@ -1,0 +1,7 @@
+node_modules
+.next
+.local
+apps/web/.next
+packages/contracts/api.d.ts
+packages/contracts/openapi.json
+pnpm-lock.yaml

@@ -1,0 +1,202 @@
+# Verificación del MVP sandbox — 6 septiembre 2026
+
+Historia: una marca elige un creador, configura el uso, obtiene una decisión determinista, acepta el contrato, simula el pago y recibe un certificado firmado; el creador y administración gestionan derechos, solicitudes y operaciones.
+
+| Comprobación | Resultado | Evidencia |
+|---|---|---|
+| TypeScript estricto web/API/worker/dominio | PASS | `pnpm typecheck` |
+| ESLint | PASS | `pnpm lint` |
+| Pruebas dominio, PostgreSQL y adaptador Stripe | PASS | `pnpm test` — 127 tests (dominio, rights-core, auth supabase, integración, Stripe) |
+| Build optimizado Next.js 16.3.4 | PASS | `pnpm build` |
+| Navegador Chromium sobre build | 9 PASS | `pnpm test:e2e` — home + commerce + matriz §28 (~24 s, stack :3010/:4010) |
+| Escritorio y móvil sin overflow | PASS | Capturas 1440px / 390px y comprobación DOM |
+| Stripe Checkout + webhooks (local) | PASS | Mocks: snapshot, idempotencia, lifecycle, race `provider_ref`, mismatch permanente, fallos antiguos, duplicados |
+| Stripe Connect onboarding (local) | PASS | Mocks: Accounts v2 recipient, Account Links sin persistir URL, sync thin events, remediación `account_update`, thin requirements/capability |
+| Stripe Refunds (local) | PASS | Mocks: refund total con reverse_transfer/fee, pending→webhook, failed→review, bloqueo de emisión, licencia intacta |
+| Stripe Money (local) | PASS | Mocks: transfer vinculada, disputa sin revocar licencia, payout sin order_id, reversal idempotente |
+| Stripe conciliación externa (local) | PASS | Mocks: BT paginadas + cursor, fees/neto, cola de diferencias, recovery Events API, GET interno sin import |
+| Stripe externo (Dashboard / API keys) | PASS (modo test) | Ensayo autenticado 6 sep 2026 — ver sección siguiente |
+| Rights Core v0.1 motor puro | PASS | `tests/rights-core-acceptance.test.ts` (matriz); `packages/domain/src/rights-core/` |
+| Rights Core integración dual-path | PASS | `tests/rights-core-integration.test.ts` (8); migración `012`; seed Greta DE rights-policy |
+| Auth Supabase v0.1 (sin MFA) | PASS | `tests/supabase-auth.test.ts`; `docs/AUTH_SUPABASE_V0_1.md`; runbook `docs/runbooks/auth-supabase.md` |
+| Home pública + E2E §28 | PASS | `/` bare shell; `pnpm test:e2e` **9 PASS**; `docs/HOME_AND_E2E_V0_1.md` |
+| Marketplace UX v0.1 | PASS | Home producto + pasos licencia; `docs/MARKETPLACE_UX_V0_1.md` |
+| Identity KYC v0.1.1 | PASS | Port sandbox/stripe + selfie matching; `docs/IDENTITY_KYC_V0_1.md`; tests `identity-kyc.test.ts` |
+| Creator publish Rights Core v0.1 | PASS | Editor AT/DE en `/dashboard`; `docs/CREATOR_PUBLISH_RIGHTS_CORE_V0_1.md` |
+| Launch gates AT–DE (sin live) | Documentado | `docs/launch-gates.md` — `LIVE_COMMERCE_ENABLED` sigue false |
+| Piloto live | NO HABILITADO | Gates pendientes, guard de arranque explícito |
+
+## Identity KYC v0.1 (7 sep 2026)
+
+| Entrega | Resultado | Evidencia |
+|---|---|---|
+| Spec `IDENTITY_KYC_V0_1` | PASS | `docs/IDENTITY_KYC_V0_1.md` |
+| Migración `013_identity_checks` | PASS | refs proveedor, sin blobs de documento |
+| Port sandbox + Stripe Identity | PASS | `apps/api/src/integrations/identity-kyc.ts` |
+| Session + webhook + simulate gated | PASS | `identity-kyc` module; webhook en `/v1/webhooks/stripe` |
+| Tests mocks | PASS | `tests/identity-kyc.test.ts` (3) |
+| MFA / live commerce | NO | STOP |
+
+## Identity KYC v0.1.1 selfie (7 sep 2026)
+
+| Entrega | Resultado | Evidencia |
+|---|---|---|
+| `require_matching_selfie` en create session | PASS | `stripeIdentityCreateParams` |
+| Copy UI documento + selfie | PASS | `creator-dashboard.tsx` |
+| Sin blobs biométricos / live false | PASS | STOP docs + `assertConfiguration` |
+| MFA / live commerce | NO | STOP |
+
+## Creator publish Rights Core v0.1 (7 sep 2026)
+
+| Entrega | Resultado | Evidencia |
+|---|---|---|
+| Editor AT/DE en `/dashboard` | PASS | `creator-dashboard.tsx` |
+| Default policy cuando `RIGHTS_CORE_PURCHASES` | PASS | `GET /v1/creator` |
+| Legacy ES editor intacto | PASS | perfiles `rightsnet.policy/0.1` |
+| Live / remap ES→AT | NO | STOP |
+
+**STOP.** `LIVE_COMMERCE_ENABLED` permanece false. Siguiente gate solo tras checklist `launch-gates.md`.
+
+## Rights Core v0.1 — motor puro (7 sep 2026)
+
+Hito de implementación del motor determinista **sin** cablear compras ni migrar políticas ES→AT.
+
+| Entrega | Resultado | Evidencia |
+|---|---|---|
+| Schemas Zod `rights-policy` / `license-request` / `license-decision` / `rights-passport` 0.1 | PASS | `packages/domain/src/rights-core/schemas.ts` |
+| Canonicalización + hash nuevos (legacy intacto) | PASS | `rightsCanonical` / `rightsHash`; `canonical`/`hash` legacy sin cambio |
+| Evaluador puro + approvals + passport allowlist + issuance gate | PASS | `evaluate.ts`, `approvals.ts`, `passport.ts`, `issuance.ts` |
+| Matriz de aceptación RIGHTS_CORE_V0_1 | PASS | 37 casos en `tests/rights-core-acceptance.test.ts` |
+
+## Rights Core integración dual-path (7 sep 2026)
+
+| Entrega | Resultado | Evidencia |
+|---|---|---|
+| Migración 012 (INCOMPLETE, safety, approvals hashes, consent terms) | PASS | `packages/db/migrations/012_rights_core_integration.sql` |
+| Dual-path createRequest / approve (re-eval) / quote / order / issue | PASS | `licensing.ts`, `payments.ts` `assertOrderIssuable` |
+| Flag `RIGHTS_CORE_PURCHASES` + seed Greta DE | PASS | `.env.example`; `seedRightsCoreFixture` |
+| Passport público allowlist | PASS | `GET /v1/assets/:id/passport` → `projectPublicPassport` |
+| Tests integración | PASS | 8 casos; suite total **122** tests |
+| UI dual-path (descubrimiento + ficha) | PASS | `creator-detail` / `discover` / `policy.ts`; Greta DE + Lucía ES |
+| Auth / live / ES→AT masivo | NO | STOP explícito (Auth abierta como hito siguiente) |
+
+**STOP (histórico).** Tras decisión explícita se abrió Auth Supabase v0.1 — ver sección siguiente.
+
+## Auth Supabase v0.1 (7 sep 2026)
+
+Login / refresh / provisioning con mocks. Default local sigue `AUTH_PROVIDER=sandbox`.
+
+| Entrega | Resultado | Evidencia |
+|---|---|---|
+| Spec `AUTH_SUPABASE_V0_1` | PASS | `docs/AUTH_SUPABASE_V0_1.md` |
+| Port inyectable + login/refresh/provision | PASS | `apps/api/src/integrations/supabase-auth.ts` |
+| Rutas API + actor dual-path | PASS | `auth/supabase/login`, `refresh`; `actor()` vía JWT |
+| Proxy cookies access + refresh | PASS | `apps/web/src/app/api/[...path]/route.ts` |
+| UI email/password si `auth=supabase` | PASS | `login.tsx` lee `GET /config` |
+| Tests mocks | PASS | `tests/supabase-auth.test.ts` |
+| Runbook proyecto real | PASS | `docs/runbooks/auth-supabase.md` |
+| MFA / live commerce / OAuth | NO | STOP explícito |
+
+**STOP.** No MFA, no live commerce, no remap ES→AT. Siguiente gate de producto solo tras decisión explícita.
+
+## Home pública + E2E §28 (7 sep 2026)
+
+| Entrega | Resultado | Evidencia |
+|---|---|---|
+| Landing `/` + hub demo sandbox | PASS | `home.tsx` + shell bare |
+| Marketplace solo `/discover` | PASS | catch-all `page.tsx` |
+| E2E fuerza sandbox (:3010/:4010) | PASS | `scripts/e2e-server.mjs` + `WEB_ORIGINS` |
+| Matriz journeys 1–10 | PASS | `tests/e2e/journeys.spec.ts` + commerce |
+| Vitest con AUTH sandbox | PASS | `vitest.config.ts` fuerza `AUTH_PROVIDER=sandbox` |
+| Playwright | PASS | **9** tests |
+| MFA / live / generador IA | NO | STOP (J10 = `/verify` only) |
+
+**STOP.** No MFA, no live commerce, no remap ES→AT. Siguiente gate solo tras decisión explícita.
+
+## Marketplace UX v0.1 (7 sep 2026)
+
+| Entrega | Resultado | Evidencia |
+|---|---|---|
+| Home sin hub demo / sin Auth banner | PASS | `home.tsx` → Cómo funciona |
+| Login demo secundaria / supabase producto | PASS | `login.tsx` |
+| Pasos 1–3 en ficha + copy discover/order | PASS | `creator-detail` / `discover` / `company` |
+| E2E home actualizado | PASS | `tests/e2e/home.spec.ts` |
+| Signup público / MFA / live | NO | STOP |
+
+**STOP.** No MFA, no live commerce, no remap ES→AT.
+
+
+## Revisión posterior a los cambios de Cursor
+
+Revisión de código y pruebas repetidas en esta tarea; no se ha repetido el ensayo externo ni se han generado nuevos cobros. La evidencia de Dashboard/CLI de la sección siguiente se conserva como informe del ensayo anterior de Cursor, no como prueba de las correcciones posteriores.
+
+- Baseline recibido: **70 tests locales PASS**. Después de las correcciones: **77 tests PASS**, `pnpm lint`, `pnpm typecheck` y `pnpm build` PASS. Migración 011 aplicada también a la base local `rightsnet`; health API responde OK. Los procesos existentes no se reiniciaron en esta revisión; recargar API/worker antes del reensayo externo.
+- Nuevas regresiones: retomar 250 balance transactions en tres ciclos limitados sin perder páginas; descubrir eventos nuevos después del cursor anterior; no avanzar tras error; cargos y refunds ajenos del mismo importe no se concilian con órdenes locales; estado de refund consultado al proveedor; refund ID y ámbito conectados rechazados si no corresponden.
+- Migración 011 añade progreso de paginación sin borrar ni reescribir movimientos/journals históricos. Los journals de reversión sintéticos existentes se conservan y requieren revisión; ahora no se generan nuevos sin transferencia contabilizada.
+- Checkout no fija email ficticio ni lista de métodos. Mantiene EUR; los métodos se controlan en Dashboard. Por tanto, la fila anterior «async N/A» solo describe el ensayo de tarjeta, no todos los métodos configurables.
+- Planner real disponible y usado: respuestas originales en `stripe-planner-decision-tree.json` y `stripe-planner-accepted.json`. La respuesta accepted confirma hosted/web, no valida integralmente Connect ni las pruebas.
+
+**Pendiente:** reensayo externo de estas correcciones; recuperación v2 thin, reversión parcial/paginada, asociación tardía de transferencias y conciliación integral de fees/cuentas connected. La comparación actual está limitada a 500 movimientos. Cero diferencias críticas o avisos acknowledged no acreditan esos escenarios.
+
+## Ensayo Stripe modo test (6 sep 2026) — evidencia previa de Cursor
+
+Acreditación operativa local con `PAYMENTS_PROVIDER=stripe`, claves `sk_test_…`, `stripe listen` (snapshot + thin) y Dashboard test. IDs redactados.
+
+| Caso | Resultado | Evidencia |
+|---|---|---|
+| Platform setup marketplace (Cliente → Tú → Destinatario) | PASS | Connect platform setup completado |
+| Connect creador (Accounts v2 recipient + Account Link) | PASS | Lucía `acct_…`; `transfers_status=active`; thin sync UI |
+| Checkout hosted €650 campaña «zara» | PASS | `cs_test_…` → orden `6330abc6-…` `fulfilled` → licencia `479a931e-…` |
+| Webhook snapshot firma | PASS (tras fix) | Antes: todos `← [400]` por `rawBody` vacío; después `← [200]`. Fulfillment inicial vía recovery Events API |
+| Licencia pública | PASS | `/verify/Igo65BWYhPp4i9UxZ7yuUYfOdZQukmMW` — `signature_valid`, `NOT_YET_VALID` hasta `starts_at` 2026-09-09 |
+| Conciliar Stripe (cierre paso 6) | PASS* | Run `96261f8d…`; import OK; **0 críticas**; avisos no críticos (CLI/funding) ack |
+| Refund total test | PASS | Orden → `refunded`; refund `re_3UClNM…` `succeeded` €650; licencia **sigue `issued`** (sin auto-revocación) |
+| Idempotencia `events resend` | PASS | Mismo `evt_…` → HTTP 200; sin nuevos `provider_events` ni journals |
+| Eventos desordenados / retraso (#5) | PASS | Resend post-flujo de evento secundario; sin doble ledger |
+| Expirar Checkout sin pagar (#7) | PASS | Orden `7295138c…` · sesión `cs_test_a1Pfx…` → intento `expired`; 0 licencias |
+| Pago nuevo + payout connected (#9) | PASS | Orden `21884812…` fulfilled + transfer; `po_1UCmK1…` en `acct_1UClG2…`; `payout_records` **sin** `order_id` |
+| Disputa CLI `stripe trigger` | PASS (skip) | Fixture USD → ack 200 sin insertar (MVP solo EUR); licencia intacta |
+| Disputa EUR (orden viva) | PASS | Orden `18caba7b…` · `du_1UCn0k…` €650; licencia `issued`; review admin → `acknowledged`, `license_changed: false` |
+| `charge_ref` en intentos | HECHO | Migración `010`; matching recon/disputas por `ch_…` |
+| **Paso 6 cerrado** | **HECHO (test mode)** | Checklist runbook 0–10 + disputa EUR. `LIVE_COMMERCE_ENABLED` sigue false |
+
+### Correcciones aplicadas en el ensayo
+
+- `express.json` conserva `req.rawBody` para firma Stripe (`apps/api/src/main.ts`).
+- Account Link: fallback `account_update` → `account_onboarding` si Stripe solo permite onboarding.
+- Conciliación: el cursor ya no usa solo `starting_after` (miraba al pasado); usa `created[gte]` + watermark al txn más reciente.
+- Matching de cargos: `charge_ref` + filtro `provider='stripe'` al cruzar por importe.
+- Disputas no-EUR (fixtures CLI): se acusan 2xx y se omiten (sin reintentos infinitos).
+
+## Recorridos de navegador
+
+1. Marketplace, filtros, resultado vacío, favoritos y layout móvil.
+2. Compra: aceptación requerida, pago rechazado, retry, emisión única, descarga JSON, verificación pública anónima, refund y suspensión administrativa.
+3. Cambio de política con nuevo consentimiento y aprobación manual por el creador antes de cotizar.
+4. Viewer bloqueado en escritura, administración restringida y rechazo de origen CSRF ajeno.
+5. Alta de creador desde cero: perfil, evidencia PNG de prueba, identidad simulada, consentimiento, revisión administrativa, publicación y retirada del fixture conservando evidencias.
+
+## Evidencia visual
+
+- [Marketplace escritorio](screenshots/marketplace-desktop.png)
+- [Marketplace móvil](screenshots/marketplace-mobile.png)
+- [Orden emitida](screenshots/order-issued.png)
+- [Verificación de certificado](screenshots/license-verification.png)
+- [Panel del creador](screenshots/creator-dashboard.png)
+
+Las pruebas no usaron identidades, tarjetas ni licencias reales. El fixture de onboarding se retiró de publicación tras probarlo; las campañas y auditoría E2E se conservan.
+
+## Correcciones verificadas
+
+- El constraint trigger del ledger usaba un campo que no existía en ambas tablas. Se corrigió en migración 003 y se comprobaron doble partida, refunds, duplicados y cierre transaccional.
+- Next.js normaliza ciertos orígenes locales. La protección CSRF ahora usa una allowlist explícita de localhost/127.0.0.1; un origen ajeno sigue bloqueado.
+- Los snapshots contractuales y de licencia se protegen en DB; los journals no admiten líneas en transacciones posteriores.
+- Paso 1 Stripe: mismatches permanentes de webhook se auditan y responden 2xx (sin reintento infinito); ausencia de `provider_ref` sigue en 409 reintentable. Puerto Stripe inyectable para tests sin red.
+- Paso 2 Connect: cuentas por creador/entorno; Account Links efímeros no se guardan; eventos thin recuperan el Account autoritativo; panel creador con paso de cobros/remediación.
+- Paso 3 Refunds: solicitud durable + worker; `reverse_transfer` y `refund_application_fee`; webhooks sin doble ledger; emisión bloqueada si hay refund pendiente; la licencia no se revoca sola.
+- Paso 4 Money: transferencias/disputas/payouts; payouts sin orden; disputa abre revisión humana sin revocar licencia; UI admin y resumen pagado/transferido/payout en creador.
+- Paso 5 Conciliación: balance transactions con cursor; comparación vs journals/pagos/refunds/transfers/payouts; diferencias + ack; recovery de eventos; GET ledger interno no llama a Stripe.
+
+## Límites de esta evidencia
+
+El resultado no acredita KYC, suficiencia contractual, impuestos, antimalware, MFA real, backup/restore ni despliegue cloud. El ensayo Stripe **modo test** (paso 6) sí acredita Checkout/Connect/refund/payout/disputa/conciliación frente a Dashboard/CLI; **no** sustituye un cobro live ni cierra gates de piloto. Tampoco se ha ejecutado una prueba de carga de 20 usuarios ni una auditoría de seguridad independiente. Los workflows CI están preparados; la ejecución remota exige publicar el repositorio.

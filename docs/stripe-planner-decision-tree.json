@@ -1,0 +1,1910 @@
+{
+  "integration_shape": null,
+  "type": "guide",
+  "instructions": "Walk through each decision tree question using the merchant's context. For each question, choose the option that best fits. Follow next_question_id until you reach terminal options. When a terminal option includes accept_attributes, call back with accept=True, the same guide_id, and the selected attributes as JSON in the text.",
+  "decision_trees": [
+    {
+      "root_question_id": "connect_two_sided_network",
+      "principles": [],
+      "title": "Decision Tree #1: Is Connect the right solution? What type of Connect platform should I build?",
+      "questions": [
+        {
+          "prompt": "Does your platform bring together two distinct groups — buyers who pay for goods or services, AND sellers/service providers who fulfill them?",
+          "id": "connect_two_sided_network",
+          "options": [
+            {
+              "notes": [],
+              "next_question_id": "connect_money_flows",
+              "id": "yes_two_sided",
+              "label": "Yes — My platform is a two-sided network where buyers and sellers interact through my platform"
+            },
+            {
+              "notes": [],
+              "next_question_id": "connect_businesses_accept_payments",
+              "id": "no_software_tools",
+              "label": "No — I provide software or tools that businesses use to serve their own separate customers"
+            }
+          ]
+        },
+        {
+          "prompt": "Does money flow through your platform from buyers to sellers — i.e., do sellers receive their funds via your platform?",
+          "id": "connect_money_flows",
+          "options": [
+            {
+              "notes": [],
+              "next_question_id": "connect_transaction_revenue",
+              "id": "yes_money_flows",
+              "label": "Yes — Buyers pay through my platform and sellers receive proceeds through my platform"
+            },
+            {
+              "notes": [
+                "You likely don't need Connect; consider standard Stripe payments for your own platform revenue"
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/payments",
+                  "label": "Standard Stripe payments"
+                }
+              ],
+              "id": "no_direct_outside",
+              "accept_attributes": {},
+              "label": "No — Buyers pay sellers directly outside of my platform"
+            }
+          ]
+        },
+        {
+          "prompt": "How does your platform primarily earn revenue from buyer-seller transactions?",
+          "id": "connect_transaction_revenue",
+          "options": [
+            {
+              "notes": [
+                "Your platform routes payments from buyers to sellers and retains a portion of each transaction",
+                "Sellers/service providers are represented as connected accounts and receive payouts",
+                "Buyers transact through your platform (they may or may not have their own accounts on your platform)",
+                "Example business types: on-demand service platforms, rental/sharing economy (e.g., home or car rentals), freelance and gig platforms, multi-vendor e-commerce",
+                "Overview: [https://docs.stripe.com/connect/marketplace](https://docs.stripe.com/connect/marketplace)"
+              ],
+              "next_question_id": "connect_connected_account_location",
+              "id": "commission_marketplace",
+              "label": "Commission, percentage, or flat fee taken from each transaction — Recommend integrating as a Marketplace"
+            },
+            {
+              "notes": [],
+              "next_question_id": "connect_businesses_accept_payments",
+              "id": "seller_subscription",
+              "label": "Sellers pay a subscription or listing fee, but platform doesn't take a cut of each individual transaction"
+            },
+            {
+              "notes": [
+                "Review both [Build a marketplace](https://docs.stripe.com/connect/marketplace) and [Build a SaaS platform](https://docs.stripe.com/connect/saas)",
+                "Identify which use case is dominant to determine your primary integration starting point",
+                "Warning: Supporting both sides adds significant complexity (two separate payment flows, two sets of webhook handlers, and more testing surface). We recommend launching the most critical side first, then expanding."
+              ],
+              "next_question_id": "connect_connected_account_location",
+              "id": "hybrid_marketplace_saas",
+              "label": "Both a per-transaction take rate AND subscription or software fees from sellers — You likely have a hybrid model"
+            }
+          ]
+        },
+        {
+          "prompt": "Does your platform enable businesses to accept payments from their own end customers using your software?",
+          "id": "connect_businesses_accept_payments",
+          "options": [
+            {
+              "notes": [],
+              "next_question_id": "connect_customer_buying_from",
+              "id": "yes_business_payments",
+              "label": "Yes — my platform enables businesses to accept payments from their own end customers using my software"
+            },
+            {
+              "notes": [
+                "You don't need Connect; consider Stripe Billing to charge your subscribers directly"
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/billing",
+                  "label": "Stripe Billing"
+                }
+              ],
+              "id": "no_connect_needed",
+              "accept_attributes": {},
+              "label": "No — I only charge my own customers for using my software (e.g., a straightforward SaaS subscription)"
+            }
+          ]
+        },
+        {
+          "prompt": "When a customer makes a purchase, who are they buying from?",
+          "id": "connect_customer_buying_from",
+          "options": [
+            {
+              "notes": [
+                "You extend Stripe payment capabilities to your merchant customers by modeling them as connected accounts",
+                "Merchants accept payments from their own end customers through your software",
+                "You earn revenue via merchant subscription fees, per-transaction application fees, and/or payment processing markup",
+                "Example business types: vertical SaaS (restaurants, salons, gyms, clinics), e-commerce website builders, scheduling/booking software, property management tools, POS platforms",
+                "Tutorial: [https://docs.stripe.com/connect/saas](https://docs.stripe.com/connect/saas)"
+              ],
+              "next_question_id": "connect_end_customer_location",
+              "id": "merchant_direct_saas",
+              "label": "They're buying directly from the merchant/business — your platform is the software tool the merchant uses behind the scenes, and the customer may not even know your platform exists — Recommend integrating as a SaaS Platform"
+            },
+            {
+              "notes": [],
+              "next_question_id": "connect_transaction_revenue",
+              "id": "through_platform",
+              "label": "They're buying through your platform — your platform is the storefront or marketplace they're using to find and to purchase from sellers"
+            }
+          ]
+        },
+        {
+          "prompt": "Where are your end customers located relative to your platform?",
+          "id": "connect_end_customer_location",
+          "options": [
+            {
+              "notes": [],
+              "next_question_id": "connect_business_model",
+              "id": "same_country_end_customers",
+              "label": "All in the same country as my platform — No buyers in different countries"
+            },
+            {
+              "notes": [],
+              "next_question_id": "connect_cross_border_end_customer_model",
+              "id": "cross_border_end_customers",
+              "label": "In different countries from my platform (cross-border buyers)"
+            }
+          ]
+        },
+        {
+          "prompt": "For cross-border buyers, which platform and charge setup applies?",
+          "id": "connect_cross_border_end_customer_model",
+          "options": [
+            {
+              "notes": [],
+              "next_question_id": "connect_connected_account_location",
+              "id": "marketplace_cross_border_buyers_supported",
+              "label": "Marketplace using destination charges or separate charges and transfers — platform and all end customers are in the same country or in compatible cross-border regions (e.g. US, Canada, UK, EEA, Switzerland)"
+            },
+            {
+              "notes": [
+                "Not supported. End of tree."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/connect/cross-border-payouts",
+                  "label": "Cross-border payouts with Connect"
+                }
+              ],
+              "id": "marketplace_cross_border_buyers_not_supported",
+              "accept_attributes": {},
+              "label": "Marketplace using destination charges or separate charges and transfers — platform and end customers are not in the same country or compatible cross-border regions"
+            },
+            {
+              "notes": [],
+              "next_question_id": "connect_connected_account_location",
+              "id": "saas_cross_border_buyers_supported",
+              "label": "SaaS Platform using direct charges — connected accounts and all of their end customers are in the same country"
+            },
+            {
+              "notes": [
+                "Not supported. End of tree."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/connect/saas",
+                  "label": "Build a SaaS platform"
+                }
+              ],
+              "id": "saas_cross_border_buyers_not_supported",
+              "accept_attributes": {},
+              "label": "SaaS Platform using direct charges — connected accounts and end customers are not all in the same country"
+            }
+          ]
+        },
+        {
+          "prompt": "Where are your connected accounts (sellers/service providers) located relative to your platform?",
+          "id": "connect_connected_account_location",
+          "options": [
+            {
+              "notes": [],
+              "next_question_id": "connect_business_model",
+              "id": "same_country_connected_accounts",
+              "label": "Same country as my platform — Standard domestic setup, no cross-border payout considerations"
+            },
+            {
+              "notes": [],
+              "next_question_id": "connect_cross_border_payout_model",
+              "id": "cross_border_connected_accounts",
+              "label": "Different countries from my platform (cross-border payouts)"
+            }
+          ]
+        },
+        {
+          "prompt": "For cross-border payouts, which platform and charge setup applies?",
+          "id": "connect_cross_border_payout_model",
+          "options": [
+            {
+              "notes": [
+                "You can pay out connected accounts in 100+ countries",
+                "The platform must own both loss liability AND pricing, and on-behalf-of (OBO) is not permitted."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/connect/cross-border-payouts",
+                  "label": "Cross-border payouts with Connect"
+                }
+              ],
+              "id": "marketplace_cross_border_payouts_supported",
+              "accept_attributes": {},
+              "label": "Marketplace using destination charges or separate charges and transfers — my platform is in the US, UK, EEA, Canada or Switzerland"
+            },
+            {
+              "notes": [
+                "Not supported. End of tree."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/connect/cross-border-payouts",
+                  "label": "Cross-border payouts with Connect"
+                }
+              ],
+              "id": "marketplace_cross_border_payouts_not_supported",
+              "accept_attributes": {},
+              "label": "Marketplace using destination charges or separate charges and transfers — my platform is not in the US, UK, EEA, Canada or Switzerland"
+            },
+            {
+              "notes": [
+                "Not supported. End of tree.",
+                "Cross-border payouts are not compatible with direct charges, because the connected account acquires locally as merchant of record in their own country."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/connect/saas",
+                  "label": "Build a SaaS platform"
+                }
+              ],
+              "id": "saas_cross_border_payouts_not_supported",
+              "accept_attributes": {},
+              "label": "SaaS Platform using direct charges"
+            }
+          ]
+        }
+      ],
+      "use_case_key": "add_and_monetize_payments_connect"
+    },
+    {
+      "root_question_id": "connect_business_model",
+      "principles": [
+        "Do NOT use on-behalf-of (OBO) for Marketplace use cases — that would make the connected account the merchant of record. The Marketplace should be merchant of record, not the connected account."
+      ],
+      "title": "Decision Tree #2: What charge type and pricing model should I use?",
+      "questions": [
+        {
+          "prompt": "What is your platform's business model?",
+          "id": "connect_business_model",
+          "options": [
+            {
+              "notes": [],
+              "next_question_id": "connect_marketplace_funds",
+              "id": "marketplace",
+              "label": "Marketplace"
+            },
+            {
+              "notes": [],
+              "next_question_id": "connect_saas_direct_charges",
+              "id": "saas_platform",
+              "label": "SaaS Platform"
+            }
+          ]
+        },
+        {
+          "prompt": "Does your platform need to hold funds before releasing them to sellers, or split one payment across multiple sellers?",
+          "id": "connect_marketplace_funds",
+          "options": [
+            {
+              "notes": [
+                "Your platform is the merchant of record. Funds transfer to connected accounts automatically upon payment success.",
+                "Tutorial: [https://docs.stripe.com/connect/marketplace/tasks/accept-payment/destination-charges](https://docs.stripe.com/connect/marketplace/tasks/accept-payment/destination-charges)"
+              ],
+              "next_question_id": "connect_pricing_owner",
+              "id": "destination_charges",
+              "label": "No — Recommend Destination Charges (DEFAULT)"
+            },
+            {
+              "notes": [
+                "The platform accepts a payment on its own account and makes a separate Transfer API call to move funds to the connected account after the trigger event",
+                "Do NOT use destination charges for hold-and-release — destination charges transfer automatically and cannot hold funds",
+                "Tutorial: [https://docs.stripe.com/connect/marketplace/tasks/accept-payment/separate-charges-and-transfers](https://docs.stripe.com/connect/marketplace/tasks/accept-payment/separate-charges-and-transfers)"
+              ],
+              "next_question_id": "connect_pricing_owner",
+              "id": "separate_charges_hold",
+              "label": "Yes — I need to hold funds before releasing (e.g., release after delivery confirmation) — Recommend Separate Charges and Transfers"
+            },
+            {
+              "notes": [
+                "Destination charges only support one connected account per transaction",
+                "Tutorial: [https://docs.stripe.com/connect/marketplace/tasks/accept-payment/separate-charges-and-transfers](https://docs.stripe.com/connect/marketplace/tasks/accept-payment/separate-charges-and-transfers)"
+              ],
+              "next_question_id": "connect_pricing_owner",
+              "id": "separate_charges_split",
+              "label": "Yes — One payment must be split across multiple sellers (e.g., multi-vendor cart checkout) — Recommend Separate Charges and Transfers"
+            },
+            {
+              "notes": [
+                "Tutorial: [https://docs.stripe.com/connect/marketplace/tasks/accept-payment/separate-charges-and-transfers](https://docs.stripe.com/connect/marketplace/tasks/accept-payment/separate-charges-and-transfers)"
+              ],
+              "next_question_id": "connect_pricing_owner",
+              "id": "separate_charges_independent_settlement",
+              "label": "Yes — I need independent settlement timing per vendor (complex B2B billing) — Recommend Separate Charges and Transfers"
+            }
+          ]
+        },
+        {
+          "prompt": "For SaaS platforms, recommend Direct Charges",
+          "id": "connect_saas_direct_charges",
+          "options": [
+            {
+              "notes": [
+                "The connected account is the merchant of record. Their name appears on customer bank statements.",
+                "Tutorial: [https://docs.stripe.com/connect/saas/tasks/accept-payment](https://docs.stripe.com/connect/saas/tasks/accept-payment)"
+              ],
+              "next_question_id": "connect_pricing_owner",
+              "id": "direct_charges",
+              "label": "Recommend Direct Charges (DEFAULT)"
+            }
+          ]
+        },
+        {
+          "prompt": "Who should own pricing for connected accounts?",
+          "id": "connect_pricing_owner",
+          "options": [
+            {
+              "notes": [
+                "Connected accounts pay Stripe processing fees directly. Stripe handles all pricing complexity.",
+                "The alternative (platform owns pricing) requires the platform to pay all Stripe fees at a buy-rate and charge connected accounts separately — very complex and error-prone."
+              ],
+              "next_question_id": "connect_transaction_risk",
+              "id": "stripe_pricing_saas",
+              "label": "For SaaS platforms using direct charges — strongly recommend Stripe owns pricing (fees_collector: \"stripe\" in v2)"
+            },
+            {
+              "notes": [
+                "The platform pays Stripe processing fees because the platform takes payments first and then makes transfers."
+              ],
+              "next_question_id": "connect_transaction_risk",
+              "id": "platform_pricing_marketplace",
+              "label": "For Marketplaces using destination charges or separate charges and transfers — must use Platform owns pricing (fees_collector: \"application\" in v2)"
+            }
+          ]
+        },
+        {
+          "prompt": "Who manages transaction risk?",
+          "id": "connect_transaction_risk",
+          "options": [
+            {
+              "notes": [
+                "The platform bears ultimate responsibility for fraud and dispute outcomes.",
+                "Enable [Radar for Platforms](https://docs.stripe.com/radar/radar-for-platforms) from day one. Radar provides ML-based fraud detection to help platforms manage risk."
+              ],
+              "next_question_id": "connect_dashboard_model",
+              "id": "platform_risk_marketplace",
+              "label": "Destination charges or separate charges and transfers — Platform is the merchant of record and must manage transaction risk."
+            },
+            {
+              "notes": [
+                "However, the platform can and should proactively manage transaction risk on the connected account's behalf by enabling [Radar for Platforms](https://docs.stripe.com/radar/radar-for-platforms). This protects connected accounts from fraud and minimizes their dispute burden."
+              ],
+              "next_question_id": "connect_dashboard_model",
+              "id": "connected_account_risk_saas",
+              "label": "Direct charges — The connected account is the merchant of record and is responsible for managing disputes."
+            }
+          ]
+        }
+      ],
+      "use_case_key": "add_and_monetize_payments_connect"
+    },
+    {
+      "root_question_id": "connect_dashboard_model",
+      "principles": [],
+      "title": "Decision Tree #3: What dashboard experience should I configure for connected accounts?",
+      "questions": [
+        {
+          "prompt": "What is your platform's business model and pricing ownership?",
+          "id": "connect_dashboard_model",
+          "options": [
+            {
+              "notes": [
+                "Connected accounts log in independently at [dashboard.stripe.com](https://dashboard.stripe.com) and get the full Stripe experience"
+              ],
+              "next_question_id": "connect_embedded_access",
+              "id": "saas_stripe_pricing_full",
+              "label": "SaaS platform, Stripe owns pricing — Recommend Full Stripe Dashboard (dashboard: \"full\") (DEFAULT)"
+            },
+            {
+              "notes": [
+                "Platform-owned pricing is not recommended for SaaS platforms. Carefully review the tradeoffs before choosing this path. Platforms working with a Stripe sales/account team may pursue this route.",
+                "It is a hard API constraint: if the platform owns pricing, MUST use dashboard: \"express\" or dashboard: \"none\". Express Dashboard is recommended to provide baseline functionality."
+              ],
+              "next_question_id": "connect_embedded_access",
+              "id": "saas_platform_pricing_express",
+              "label": "SaaS platform, platform owns pricing — Recommend Express Dashboard (dashboard: \"express\")"
+            },
+            {
+              "notes": [
+                "Provides a lightweight view of earnings and payouts"
+              ],
+              "next_question_id": "connect_embedded_access",
+              "id": "marketplace_express",
+              "label": "Marketplace — Recommend Express Dashboard (dashboard: \"express\") (DEFAULT)"
+            }
+          ]
+        },
+        {
+          "prompt": "How will you provide access to Stripe features from your platform's dashboard?",
+          "id": "connect_embedded_access",
+          "options": [
+            {
+              "notes": [
+                "Apply [appearance options](https://docs.stripe.com/connect/embedded-appearance-options) so embedded components match your platform's dashboard, including dark mode if the platform's dashboard is enabled for dark mode",
+                "Always include the [notification banner](https://docs.stripe.com/connect/supported-embedded-components/notification-banner) — this prompts connected accounts for updated information so their accounts stay enabled as requirements change over time"
+              ],
+              "next_question_id": "connect_dashboard_link",
+              "id": "embedded_components",
+              "label": "Recommended path — Use Stripe's [embedded components](https://docs.stripe.com/connect/get-started-connect-embedded-components) (@stripe/connect-js) to embed functionality into your platform's dashboard"
+            },
+            {
+              "notes": [
+                "This path is NOT recommended and requires significant upfront work as well as ongoing maintenance.",
+                "Warning: With no dashboard, you MUST build ALL of the following yourself: custom onboarding flows (including country-specific requirements and ongoing updates), refund management UI, dispute management flows (connected accounts cannot manage disputes themselves), and earnings/payout views",
+                "We strongly recommend using embedded components instead — white-label feel with pre-built UI and less maintenance burden",
+                "Reference: [Fully embedded Connect guide](https://docs.stripe.com/connect/build-full-embedded-integration)"
+              ],
+              "next_question_id": "connect_dashboard_link",
+              "id": "dashboard_none",
+              "label": "Platform wants to build everything from scratch — Configure accounts with dashboard: \"none\"."
+            }
+          ]
+        },
+        {
+          "prompt": "Do you need to link out to a Stripe-provided dashboard?",
+          "id": "connect_dashboard_link",
+          "options": [
+            {
+              "notes": [],
+              "next_question_id": "connect_liability_charge_type",
+              "id": "full_dashboard_link",
+              "label": "Account uses Full Stripe Dashboard — Platform's dashboard should provide a link to [https://dashboard.stripe.com/](https://dashboard.stripe.com/)<ACCOUNT_ID>."
+            },
+            {
+              "notes": [
+                "Tutorial: [https://docs.stripe.com/api/accounts/login_link/create](https://docs.stripe.com/api/accounts/login_link/create)"
+              ],
+              "next_question_id": "connect_liability_charge_type",
+              "id": "express_login_link",
+              "label": "Account uses Express Dashboard — Connected accounts access via an Express login link generated from stripe.accounts.createLoginLink(accountId)"
+            }
+          ]
+        }
+      ],
+      "use_case_key": "add_and_monetize_payments_connect"
+    },
+    {
+      "root_question_id": "connect_liability_charge_type",
+      "principles": [
+        "Stripe-owned loss liability is ONLY safe with direct charges. With destination charges or separate charges and transfers, the platform carries negative balance liabilities regardless of the connected account configuration.",
+        "Configurations where the platform owns losses AND Stripe owns pricing are NOT supported.",
+        "Risk management (who detects fraud) and loss liability (who pays for fraud losses) are separate decisions. You can have Stripe own loss liability while still using Radar for fraud detection."
+      ],
+      "title": "Decision Tree #4: Who should own account risk and loss liability?",
+      "questions": [
+        {
+          "prompt": "What charge type is your platform using?",
+          "id": "connect_liability_charge_type",
+          "options": [
+            {
+              "notes": [
+                "The connected account is the merchant of record, so Stripe managing losses makes sense — the platform does not wind up liable for negative balances",
+                "Stripe manages most merchant risk. However, platforms should still monitor for policy violations and reputational risk."
+              ],
+              "next_question_id": "connect_fraud_management",
+              "id": "direct_charges_stripe_losses",
+              "label": "Direct charges (SaaS) — Strongly recommend Stripe owns loss liability (losses_collector: \"stripe\" in v2)"
+            },
+            {
+              "notes": [
+                "Setting platform-owned loss liability gives platforms the flexibility to reverse transfers (e.g., for refunds or disputes) even if those reversals create negative balances on their connected accounts.",
+                "Must use with platform-owned pricing (fees_collector: \"application\")",
+                "The platform is directly exposed to losses from bad merchants. Implement merchant monitoring practices from day one, including [Radar for Platforms](https://docs.stripe.com/radar/radar-for-platforms).",
+                "Must accept loss liability from the Stripe Dashboard at [dashboard.stripe.com/settings/connect/platform-profile](https://dashboard.stripe.com/settings/connect/platform-profile) before creating connected accounts with \"platform owns loss liability.\""
+              ],
+              "next_question_id": "connect_fraud_management",
+              "id": "marketplace_application_losses",
+              "label": "Destination charges or Separate Charges and Transfers (Marketplace) — Must use Platform owns loss liability (losses_collector: \"application\" in v2)"
+            }
+          ]
+        },
+        {
+          "prompt": "How do you want to detect and manage fraud?",
+          "id": "connect_fraud_management",
+          "options": [
+            {
+              "notes": [
+                "Stripe's built-in protections handle most fraud for direct charges. The platform can optionally enable Radar for Platforms for additional control."
+              ],
+              "next_question_id": "connect_account_api_configuration",
+              "id": "stripe_managed_fraud",
+              "label": "IF using direct charges (SaaS) — Recommend letting Stripe manage fraud"
+            },
+            {
+              "notes": [
+                "Strongly recommend Radar for Platforms with default ML-based fraud detection. The platform bears ultimate responsibility for fraud and dispute outcomes, but Radar does the heavy lifting.",
+                "For more control, enable Radar custom rules for business-specific logic",
+                "Overview: [https://docs.stripe.com/radar/radar-for-platforms](https://docs.stripe.com/radar/radar-for-platforms)"
+              ],
+              "next_question_id": "connect_account_api_configuration",
+              "id": "platform_managed_fraud",
+              "label": "IF using destination charges or separate charges and transfers (Marketplace) — Platform must manage fraud"
+            }
+          ]
+        }
+      ],
+      "use_case_key": "add_and_monetize_payments_connect"
+    },
+    {
+      "root_question_id": "connect_account_api_configuration",
+      "principles": [
+        "If the platform is new, do NOT use v1 account API calls.",
+        "Help existing platforms migrate to v2.",
+        "Highly recommended: if using direct charges, connected accounts should have Stripe-owned loss liability. If using other charge types, connected accounts MUST have platform-owned loss liability.",
+        "If a connected account has no Stripe dashboard AND the platform owns risk: The platform is fully responsible for onboarding AND ongoing compliance. If additional information is required after initial onboarding, Stripe will NOT collect it automatically. Implement the notification banner embedded component or follow the [handle verification updates guide](https://docs.stripe.com/connect/handle-verification-updates).",
+        "To use Stripe products beyond payments (e.g., Issuing, Treasury, Capital, Tax, Terminal): review interoperability documentation to ensure no incompatibilities with the chosen configuration."
+      ],
+      "title": "Decision Tree #5: How should I create and configure connected accounts?",
+      "questions": [
+        {
+          "prompt": "Use the latest APIs and configure accounts to accept payments or receive transfers",
+          "id": "connect_account_api_configuration",
+          "options": [
+            {
+              "notes": [
+                "If creating accounts with dashboard: express and losses_collector: stripe — Must use an API version that ends in \".preview.\"",
+                "Tutorial: [https://docs.stripe.com/connect/saas/tasks/create#code-sample](https://docs.stripe.com/connect/saas/tasks/create#code-sample)"
+              ],
+              "next_question_id": "connect_onboarding",
+              "id": "new_saas_account",
+              "label": "For new SaaS Platforms — Create connected accounts with v2 configuration.merchant, requesting the merchant card_payments capability, and any other payment methods needed."
+            },
+            {
+              "notes": [
+                "You must accept loss liability from the Stripe Dashboard at [dashboard.stripe.com/settings/connect/platform-profile](https://dashboard.stripe.com/settings/connect/platform-profile) before creating connected accounts with \"platform owns loss liability.\"",
+                "Do NOT request v2 configuration.merchant or v1 card_payments capability — marketplace connected accounts don't accept payments directly. Requesting merchant configuration causes longer, more arduous onboarding.",
+                "Do NOT request local payment method capabilities for connected accounts. Marketplaces should request local payment method capabilities for their own platform account, not for connected accounts.",
+                "Tutorial: [https://docs.stripe.com/connect/marketplace/tasks/create#code-sample](https://docs.stripe.com/connect/marketplace/tasks/create#code-sample)"
+              ],
+              "next_question_id": "connect_onboarding",
+              "id": "new_marketplace_account",
+              "label": "For new Marketplaces — Create connected accounts with v2 configuration.recipient (or v1 capability transfers), requesting the recipient stripe_transfers capability on stripe_balance so the account has a balance to receive transfers."
+            },
+            {
+              "notes": [],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/connect/saas/tasks/create#code-sample",
+                  "label": "Create SaaS connected accounts"
+                }
+              ],
+              "id": "do_not_use_legacy_type",
+              "accept_attributes": {},
+              "label": "Do NOT configure connected accounts using the legacy type parameter ('standard', 'express', 'custom'). Use the controller object (v1) or responsibilities (v2) to explicitly set fees_collector, dashboard, and losses_collector."
+            }
+          ]
+        },
+        {
+          "prompt": "How should you onboard connected accounts?",
+          "id": "connect_onboarding",
+          "options": [
+            {
+              "notes": [
+                "Embedded onboarding adapts to new requirements automatically, handles country-specific requirement collection, and prevents the need to build custom remediation flows"
+              ],
+              "next_question_id": "connect_capability_status",
+              "id": "embedded_onboarding",
+              "label": "Use [embedded onboarding](https://docs.stripe.com/connect/embedded-onboarding) to surface the onboarding flow to connected accounts (DEFAULT)"
+            },
+            {
+              "notes": [
+                "Reference: [https://docs.stripe.com/connect/api-onboarding](https://docs.stripe.com/connect/api-onboarding)"
+              ],
+              "next_question_id": "connect_capability_status",
+              "id": "api_onboarding",
+              "label": "Do NOT use API onboarding — this forces the platform to build custom remediation flows and makes it difficult to expand to more geographies or products in the future"
+            }
+          ]
+        },
+        {
+          "prompt": "How should you confirm connected accounts can accept payments or receive transfers?",
+          "id": "connect_capability_status",
+          "options": [
+            {
+              "notes": [
+                "These checks must occur before processing charges on the account.",
+                "Reference: [https://docs.stripe.com/api/v2/core/accounts/retrieve?api-version=2026-05-27.preview&rds=1#v2_retrieve_accounts-response-configuration-merchant-capabilities-card_payments-status](https://docs.stripe.com/api/v2/core/accounts/retrieve?api-version=2026-05-27.preview&rds=1#v2_retrieve_accounts-response-configuration-merchant-capabilities-card_payments-status)"
+              ],
+              "next_question_id": "connect_recurring_fee",
+              "id": "saas_card_payments_status",
+              "label": "IF SaaS Platform — Retrieve the connected account and check the account's configuration.merchant.capabilities.card_payments.status field to determine if the connected account has charges enabled."
+            },
+            {
+              "notes": [
+                "This check must occur before attempting to transfer to the account.",
+                "Reference: [https://docs.stripe.com/api/v2/core/accounts/retrieve?api-version=2026-05-27.preview&rds=1#v2_retrieve_accounts-response-configuration-recipient-capabilities-stripe_balance-stripe_transfers-status](https://docs.stripe.com/api/v2/core/accounts/retrieve?api-version=2026-05-27.preview&rds=1#v2_retrieve_accounts-response-configuration-recipient-capabilities-stripe_balance-stripe_transfers-status)"
+              ],
+              "next_question_id": "connect_recurring_fee",
+              "id": "marketplace_transfers_status",
+              "label": "IF Marketplace — Retrieve the connected account and check the account's configuration.recipient.capabilities.stripe_balance.stripe_transfers.status field to determine if the connected account has transfers enabled."
+            }
+          ]
+        }
+      ],
+      "use_case_key": "add_and_monetize_payments_connect"
+    },
+    {
+      "root_question_id": "connect_recurring_fee",
+      "principles": [
+        "If using the Platform Pricing Tool, ensure application_fee_amount is NOT set on the PaymentIntent. Setting application_fee_amount explicitly overrides the Platform Pricing Tool.",
+        "Platforms based outside Brazil cannot collect application fees from Brazilian connected accounts due to regulatory requirements. Same restriction applies to Malaysia.",
+        "Use amount on the ApplicationFee object (not the charge field) for accurate fee reporting.",
+        "For small transactions (e.g., $1–$5), fees may be large relative to proceeds. Consider creative ways to combine transactions.",
+        "Pricing profitably is complex and depends on card mix, geography, and negotiated rates."
+      ],
+      "title": "Decision Tree #6: How should I monetize my Connect platform?",
+      "questions": [
+        {
+          "prompt": "Do you want to charge a recurring subscription fee?",
+          "id": "connect_recurring_fee",
+          "options": [
+            {
+              "notes": [
+                "Create a Product with a recurring Price, then create Subscriptions against the connected account",
+                "For v2, the connected account must have both merchant and customer configurations. Pass the account as customer_account on the SetupIntent and Subscription API calls.",
+                "Do not use v1 to create separate Customer objects to bill connected accounts — v2 Accounts is the recommended approach"
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/connect/saas/tasks/service-fee",
+                  "label": "Charge service fees"
+                }
+              ],
+              "id": "yes_saas_fee",
+              "accept_attributes": {},
+              "label": "Yes — Charge a \"SaaS fee\" or \"service fee\""
+            },
+            {
+              "notes": [],
+              "next_question_id": "connect_transaction_fee",
+              "id": "no_recurring_fee",
+              "label": "No — Continue to Step 2"
+            }
+          ]
+        },
+        {
+          "prompt": "Do you want to charge a fee per transaction?",
+          "id": "connect_transaction_fee",
+          "options": [
+            {
+              "notes": [],
+              "next_question_id": "connect_transaction_fee_method",
+              "id": "yes_transaction_fee",
+              "label": "Yes"
+            },
+            {
+              "notes": [],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/connect",
+                  "label": "Connect"
+                }
+              ],
+              "id": "no_transaction_fee",
+              "accept_attributes": {},
+              "label": "No — End of tree."
+            }
+          ]
+        },
+        {
+          "prompt": "Determine how you will charge transaction fees",
+          "id": "connect_transaction_fee_method",
+          "options": [
+            {
+              "notes": [
+                "Platform application fees are charged in addition to Stripe fees that the connected account pays. Connected accounts will see both fees when viewing transactions in their dashboards.",
+                "Simplest path to profitability (generally): Direct charges with Stripe-owned pricing. Stripe handles pricing complexity; the platform charges an application fee on top."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/connect/saas/tasks/app-fees",
+                  "label": "Collect application fees for SaaS platforms"
+                }
+              ],
+              "id": "saas_application_fee_amount",
+              "accept_attributes": {},
+              "label": "IF SaaS Platform with Stripe-owned pricing and direct charges — Use application_fee_amount when creating the charge"
+            },
+            {
+              "notes": [
+                "Sets pricing rules without code. Supports buy-rate pricing, interchange-plus passthrough, dispute fee passthrough, and card-level pricing logic. Available for direct and destination charges (not separate charges and transfers).",
+                "Do not set application_fee_amount on the charge when using the Platform Pricing Tool. Setting application_fee_amount explicitly overrides the Platform Pricing Tool."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://dashboard.stripe.com/settings/connect/platform_pricing",
+                  "label": "Platform Pricing Tool"
+                },
+                {
+                  "url": "https://docs.stripe.com/connect/platform-pricing-tools/pricing-schemes",
+                  "label": "Pricing schemes"
+                }
+              ],
+              "id": "platform_pricing_tool",
+              "accept_attributes": {},
+              "label": "IF SaaS Platform or Marketplace with platform-owned pricing — Strongly recommend setting application fees using the Stripe Dashboard's Platform Pricing Tool"
+            },
+            {
+              "notes": [
+                "application_fee_amount is NOT compatible with separate charges and transfers. NEVER use application_fee_amount with this charge type."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/connect/marketplace/tasks/accept-payment/separate-charges-and-transfers",
+                  "label": "Separate charges and transfers"
+                }
+              ],
+              "id": "separate_charges_transfer_less",
+              "accept_attributes": {},
+              "label": "IF Marketplace with separate charges and transfers — Collect fees by transferring less to the connected account than the original charge, retaining the difference"
+            }
+          ]
+        }
+      ],
+      "use_case_key": "add_and_monetize_payments_connect"
+    },
+    {
+      "root_question_id": "invoice_create_owner",
+      "principles": [
+        "Dashboard is sufficient for most businesses. If someone on your team manually creates invoices -- even hundreds per month -- Dashboard handles it. The API is particularly helpful for automation.",
+        "Webhooks notify you; your code creates invoices. Webhooks are outbound signals from Stripe to your system (e.g., \"this payment succeeded\"). They do not trigger invoice creation. Your code triggers invoice creation by calling the API.",
+        "Invoice items are the key to clean batch billing. Use `POST /v1/invoiceitems` to accumulate charges throughout the billing period. On billing day, `POST /v1/invoices` rolls them into one clean document. This avoids fragmenting the customer's bill across multiple invoices.",
+        "`auto_advance: true` is the zero-touch default. Set it and Stripe finalizes, sends, and attempts collection automatically. Use `auto_advance: false` only when you need to review each invoice before it goes out.",
+        "Idempotency keys are mandatory for API invoicing at scale. They prevent duplicate invoices during retries or network errors."
+      ],
+      "title": "Decision Tree 1: Create -- How do I create an invoice?",
+      "questions": [
+        {
+          "prompt": "Does a person on your team create each invoice manually, or does your system need to create them automatically?",
+          "id": "invoice_create_owner",
+          "options": [
+            {
+              "notes": [],
+              "next_question_id": "invoice_create_repeated_structure",
+              "id": "manual_invoice_creation",
+              "label": "MANUALLY (a human clicks through Dashboard for each invoice)"
+            },
+            {
+              "notes": [],
+              "next_question_id": "invoice_create_automation_trigger",
+              "id": "automatic_invoice_creation",
+              "label": "AUTOMATICALLY (system must create invoices programmatically)"
+            }
+          ]
+        },
+        {
+          "prompt": "Do you use the same line items, terms, or structure repeatedly?",
+          "id": "invoice_create_repeated_structure",
+          "options": [
+            {
+              "notes": [
+                "Create, customize, and send invoices in minutes. No code required."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/invoicing/dashboard#create-invoice",
+                  "label": "Create invoices in the Dashboard"
+                }
+              ],
+              "id": "unique_manual_invoices",
+              "accept_attributes": {},
+              "label": "NO — each invoice is unique (different items, amounts, terms) — Recommend Dashboard (DEFAULT)"
+            },
+            {
+              "notes": [
+                "Configure a rendering template once (memo, footer, custom fields) in the Dashboard.",
+                "Apply the template when you create each invoice; you still add line items and set terms yourself."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/invoicing/dashboard#create-invoice",
+                  "label": "Create invoices in the Dashboard"
+                },
+                {
+                  "url": "https://docs.stripe.com/invoicing/invoice-rendering-template",
+                  "label": "Invoice rendering templates"
+                }
+              ],
+              "id": "repeated_manual_invoice_structure",
+              "accept_attributes": {},
+              "label": "YES — same invoice presentation repeats (memo, footer, custom fields) — Recommend Dashboard + Invoice Templates"
+            }
+          ]
+        },
+        {
+          "prompt": "What triggers invoice creation in your system?",
+          "id": "invoice_create_automation_trigger",
+          "options": [
+            {
+              "notes": [
+                "Your system calls POST /v1/invoices when the event occurs.",
+                "Stripe sends invoice finalized and invoice paid webhooks back to your system to confirm outcome. Webhooks notify you; your code triggers the invoice."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/invoicing/integration",
+                  "label": "Invoicing API integration"
+                }
+              ],
+              "id": "invoice_created_from_business_event",
+              "accept_attributes": {},
+              "label": "A business event fires in your system (job complete, order shipped, milestone reached) — Recommend Invoicing API, called from your code on the event (DEFAULT)"
+            },
+            {
+              "notes": [
+                "Accumulate charges via POST /v1/invoiceitems during the period.",
+                "On billing day, call POST /v1/invoices to roll up and finalize.",
+                "Use cron jobs or any job scheduler — Stripe has no built-in recurrence for standalone invoices."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/invoicing/integration",
+                  "label": "Invoicing API integration"
+                }
+              ],
+              "id": "invoice_created_from_scheduler",
+              "accept_attributes": {},
+              "label": "A scheduled run (month-end close, billing period rollup) — Recommend Invoicing API, called from your scheduler"
+            }
+          ]
+        }
+      ],
+      "use_case_key": "automate_ar_and_cash_flow_invoicing"
+    },
+    {
+      "root_question_id": "invoice_customization_problem",
+      "principles": [
+        "Invoice Templates prevent re-work at scale. For businesses billing the same services repeatedly, a rendering template reuses the memo, footer, and custom fields across invoices so you don't re-enter them each time.",
+        "Metadata is your integration layer, not a display field. It flows to the API, webhooks, and Sigma – ideal for linking invoice records to your ERP, CRM, or project management system. If you need data to appear visibly on the customer-facing PDF, use line item descriptions or the memo field instead."
+      ],
+      "title": "Decision Tree 2: Customize -- What invoice presentation does my business need?",
+      "questions": [
+        {
+          "prompt": "What specific problem are you trying to solve with invoice customization?",
+          "id": "invoice_customization_problem",
+          "options": [
+            {
+              "notes": [
+                "One-time setup in Dashboard > Settings > Branding.",
+                "Upload logo, set brand color, configure footer text.",
+                "Applies automatically to all invoices. Zero per-invoice work."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/invoicing/customize#brand-customization",
+                  "label": "Brand customization"
+                }
+              ],
+              "id": "invoice_branding",
+              "accept_attributes": {},
+              "label": "\"Our invoices show Stripe's default appearance, not our brand\" — Recommend Invoice Branding (DEFAULT)"
+            },
+            {
+              "notes": [
+                "Create named rendering templates per segment. Assign at invoice creation via rendering[template].",
+                "Templates store memo, footer, and custom fields (plus optional line item grouping) — not line items or payment terms.",
+                "You fill in the customer, line items, and any variable amounts."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/invoicing/invoice-rendering-template",
+                  "label": "Invoice rendering templates"
+                }
+              ],
+              "id": "invoice_templates_by_segment",
+              "accept_attributes": {},
+              "label": "\"We bill different customer segments differently (enterprise vs. SMB, different service lines)\" — Recommend Invoice Templates"
+            },
+            {
+              "notes": [
+                "Add metadata key-value pairs to the invoice for internal tracking.",
+                "Use the description field on line items for customer-visible detail.",
+                "Metadata flows through to API responses, webhooks, and Sigma.",
+                "Note: metadata does not appear on the customer-facing PDF by default."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/api/invoices/create#create-metadata",
+                  "label": "Invoice metadata"
+                },
+                {
+                  "url": "https://docs.stripe.com/api/invoiceitems/create#create_invoiceitem-description",
+                  "label": "Invoice item descriptions"
+                }
+              ],
+              "id": "invoice_tracking_metadata",
+              "accept_attributes": {},
+              "label": "\"We need to surface internal tracking info on invoices (PO number, project code, cost center, CRM deal ID)\" — Recommend Invoice Metadata + Line Item Descriptions"
+            },
+            {
+              "notes": [
+                "Stripe's hosted invoice PDF may not satisfy e-invoicing mandates.",
+                "Use GET /v1/invoices/{id} to pull structured invoice data.",
+                "Render and submit via your country's e-invoicing network."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/api/invoices/retrieve",
+                  "label": "Retrieve an invoice"
+                }
+              ],
+              "id": "invoice_external_electronic_format",
+              "accept_attributes": {},
+              "label": "\"We must produce invoices in a government-mandated electronic format\" (Italy SDI, Mexico CFDI, Germany ZUGFeRD, EU PEPPOL, etc.) — Recommend pulling invoice data via API and rendering externally"
+            }
+          ]
+        }
+      ],
+      "use_case_key": "automate_ar_and_cash_flow_invoicing"
+    },
+    {
+      "root_question_id": "invoice_collect_saved_payment_method",
+      "principles": [
+        "The Hosted Invoice Page handles 3DS automatically. Do not build custom 3DS logic for invoice payment. The hosted page handles all authentication challenges – cards that trigger 3DS, bank redirects – with no code on your side.",
+        "`auto_advance: true` gives you a zero-touch collection flow. Combined with a saved payment method, invoice creation through to collection requires no manual steps. The only thing you need to handle is `invoice.payment_failed`.",
+        "Bank transfer is particularly useful for B2B invoicing. Configure bank transfer as a payment method and Stripe assigns a unique virtual bank account number to each customer. Payments auto-reconcile when funds arrive. Ideal for customers whose procurement policies prohibit card payments.",
+        "Never store card data yourself. Use Stripe's saved payment method tokens (`pm_xxx`). The `POST /invoices/{id}/pay` API handles the charge -- you never touch raw card data.",
+        "Elements here confirms the invoice's existing PaymentIntent — it does not create a new Checkout Session. Expand `confirmation_secret` on the invoice and pass `invoice.confirmation_secret.client_secret` to Elements. The Checkout Sessions API is a separate integration and does not apply to invoice payment."
+      ],
+      "title": "Decision Tree 3: Collect -- How is an invoice paid?",
+      "questions": [
+        {
+          "prompt": "Do you have a saved payment method on file and want to charge it automatically?",
+          "id": "invoice_collect_saved_payment_method",
+          "options": [
+            {
+              "notes": [],
+              "next_question_id": "invoice_collect_auto_attempt",
+              "id": "invoice_collect_saved_payment_method_yes",
+              "label": "YES"
+            },
+            {
+              "notes": [],
+              "next_question_id": "invoice_collect_hosted_ui",
+              "id": "invoice_collect_saved_payment_method_no",
+              "label": "NO (customer needs to enter payment details or choose a payment method)"
+            }
+          ]
+        },
+        {
+          "prompt": "Should Stripe attempt the charge automatically after finalizing?",
+          "id": "invoice_collect_auto_attempt",
+          "options": [
+            {
+              "notes": [
+                "Stripe finalizes invoice and auto-charges the saved card or bank.",
+                "Listen to invoice.payment_failed to know when to escalate."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/invoicing/integration/automatic-advancement-collection",
+                  "label": "Automatic advancement and collection"
+                }
+              ],
+              "id": "invoice_collect_auto_advance_saved_pm",
+              "accept_attributes": {},
+              "label": "YES — Recommend auto_advance: true + saved payment method (DEFAULT for automatic)"
+            },
+            {
+              "notes": [
+                "Call this endpoint when you are ready to trigger the charge.",
+                "Useful for high-touch B2B accounts where timing is coordinated."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/api/invoices/pay",
+                  "label": "Pay an invoice"
+                }
+              ],
+              "id": "invoice_collect_manual_pay_endpoint",
+              "accept_attributes": {},
+              "label": "NO (you want to control when the charge fires) — Recommend POST /v1/invoices/{id}/pay"
+            }
+          ]
+        },
+        {
+          "prompt": "Do you want Stripe to host the payment UI?",
+          "id": "invoice_collect_hosted_ui",
+          "options": [
+            {
+              "notes": [
+                "Share invoice.hosted_invoice_url. Customer pays on a Stripe-hosted page.",
+                "Handles cards, bank transfers, BNPL, and all 3DS authentication automatically."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/invoicing/hosted-invoice-page",
+                  "label": "Hosted Invoice Page"
+                }
+              ],
+              "id": "invoice_collect_hosted_invoice_page",
+              "accept_attributes": {},
+              "label": "YES — Recommend Hosted Invoice Page (DEFAULT for customer-initiated)"
+            },
+            {
+              "notes": [
+                "Mount Stripe Elements in your UI.",
+                "Expand `confirmation_secret` on the invoice and pass `invoice.confirmation_secret.client_secret` to Elements to confirm the payment.",
+                "You are responsible for handling 3DS redirect flows."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/payments/accept-a-payment?payment-ui=elements&api-integration=paymentintents",
+                  "label": "Elements with Payment Intents"
+                }
+              ],
+              "id": "invoice_collect_elements_payment_intent",
+              "accept_attributes": {},
+              "label": "NO (payment UI must be embedded in your own app or portal) — Recommend Stripe Elements + Payment Intent"
+            }
+          ]
+        }
+      ],
+      "use_case_key": "automate_ar_and_cash_flow_invoicing"
+    },
+    {
+      "root_question_id": "invoice_reconcile_bank_transfer",
+      "principles": [
+        "`invoice.paid` is the canonical settled event. When this webhook fires, the invoice is closed. Use `invoice.id` from the event payload, then read payment details from `invoice.payments` (for example, expand `payments.data.payment`) to update your records.",
+        "Credit notes complicate reconciliation. When you issue a credit note against a paid invoice, Stripe fires `credit_note.created`. Your webhook handler must account for this to avoid a mismatch between Stripe and your ERP."
+      ],
+      "title": "Decision Tree 4: Reconcile -- How do I confirm payments match my records?",
+      "questions": [
+        {
+          "prompt": "Do any of your invoices get paid via ACH or bank transfer?",
+          "id": "invoice_reconcile_bank_transfer",
+          "options": [
+            {
+              "notes": [
+                "ACH always requires a manual reconciliation step, even if you have no external system to sync.",
+                "Why: ACH funds land in Stripe's customer cash balance — not directly on the invoice. Stripe auto-applies funds when the amount and reference match exactly. Partial payments, VBAN typos, or missing references leave funds unreconciled in the cash balance until you apply them manually. Also note: ACH takes 1–5 business days to settle — invoice.paid does not mean cash in hand.",
+                "Continue to Q2 to handle any external system sync."
+              ],
+              "next_question_id": "invoice_reconcile_external_system_with_ach",
+              "id": "invoice_reconcile_bank_transfer_yes",
+              "label": "YES"
+            },
+            {
+              "notes": [
+                "Continue to Q2."
+              ],
+              "next_question_id": "invoice_reconcile_external_system",
+              "id": "invoice_reconcile_bank_transfer_no",
+              "label": "NO"
+            }
+          ]
+        },
+        {
+          "prompt": "Do you need Stripe invoice and payment data to flow into an external system?",
+          "id": "invoice_reconcile_external_system_with_ach",
+          "options": [
+            {
+              "notes": [
+                "Invoice status (draft, open, paid, uncollectible, void) is always current in Stripe; overdue send_invoice invoices stay open past their due date.",
+                "Use the Invoices tab to monitor status; export CSV for your accountant.",
+                "For most businesses, this is enough."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/invoicing/bank-transfer#automatic-transfer-reconciliation",
+                  "label": "Automatic transfer reconciliation"
+                },
+                {
+                  "url": "https://docs.stripe.com/invoicing/dashboard",
+                  "label": "Create and manage invoices in the Dashboard"
+                }
+              ],
+              "id": "invoice_reconcile_ach_only_dashboard",
+              "accept_attributes": {},
+              "label": "NO (Stripe Dashboard is sufficient — no external system needs updating) — Recommend Dashboard (DEFAULT)"
+            },
+            {
+              "notes": [],
+              "next_question_id": "invoice_reconcile_external_need_with_ach",
+              "id": "invoice_reconcile_external_system_with_ach_yes",
+              "label": "YES (Stripe data must sync to an ERP, accounting system, or data warehouse)"
+            }
+          ]
+        },
+        {
+          "prompt": "Do you need Stripe invoice and payment data to flow into an external system?",
+          "id": "invoice_reconcile_external_system",
+          "options": [
+            {
+              "notes": [
+                "Invoice status (draft, open, paid, uncollectible, void) is always current in Stripe; overdue send_invoice invoices stay open past their due date.",
+                "Use the Invoices tab to monitor status; export CSV for your accountant.",
+                "For most businesses, this is enough."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/invoicing/dashboard",
+                  "label": "Create and manage invoices in the Dashboard"
+                }
+              ],
+              "id": "invoice_reconcile_dashboard_only",
+              "accept_attributes": {},
+              "label": "NO (Stripe Dashboard is sufficient — no external system needs updating) — Recommend Dashboard (DEFAULT)"
+            },
+            {
+              "notes": [],
+              "next_question_id": "invoice_reconcile_external_need",
+              "id": "invoice_reconcile_external_system_yes",
+              "label": "YES (Stripe data must sync to an ERP, accounting system, or data warehouse)"
+            }
+          ]
+        },
+        {
+          "prompt": "What is your external system or reporting need?",
+          "id": "invoice_reconcile_external_need_with_ach",
+          "options": [
+            {
+              "notes": [
+                "Built and supported by Stripe. Syncs invoices, payments, credit notes, and refunds automatically."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/invoicing/bank-transfer#automatic-transfer-reconciliation",
+                  "label": "Automatic transfer reconciliation"
+                },
+                {
+                  "url": "https://docs.stripe.com/use-stripe-apps/netsuite/invoice-automation",
+                  "label": "NetSuite invoice automation"
+                }
+              ],
+              "id": "invoice_reconcile_ach_netsuite",
+              "accept_attributes": {},
+              "label": "NetSuite — Recommend Stripe Connector for NetSuite (DEFAULT for ERP users)"
+            },
+            {
+              "notes": [
+                "Third-party apps are available on the Stripe App Marketplace.",
+                "Not built or supported by Stripe — evaluate the connector's maintenance and support before adopting."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/invoicing/bank-transfer#automatic-transfer-reconciliation",
+                  "label": "Automatic transfer reconciliation"
+                },
+                {
+                  "url": "https://marketplace.stripe.com/apps/quickbooks-sync-by-acodei",
+                  "label": "QuickBooks Sync by Acodei"
+                },
+                {
+                  "url": "https://marketplace.stripe.com/apps/xero",
+                  "label": "Xero"
+                }
+              ],
+              "id": "invoice_reconcile_ach_quickbooks_xero",
+              "accept_attributes": {},
+              "label": "QuickBooks or Xero — Recommend third-party marketplace connector"
+            },
+            {
+              "notes": [
+                "Listen to: invoice.paid, invoice.payment_failed, charge.refunded, credit_note.created.",
+                "Update your system on each event.",
+                "If you accept ACH bank transfers, also handle cash_balance.funds_available and customer_cash_balance_transaction.created — the latter surfaces funding_reversed transactions (see Q1 above)."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/invoicing/bank-transfer#automatic-transfer-reconciliation",
+                  "label": "Automatic transfer reconciliation"
+                },
+                {
+                  "url": "https://docs.stripe.com/api/events/types#event_types-invoice.paid",
+                  "label": "invoice.paid event"
+                },
+                {
+                  "url": "https://docs.stripe.com/api/events/types#event_types-invoice.payment_failed",
+                  "label": "invoice.payment_failed event"
+                },
+                {
+                  "url": "https://docs.stripe.com/api/events/types#event_types-charge.refunded",
+                  "label": "charge.refunded event"
+                },
+                {
+                  "url": "https://docs.stripe.com/api/events/types#event_types-credit_note.created",
+                  "label": "credit_note.created event"
+                }
+              ],
+              "id": "invoice_reconcile_ach_custom_erp",
+              "accept_attributes": {},
+              "label": "Custom or in-house ERP / accounting system — Recommend Webhook-Driven Updates"
+            },
+            {
+              "notes": [
+                "Continuous sync of all Stripe objects to your warehouse.",
+                "Run reconciliation SQL and close process queries in your own BI environment."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/invoicing/bank-transfer#automatic-transfer-reconciliation",
+                  "label": "Automatic transfer reconciliation"
+                },
+                {
+                  "url": "https://docs.stripe.com/data/access-data-in-warehouse",
+                  "label": "Access data in your warehouse"
+                }
+              ],
+              "id": "invoice_reconcile_ach_data_warehouse",
+              "accept_attributes": {},
+              "label": "Data warehouse — Recommend Stripe Data Pipeline"
+            },
+            {
+              "notes": [
+                "SQL access to all Stripe data directly in the Dashboard.",
+                "Run AR aging reports, reconciliation queries, and payment failure analysis on demand. No warehouse needed."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/invoicing/bank-transfer#automatic-transfer-reconciliation",
+                  "label": "Automatic transfer reconciliation"
+                },
+                {
+                  "url": "https://docs.stripe.com/data/write-queries",
+                  "label": "Write queries in Sigma"
+                },
+                {
+                  "url": "https://docs.stripe.com/data/query-billing-data#invoices",
+                  "label": "Query Billing data"
+                }
+              ],
+              "id": "invoice_reconcile_ach_sigma",
+              "accept_attributes": {},
+              "label": "Ad hoc queries, AR aging, or audit investigation — Recommend Stripe Sigma"
+            }
+          ]
+        },
+        {
+          "prompt": "What is your external system or reporting need?",
+          "id": "invoice_reconcile_external_need",
+          "options": [
+            {
+              "notes": [
+                "Built and supported by Stripe. Syncs invoices, payments, credit notes, and refunds automatically."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/use-stripe-apps/netsuite/invoice-automation",
+                  "label": "NetSuite invoice automation"
+                }
+              ],
+              "id": "invoice_reconcile_netsuite",
+              "accept_attributes": {},
+              "label": "NetSuite — Recommend Stripe Connector for NetSuite (DEFAULT for ERP users)"
+            },
+            {
+              "notes": [
+                "Third-party apps are available on the Stripe App Marketplace.",
+                "Not built or supported by Stripe — evaluate the connector's maintenance and support before adopting."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://marketplace.stripe.com/apps/quickbooks-sync-by-acodei",
+                  "label": "QuickBooks Sync by Acodei"
+                },
+                {
+                  "url": "https://marketplace.stripe.com/apps/xero",
+                  "label": "Xero"
+                }
+              ],
+              "id": "invoice_reconcile_quickbooks_xero",
+              "accept_attributes": {},
+              "label": "QuickBooks or Xero — Recommend third-party marketplace connector"
+            },
+            {
+              "notes": [
+                "Listen to: invoice.paid, invoice.payment_failed, charge.refunded, credit_note.created.",
+                "Update your system on each event."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/api/events/types#event_types-invoice.paid",
+                  "label": "invoice.paid event"
+                },
+                {
+                  "url": "https://docs.stripe.com/api/events/types#event_types-invoice.payment_failed",
+                  "label": "invoice.payment_failed event"
+                },
+                {
+                  "url": "https://docs.stripe.com/api/events/types#event_types-charge.refunded",
+                  "label": "charge.refunded event"
+                },
+                {
+                  "url": "https://docs.stripe.com/api/events/types#event_types-credit_note.created",
+                  "label": "credit_note.created event"
+                }
+              ],
+              "id": "invoice_reconcile_custom_erp",
+              "accept_attributes": {},
+              "label": "Custom or in-house ERP / accounting system — Recommend Webhook-Driven Updates"
+            },
+            {
+              "notes": [
+                "Continuous sync of all Stripe objects to your warehouse.",
+                "Run reconciliation SQL and close process queries in your own BI environment."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/data/access-data-in-warehouse",
+                  "label": "Access data in your warehouse"
+                }
+              ],
+              "id": "invoice_reconcile_data_warehouse",
+              "accept_attributes": {},
+              "label": "Data warehouse — Recommend Stripe Data Pipeline"
+            },
+            {
+              "notes": [
+                "SQL access to all Stripe data directly in the Dashboard.",
+                "Run AR aging reports, reconciliation queries, and payment failure analysis on demand. No warehouse needed."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/data/write-queries",
+                  "label": "Write queries in Sigma"
+                },
+                {
+                  "url": "https://docs.stripe.com/data/query-billing-data#invoices",
+                  "label": "Query Billing data"
+                }
+              ],
+              "id": "invoice_reconcile_sigma",
+              "accept_attributes": {},
+              "label": "Ad hoc queries, AR aging, or audit investigation — Recommend Stripe Sigma"
+            }
+          ]
+        }
+      ],
+      "use_case_key": "automate_ar_and_cash_flow_invoicing"
+    },
+    {
+      "root_question_id": "multiprocessor",
+      "principles": [],
+      "title": "Boost conversion & revenue",
+      "questions": [
+        {
+          "prompt": "Do you already accept payments with another processor alongside Stripe?",
+          "id": "multiprocessor",
+          "options": [
+            {
+              "notes": [],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/payments/vault-and-forward",
+                  "label": "Vault & Forward overview"
+                },
+                {
+                  "url": "https://docs.stripe.com/payments/forwarding-third-party-processors",
+                  "label": "Forwarding to third-party processors"
+                }
+              ],
+              "id": "yes_multiprocessor",
+              "accept_attributes": {},
+              "label": "Yes, I use another processor"
+            },
+            {
+              "notes": [],
+              "next_question_id": "payment_surface",
+              "id": "no_stripe_only",
+              "label": "No, Stripe only"
+            }
+          ]
+        },
+        {
+          "prompt": "How do you primarily accept payments?",
+          "id": "payment_surface",
+          "options": [
+            {
+              "notes": [],
+              "next_question_id": "app_goods_type",
+              "id": "in_app",
+              "label": "In a mobile app"
+            },
+            {
+              "notes": [],
+              "next_question_id": "digital_goods_managed_payments",
+              "id": "in_browser",
+              "label": "In a web browser"
+            }
+          ]
+        },
+        {
+          "prompt": "Do you sell physical goods or digital goods?",
+          "id": "app_goods_type",
+          "options": [
+            {
+              "notes": [],
+              "next_question_id": "mobile_checkout_needs",
+              "id": "physical_goods",
+              "label": "Physical goods"
+            },
+            {
+              "notes": [],
+              "doc_links": [
+                {
+                  "url": "https://developer.apple.com/app-store/review/guidelines",
+                  "label": "Apple App Store review guidelines"
+                },
+                {
+                  "url": "https://docs.stripe.com/payments/mobile?in-app-ui=payment-sheet",
+                  "label": "Payment Sheet (quick setup or single-tap buy)"
+                },
+                {
+                  "url": "https://docs.stripe.com/payments/mobile?in-app-ui=flow-controller",
+                  "label": "Flow Controller (select in Stripe sheet, confirm in own UI)"
+                },
+                {
+                  "url": "https://docs.stripe.com/payments/mobile?in-app-ui=payment-element",
+                  "label": "Mobile Payment Element (full layout control)"
+                },
+                {
+                  "url": "https://docs.stripe.com/mobile/digital-goods/checkout",
+                  "label": "App-to-Web with Stripe Checkout (A2W)"
+                }
+              ],
+              "id": "digital_goods",
+              "accept_attributes": {
+                "checkout_type": "hosted",
+                "origin_context": "mobile_app"
+              },
+              "label": "Digital goods delivered within the app"
+            }
+          ]
+        },
+        {
+          "prompt": "What best describes your in-app checkout needs for physical goods?",
+          "id": "mobile_checkout_needs",
+          "options": [
+            {
+              "notes": [],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/payments/mobile/accept-payment?platform=ios&type=payment",
+                  "label": "Payment Sheet — iOS"
+                },
+                {
+                  "url": "https://docs.stripe.com/payments/mobile/accept-payment?platform=android&type=payment",
+                  "label": "Payment Sheet — Android"
+                }
+              ],
+              "id": "quick_or_single_tap",
+              "accept_attributes": {},
+              "label": "Add payments quickly with minimal code, or single-tap 'Buy' checkout"
+            },
+            {
+              "notes": [],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/payments/mobile/accept-payment?platform=ios&type=payment&integration=paymentsheet-flowcontroller",
+                  "label": "Flow Controller — iOS"
+                },
+                {
+                  "url": "https://docs.stripe.com/payments/mobile/accept-payment?platform=android&type=payment&integration=paymentsheet-flowcontroller",
+                  "label": "Flow Controller — Android"
+                }
+              ],
+              "id": "select_then_confirm_or_adjust",
+              "accept_attributes": {},
+              "label": "Customer selects payment in Stripe's sheet and confirms in my UI, or I need to adjust totals / apply discounts after selection"
+            },
+            {
+              "notes": [],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/payments/mobile/accept-payment-embedded?platform=ios&type=payment",
+                  "label": "Mobile Payment Element — iOS"
+                },
+                {
+                  "url": "https://docs.stripe.com/payments/mobile/accept-payment-embedded?platform=android&type=payment",
+                  "label": "Mobile Payment Element — Android"
+                }
+              ],
+              "id": "max_flexibility_or_inline",
+              "accept_attributes": {},
+              "label": "Maximum flexibility over checkout layout, or payment options appearing inline in my own UI"
+            }
+          ]
+        },
+        {
+          "prompt": "Does your business sell only digital goods and want Stripe to handle tax, fraud, and compliance — and meet the Managed Payments eligibility criteria (digital goods only, eligible country, direct Stripe account, no IC+)?",
+          "id": "digital_goods_managed_payments",
+          "options": [
+            {
+              "notes": [],
+              "next_question_id": "managed_payments_checkout_style",
+              "id": "yes_digital_managed",
+              "label": "Yes — digital goods only, meets Managed Payments eligibility"
+            },
+            {
+              "notes": [],
+              "next_question_id": "sending_invoice",
+              "id": "no_digital_managed",
+              "label": "No"
+            }
+          ]
+        },
+        {
+          "prompt": "Which checkout style fits your needs?",
+          "id": "managed_payments_checkout_style",
+          "options": [
+            {
+              "notes": [],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/payments/accept-a-payment?payment-ui=checkout&ui=stripe-hosted",
+                  "label": "Full-page hosted Checkout"
+                },
+                {
+                  "url": "https://docs.stripe.com/payments/managed-payments/set-up?mode=payment",
+                  "label": "Managed Payments setup (payment mode)"
+                }
+              ],
+              "id": "managed_full_page_hosted",
+              "accept_attributes": {
+                "checkout_type": "hosted",
+                "origin_context": "web"
+              },
+              "label": "Full checkout flow with redirect to Stripe-hosted page"
+            },
+            {
+              "notes": [],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/payments/accept-a-payment?payment-ui=checkout&ui=embedded-form",
+                  "label": "Full-page embedded Checkout"
+                }
+              ],
+              "id": "managed_full_page_embedded",
+              "accept_attributes": {
+                "checkout_type": "embedded",
+                "origin_context": "web"
+              },
+              "label": "Full checkout embedded on my site — no redirect"
+            },
+            {
+              "notes": [],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/payments/managed-payments/use-payment-links?dashboard-or-api=api",
+                  "label": "Payment Links with Managed Payments"
+                }
+              ],
+              "id": "managed_payment_links",
+              "accept_attributes": {},
+              "label": "Send buyers a link — no checkout page to build"
+            }
+          ]
+        },
+        {
+          "prompt": "Are you looking to send invoices to customers?",
+          "id": "sending_invoice",
+          "options": [
+            {
+              "notes": [],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/invoicing/dashboard",
+                  "label": "Hosted Invoices — Dashboard (no-code)"
+                },
+                {
+                  "url": "https://docs.stripe.com/invoicing/integration",
+                  "label": "Hosted Invoices — API"
+                }
+              ],
+              "id": "yes_invoice",
+              "accept_attributes": {},
+              "label": "Yes, send invoices"
+            },
+            {
+              "notes": [],
+              "next_question_id": "payment_links_intent",
+              "id": "no_invoice",
+              "label": "No, standard checkout"
+            }
+          ]
+        },
+        {
+          "prompt": "Are you looking to send one-time payment links without a custom checkout page?",
+          "id": "payment_links_intent",
+          "options": [
+            {
+              "notes": [],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/payment-links/create?pricing-model=standard#get-started",
+                  "label": "Payment Links — Dashboard (no-code)"
+                },
+                {
+                  "url": "https://docs.stripe.com/payment-links/create?pricing-model=standard#api",
+                  "label": "Payment Links — API"
+                }
+              ],
+              "id": "yes_payment_links",
+              "accept_attributes": {},
+              "label": "Yes, shareable payment links"
+            },
+            {
+              "notes": [],
+              "next_question_id": "browser_checkout_type",
+              "id": "no_payment_links",
+              "label": "No, I need a checkout integration"
+            }
+          ]
+        },
+        {
+          "prompt": "Which best describes your checkout requirements?",
+          "id": "browser_checkout_type",
+          "options": [
+            {
+              "notes": [],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/payments/accept-a-payment?payment-ui=checkout&ui=stripe-hosted",
+                  "label": "Stripe Checkout (hosted) — integration guide"
+                }
+              ],
+              "id": "out_of_box_hosted",
+              "accept_attributes": {
+                "checkout_type": "hosted",
+                "origin_context": "web"
+              },
+              "label": "Out-of-the-box solution with quick setup, full order summary, and optimized conversion — redirect to Stripe-hosted page is fine (DEFAULT)"
+            },
+            {
+              "notes": [],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/payments/accept-a-payment?payment-ui=checkout&ui=embedded-page",
+                  "label": "Stripe Checkout (embedded) — integration guide"
+                }
+              ],
+              "id": "embedded_no_redirect",
+              "accept_attributes": {
+                "checkout_type": "embedded",
+                "origin_context": "web"
+              },
+              "label": "Out-of-the-box solution with quick setup, full order summary, and optimized conversion that is embedded on my own page — no redirect"
+            },
+            {
+              "notes": [],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/payments/accept-a-payment?payment-ui=elements&api-integration=checkout",
+                  "label": "Elements with Checkout Sessions API"
+                },
+                {
+                  "url": "https://docs.stripe.com/payments/quickstart-checkout-sessions",
+                  "label": "Quickstart — Checkout Sessions"
+                },
+                {
+                  "url": "https://docs.stripe.com/elements/express-checkout-element",
+                  "label": "Express Checkout Element (Apple Pay, Google Pay, etc.)"
+                },
+                {
+                  "url": "https://docs.stripe.com/payments/elements/link-authentication-element",
+                  "label": "Link Authentication Element"
+                },
+                {
+                  "url": "https://docs.stripe.com/elements/currency-selector-element",
+                  "label": "Currency Selector Element (Adaptive Pricing)"
+                },
+                {
+                  "url": "https://docs.stripe.com/elements/tax-id-element?payment-ui=embedded-components",
+                  "label": "Tax ID Element"
+                },
+                {
+                  "url": "https://docs.stripe.com/payments/advanced/collect-addresses?payment-ui=embedded-components",
+                  "label": "Address Element"
+                },
+                {
+                  "url": "https://docs.stripe.com/elements/payment-method-messaging",
+                  "label": "Payment Method Messaging Element (Buy now, Pay later)"
+                }
+              ],
+              "id": "custom_multi_step",
+              "accept_attributes": {},
+              "label": "I need to customize my own multi-step flow — control the display, ordering, and orchestration of payment elements"
+            },
+            {
+              "notes": [],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/payments/accept-a-payment?payment-ui=elements&api-integration=paymentintents",
+                  "label": "Elements with Payment Intents API"
+                },
+                {
+                  "url": "https://docs.stripe.com/payments/quickstart",
+                  "label": "Quickstart — Payment Intents"
+                },
+                {
+                  "url": "https://docs.stripe.com/elements/express-checkout-element",
+                  "label": "Express Checkout Element (Apple Pay, Google Pay, etc.)"
+                },
+                {
+                  "url": "https://docs.stripe.com/payments/elements/link-authentication-element",
+                  "label": "Link Authentication Element"
+                },
+                {
+                  "url": "https://docs.stripe.com/elements/tax-id-element?payment-ui=elements",
+                  "label": "Tax ID Element"
+                },
+                {
+                  "url": "https://docs.stripe.com/payments/advanced/collect-addresses?payment-ui=elements",
+                  "label": "Address Element"
+                },
+                {
+                  "url": "https://docs.stripe.com/elements/payment-method-messaging",
+                  "label": "Payment Method Messaging Element (Buy now, Pay later)"
+                }
+              ],
+              "id": "own_checkout_state",
+              "accept_attributes": {},
+              "label": "I want to own the checkout state — control when totals recalculate, how promotions apply, and call external services as needed"
+            }
+          ]
+        }
+      ],
+      "use_case_key": "boost_conversion_and_revenue"
+    },
+    {
+      "root_question_id": "riapc_app_goods_type",
+      "principles": [],
+      "title": "What payment surface should the merchant use to accept payments?",
+      "questions": [
+        {
+          "prompt": "Does the merchant sell digital goods within a mobile app?",
+          "id": "riapc_app_goods_type",
+          "options": [
+            {
+              "notes": [
+                "Review [Apple in-app purchase rules](https://developer.apple.com/app-store/review/guidelines) for iOS and the Google in-app purchase rules for Android.",
+                "Review Stripe mobile offerings:",
+                "[Payment Sheet](https://docs.stripe.com/payments/mobile?in-app-ui=payment-sheet) - suitable for users that want to add in-app payments quickly with minimal code or users that want a checkout where the customer taps a single “Buy” button and completes payment in a single step",
+                "[Flow Controller](https://docs.stripe.com/payments/mobile?in-app-ui=flow-controller) - suitable for users that want the customer to select a payment in Stripe’s sheet and confirm the payment in the user’s own UI or users that want to adjust totals, apply discounts, or collect extra info after the customer chooses a payment method",
+                "Mobile [Payment Element](https://docs.stripe.com/payments/mobile?in-app-ui=payment-element) - suitable for users that want maximum flexibility over the checkout layout and navigation or users that want payment options to appear inline (e.g. directly in their cart UI) or on a separate screen they control",
+                "App-to-Web flow with an [external payment page to accept payments using Stripe Checkout](https://docs.stripe.com/mobile/digital-goods/checkout) (“A2W”)",
+                "Make a recommendation on the mobile product offering given all the provided resources and options"
+              ],
+              "next_question_id": "riapc_app_digital_goods_managed_payments",
+              "id": "riapc_digital_goods",
+              "label": "Yes"
+            }
+          ]
+        },
+        {
+          "prompt": "Does the merchant sell only digital goods and want Stripe to handle tax, fraud, and compliance?",
+          "id": "riapc_app_digital_goods_managed_payments",
+          "options": [
+            {
+              "notes": [
+                "Recommend App-to-Web flow with Managed Payments enabled.",
+                "With Managed Payments enabled, Stripe handles tax compliance in 80+ countries, fraud prevention, dispute management, and customer support for 3.5% add-on fee."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/mobile/digital-goods/checkout",
+                  "label": "App-to-Web flow"
+                },
+                {
+                  "url": "https://docs.stripe.com/payments/managed-payments",
+                  "label": "Managed Payments"
+                },
+                {
+                  "url": "https://docs.stripe.com/payments/managed-payments/set-up-mobile",
+                  "label": "Tutorial"
+                }
+              ],
+              "id": "riapc_yes_app_digital_managed",
+              "accept_attributes": {},
+              "label": "Yes — meets eligibility criteria (digital goods only, eligible country, direct Stripe account, single payment processor)"
+            }
+          ]
+        }
+      ],
+      "use_case_key": "reduce_in_app_payment_costs"
+    },
+    {
+      "root_question_id": "riapc_payment_features_multi_country",
+      "principles": [],
+      "title": "What payment features should the merchant adopt to best optimize conversion?",
+      "questions": [
+        {
+          "prompt": "Does the merchant sell in multiple countries?",
+          "id": "riapc_payment_features_multi_country",
+          "options": [
+            {
+              "notes": [
+                "Recommend Adaptive Pricing."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/payments/currencies/localize-prices/adaptive-pricing?payment-ui=stripe-hosted",
+                  "label": "Dashboard enablement"
+                }
+              ],
+              "id": "riapc_yes_payment_features_multi_country",
+              "accept_attributes": {},
+              "label": "Yes"
+            },
+            {
+              "notes": [],
+              "next_question_id": "riapc_payment_features_dynamic_payment_methods",
+              "id": "riapc_no_payment_features_multi_country",
+              "label": "No"
+            }
+          ]
+        },
+        {
+          "prompt": "Does the merchant want Stripe to optimize the payment methods shown to customers for best conversion?",
+          "id": "riapc_payment_features_dynamic_payment_methods",
+          "options": [
+            {
+              "notes": [
+                "Recommend Dynamic Payment Methods."
+              ],
+              "doc_links": [
+                {
+                  "url": "https://docs.stripe.com/payments/payment-methods/dynamic-payment-methods#migrate-to-dynamic-payment-methods",
+                  "label": "Tutorial"
+                }
+              ],
+              "id": "riapc_yes_payment_features_dynamic_payment_methods",
+              "accept_attributes": {},
+              "label": "Yes"
+            }
+          ]
+        }
+      ],
+      "use_case_key": "reduce_in_app_payment_costs"
+    }
+  ],
+  "status": "draft",
+  "use_cases": [
+    {
+      "title": "Add and monetize payments",
+      "key": "add_and_monetize_payments_connect",
+      "summary": "Platforms routing funds and collecting fees with Connect."
+    },
+    {
+      "title": "Automate AR / improve cash flow (Invoicing)",
+      "key": "automate_ar_and_cash_flow_invoicing",
+      "summary": "Invoice-based businesses automating accounts receivable to get paid faster and improve cash flow."
+    },
+    {
+      "title": "Boost conversion and revenue",
+      "key": "boost_conversion_and_revenue",
+      "summary": "Direct online businesses improving checkout conversion."
+    },
+    {
+      "title": "Reduce the costs of in-app payments",
+      "key": "reduce_in_app_payment_costs",
+      "summary": "In-app digital goods — mobile app businesses selling digital goods that want to reduce platform fees with Managed Payments."
+    }
+  ],
+  "guide_id": "iguide_61VM6AgsBMYNGfRVL41PvfIhIOx1O"
+}

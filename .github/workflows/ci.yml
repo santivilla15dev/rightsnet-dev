@@ -1,0 +1,54 @@
+name: RightsNet checks
+on: [push, pull_request]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16.6
+        env:
+          POSTGRES_USER: rightsnet
+          POSTGRES_PASSWORD: test-password
+          POSTGRES_DB: rightsnet
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U rightsnet"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://rightsnet:test-password@127.0.0.1:5432/rightsnet
+      TEST_DATABASE_URL: postgresql://rightsnet:test-password@127.0.0.1:5432/rightsnet_test
+      APP_ENV: sandbox
+      LIVE_COMMERCE_ENABLED: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.29.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.20.0'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm contracts && git diff --exit-code packages/contracts
+      - run: pnpm lint && pnpm typecheck && pnpm test
+      - run: pnpm build
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm db:migrate && pnpm db:seed
+      - name: Browser journey against built application
+        run: |
+          pnpm api > /tmp/rightsnet-api.log 2>&1 &
+          pnpm worker > /tmp/rightsnet-worker.log 2>&1 &
+          pnpm --filter @rightsnet/web start > /tmp/rightsnet-web.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:3000/api/health > /dev/null; then break; fi
+            sleep 1
+          done
+          pnpm test:e2e --max-failures=1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rightsnet-verification
+          path: |
+            playwright-report/
+            test-results/
+            docs/screenshots/
