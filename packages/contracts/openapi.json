@@ -649,49 +649,6 @@
             "schema": {
               "type": "integer"
             }
-          },
-          {
-            "name": "gender",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": ["female", "male", "non_binary", "unspecified"]
-            }
-          },
-          {
-            "name": "age_band",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": ["18_24", "25_34", "35_44", "45_plus"]
-            }
-          },
-          {
-            "name": "language",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "location",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "ai_usage",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": ["synthetic_image", "synthetic_video"]
-            }
           }
         ],
         "responses": {
@@ -769,9 +726,9 @@
             "name": "id",
             "in": "path",
             "required": true,
-            "description": "Asset UUID or creator public_slug (e.g. lucia-martin)",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid"
             }
           }
         ],
@@ -827,9 +784,9 @@
             "name": "id",
             "in": "path",
             "required": true,
-            "description": "Asset UUID or creator public_slug",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid"
             }
           }
         ],
@@ -982,6 +939,66 @@
         }
       }
     },
+    "/v1/public/rights-check": {
+      "post": {
+        "operationId": "post_public_rights-check",
+        "summary": "public/rights-check",
+        "security": [],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "State/idempotency conflict"
+          },
+          "422": {
+            "description": "Invalid input or policy decision"
+          },
+          "429": {
+            "description": "Rate limited"
+          },
+          "503": {
+            "description": "Provider unavailable"
+          }
+        }
+      }
+    },
     "/v1/auth/sandbox": {
       "post": {
         "operationId": "post_auth_sandbox",
@@ -1015,6 +1032,271 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "State/idempotency conflict"
+          },
+          "422": {
+            "description": "Invalid input or policy decision"
+          },
+          "429": {
+            "description": "Rate limited"
+          },
+          "503": {
+            "description": "Provider unavailable"
+          }
+        }
+      }
+    },
+    "/v1/auth/supabase/login": {
+      "post": {
+        "operationId": "post_auth_supabase_login",
+        "summary": "auth/supabase/login",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "State/idempotency conflict"
+          },
+          "422": {
+            "description": "Invalid input or policy decision"
+          },
+          "429": {
+            "description": "Rate limited"
+          },
+          "503": {
+            "description": "Provider unavailable"
+          }
+        }
+      }
+    },
+    "/v1/auth/supabase/signup": {
+      "post": {
+        "operationId": "post_auth_supabase_signup",
+        "summary": "auth/supabase/signup",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "State/idempotency conflict"
+          },
+          "422": {
+            "description": "Invalid input or policy decision"
+          },
+          "429": {
+            "description": "Rate limited"
+          },
+          "503": {
+            "description": "Provider unavailable"
+          }
+        }
+      }
+    },
+    "/v1/auth/supabase/session": {
+      "post": {
+        "operationId": "post_auth_supabase_session",
+        "summary": "auth/supabase/session",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "State/idempotency conflict"
+          },
+          "422": {
+            "description": "Invalid input or policy decision"
+          },
+          "429": {
+            "description": "Rate limited"
+          },
+          "503": {
+            "description": "Provider unavailable"
+          }
+        }
+      }
+    },
+    "/v1/auth/supabase/forgot-password": {
+      "post": {
+        "operationId": "post_auth_supabase_forgot-password",
+        "summary": "auth/supabase/forgot-password",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "State/idempotency conflict"
+          },
+          "422": {
+            "description": "Invalid input or policy decision"
+          },
+          "429": {
+            "description": "Rate limited"
+          },
+          "503": {
+            "description": "Provider unavailable"
+          }
+        }
+      }
+    },
+    "/v1/auth/supabase/refresh": {
+      "post": {
+        "operationId": "post_auth_supabase_refresh",
+        "summary": "auth/supabase/refresh",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Success",
@@ -1164,6 +1446,134 @@
         }
       }
     },
+    "/v1/organizations/setup": {
+      "post": {
+        "operationId": "post_organizations_setup",
+        "summary": "organizations/setup",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "State/idempotency conflict"
+          },
+          "422": {
+            "description": "Invalid input or policy decision"
+          },
+          "429": {
+            "description": "Rate limited"
+          },
+          "503": {
+            "description": "Provider unavailable"
+          }
+        }
+      }
+    },
+    "/v1/organizations/bootstrap": {
+      "post": {
+        "operationId": "post_organizations_bootstrap",
+        "summary": "organizations/bootstrap",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "State/idempotency conflict"
+          },
+          "422": {
+            "description": "Invalid input or policy decision"
+          },
+          "429": {
+            "description": "Rate limited"
+          },
+          "503": {
+            "description": "Provider unavailable"
+          }
+        }
+      }
+    },
     "/v1/organizations": {
       "post": {
         "operationId": "post_organizations",
@@ -1269,6 +1679,70 @@
         "parameters": [],
         "responses": {
           "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "State/idempotency conflict"
+          },
+          "422": {
+            "description": "Invalid input or policy decision"
+          },
+          "429": {
+            "description": "Rate limited"
+          },
+          "503": {
+            "description": "Provider unavailable"
+          }
+        }
+      }
+    },
+    "/v1/creators/me/identity-session": {
+      "post": {
+        "operationId": "post_creators_me_identity-session",
+        "summary": "creators/me/identity-session",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": "Success",
             "content": {
               "application/json": {
@@ -4019,6 +4493,236 @@
         }
       }
     },
+    "/v1/admin/reconciliation/external": {
+      "get": {
+        "operationId": "get_admin_reconciliation_external",
+        "summary": "admin/reconciliation/external",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "State/idempotency conflict"
+          },
+          "422": {
+            "description": "Invalid input or policy decision"
+          },
+          "429": {
+            "description": "Rate limited"
+          },
+          "503": {
+            "description": "Provider unavailable"
+          }
+        }
+      },
+      "post": {
+        "operationId": "post_admin_reconciliation_external",
+        "summary": "admin/reconciliation/external",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 1000
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "State/idempotency conflict"
+          },
+          "422": {
+            "description": "Invalid input or policy decision"
+          },
+          "429": {
+            "description": "Rate limited"
+          },
+          "503": {
+            "description": "Provider unavailable"
+          }
+        }
+      }
+    },
+    "/v1/admin/reconciliation/differences/{id}/ack": {
+      "post": {
+        "operationId": "post_admin_reconciliation_differences__id_ack",
+        "summary": "admin/reconciliation/differences/:id/ack",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 1000
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "State/idempotency conflict"
+          },
+          "422": {
+            "description": "Invalid input or policy decision"
+          },
+          "429": {
+            "description": "Rate limited"
+          },
+          "503": {
+            "description": "Provider unavailable"
+          }
+        }
+      }
+    },
     "/v1/admin/money": {
       "get": {
         "operationId": "get_admin_money",
@@ -4166,10 +4870,348 @@
         }
       }
     },
+    "/v1/platform/search": {
+      "get": {
+        "operationId": "get_platform_search",
+        "summary": "platform/search",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "territory",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "channel",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "approval",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "duration",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "max_price",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Asset"
+                      }
+                    },
+                    "next_cursor": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "sandbox": {
+                      "type": "boolean"
+                    },
+                    "surface": {
+                      "type": "string",
+                      "enum": [
+                        "platform"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "next_cursor",
+                    "sandbox",
+                    "surface"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "State/idempotency conflict"
+          },
+          "422": {
+            "description": "Invalid input or policy decision"
+          },
+          "429": {
+            "description": "Rate limited"
+          },
+          "503": {
+            "description": "Provider unavailable"
+          }
+        }
+      }
+    },
+    "/v1/platform/check": {
+      "post": {
+        "operationId": "post_platform_check",
+        "summary": "platform/check",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "asset_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "usage": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "request": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                },
+                "required": [
+                  "asset_id"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "preview": {
+                      "type": "boolean"
+                    },
+                    "decision": {
+                      "type": "string"
+                    },
+                    "reason_codes": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "missing_fields": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "usage_hash": {
+                      "type": "string"
+                    },
+                    "request_hash": {
+                      "type": "string"
+                    },
+                    "surface": {
+                      "type": "string",
+                      "enum": [
+                        "platform"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "preview",
+                    "decision",
+                    "reason_codes",
+                    "missing_fields",
+                    "usage_hash",
+                    "request_hash",
+                    "surface"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "State/idempotency conflict"
+          },
+          "422": {
+            "description": "Invalid input or policy decision"
+          },
+          "429": {
+            "description": "Rate limited"
+          },
+          "503": {
+            "description": "Provider unavailable"
+          }
+        }
+      }
+    },
     "/v1/webhooks/stripe": {
       "post": {
         "operationId": "post_webhooks_stripe",
         "summary": "webhooks/stripe",
+        "security": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Unknown or inaccessible resource"
+          },
+          "409": {
+            "description": "State/idempotency conflict"
+          },
+          "422": {
+            "description": "Invalid input or policy decision"
+          },
+          "429": {
+            "description": "Rate limited"
+          },
+          "503": {
+            "description": "Provider unavailable"
+          }
+        }
+      }
+    },
+    "/v1/webhooks/stripe/thin": {
+      "post": {
+        "operationId": "post_webhooks_stripe_thin",
+        "summary": "webhooks/stripe/thin",
         "security": [],
         "parameters": [],
         "responses": {

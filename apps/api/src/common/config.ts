@@ -10,6 +10,11 @@ export const config = {
     | 'stripe',
   /** When true, new creator policies must use rightsnet.rights-policy/0.1. Dual-path evaluation always keys off payload schema_version. */
   rightsCorePurchases: process.env.RIGHTS_CORE_PURCHASES === 'true',
+  /**
+   * RightsNet Connect (partner API under /v1/platform/*). Off by default.
+   * Not Stripe Connect. Requires admin Bearer when enabled.
+   */
+  platformApiEnabled: process.env.PLATFORM_API_ENABLED === 'true',
   port: Number(process.env.API_PORT ?? 4000),
 };
 export function assertConfiguration() {

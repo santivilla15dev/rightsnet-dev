@@ -42,6 +42,14 @@ const bodySchemas: Record<string, unknown> = {
     accepted: { const: true, type: 'boolean' },
   }),
   'orders/:id/simulate-payment': obj({ success: bool }),
+  'platform/check': obj(
+    {
+      asset_id: { type: 'string', minLength: 1, maxLength: 80 },
+      usage: { type: 'object', additionalProperties: true },
+      request: { type: 'object', additionalProperties: true },
+    },
+    ['asset_id'],
+  ),
   incidents: obj(
     {
       asset_id: uuid,
@@ -75,7 +83,7 @@ for (let i = 1; i < groups.length; i += 2) {
       required: true,
       schema: m[1] === 'id' ? uuid : string,
     }));
-    if (route === 'search')
+    if (route === 'search' || route === 'platform/search')
       for (const key of [
         'q',
         'category',
@@ -102,7 +110,11 @@ for (let i = 1; i < groups.length; i += 2) {
     if (route.startsWith('admin/') && !schema && method === 'post')
       schema = obj({ reason: { type: 'string', minLength: 10, maxLength: 1000 } });
     const code =
-      method === 'post' && !route.startsWith('auth/') && !route.startsWith('webhooks/')
+      method === 'post' &&
+      !route.startsWith('auth/') &&
+      !route.startsWith('webhooks/') &&
+      route !== 'platform/check' &&
+      route !== 'public/rights-check'
         ? '201'
         : '200';
     const responseSchema =
@@ -118,6 +130,23 @@ for (let i = 1; i < groups.length; i += 2) {
                   next_cursor: { type: ['string', 'null'] },
                   sandbox: bool,
                 })
+              : route === 'platform/search'
+                ? obj({
+                    items: { type: 'array', items: ref('Asset') },
+                    next_cursor: { type: ['string', 'null'] },
+                    sandbox: bool,
+                    surface: { type: 'string', enum: ['platform'] },
+                  })
+              : route === 'platform/check'
+                ? obj({
+                    preview: bool,
+                    decision: string,
+                    reason_codes: { type: 'array', items: string },
+                    missing_fields: { type: 'array', items: string },
+                    usage_hash: string,
+                    request_hash: string,
+                    surface: { type: 'string', enum: ['platform'] },
+                  })
               : route === 'assets/:id'
                 ? ref('Asset')
                 : { type: 'object', additionalProperties: true };

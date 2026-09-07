@@ -36,6 +36,11 @@ import {
   supabaseAuth,
 } from '../integrations/supabase-auth.js';
 import {
+  assertPlatformApiAccess,
+  platformSearch,
+  platformCheck,
+} from './platform.js';
+import {
   search,
   getAsset,
   publicAsset,
@@ -112,6 +117,7 @@ export class PublicController {
       payments: config.payments,
       identity: config.identity,
       rights_core_purchases: config.rightsCorePurchases,
+      platform_api_enabled: config.platformApiEnabled,
       live_commerce: false,
     };
   }
@@ -910,6 +916,18 @@ export class AdminController {
     return mutate(user.id, 'dispute-review/' + id, idem(req), body, (db) =>
       reviewDispute(db, user, id, data),
     );
+  }
+}
+/** RightsNet Connect (partner-gated). Not Stripe Connect. */
+@Controller('v1/platform')
+export class PlatformController {
+  @Get('search') async search(@Req() req: Request, @Query() q: Record<string, unknown>) {
+    assertPlatformApiAccess(await actor(req));
+    return platformSearch(q);
+  }
+  @Post('check') @HttpCode(200) async check(@Req() req: Request, @Body() body: unknown) {
+    assertPlatformApiAccess(await actor(req));
+    return platformCheck(body);
   }
 }
 @Controller('v1/webhooks')

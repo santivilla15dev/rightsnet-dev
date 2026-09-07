@@ -11,6 +11,7 @@ import {
   AccountsController,
   CommerceController,
   AdminController,
+  PlatformController,
   WebhooksController,
 } from './modules/controllers.js';
 import { assertConfiguration, config } from './common/config.js';
@@ -21,6 +22,7 @@ assertConfiguration();
     AccountsController,
     CommerceController,
     AdminController,
+    PlatformController,
     WebhooksController,
   ],
 })
