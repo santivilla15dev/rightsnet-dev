@@ -39,6 +39,10 @@ Rights Check
 
 Ver [`RIGHTSNET_OFFICIAL_FLOW.md`](./RIGHTSNET_OFFICIAL_FLOW.md): Discover/Configure/Rights Check sin cuenta; auth en Continuar; Approved ≠ Published.
 
+## Onboarding creador (7 pasos)
+
+Barra `1 ━ 2 ━ 3 ━ 4 ━ 5 ━ 6 ━ 7`: Perfil → Identidad → Likeness → **Derechos** (editor Rights Core en el alta) → Precio → Consentimiento → Revisión → `/application`.
+
 ## License Summary (antes de pagar)
 
 - En `awaiting_acceptance`, la orden muestra primero **Resumen de licencia** (licenciatario, creador, uso, territorio, canales, duración, precio) — no el contrato largo.

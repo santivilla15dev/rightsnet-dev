@@ -61,6 +61,8 @@ Auth en **Continuar** (o al persistir solicitud de aprobación), no al explorar.
 
 `UNDER_REVIEW` → `/application` · `APPROVED` → publicar (no dashboard) · `PUBLISHED` → `/dashboard`
 
+Onboarding: exactamente 7 pasos (Perfil, Identidad, Likeness, Derechos con editor Rights Core, Precio, Consentimiento, Revisión).
+
 ## STOP
 
 Sin email/push, sin live commerce, sin §22 Generation/Output real (Verification sí).

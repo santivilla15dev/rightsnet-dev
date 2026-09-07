@@ -3912,6 +3912,35 @@ textarea {
   gap: 8px;
   margin-bottom: 8px;
 }
+.onboarding-verified {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #3d5a2a;
+  font-weight: 600;
+  margin: 12px 0;
+}
+.consent-review-copy {
+  margin: 12px 0 18px;
+  line-height: 1.55;
+  color: #3d4633;
+}
+.consent-review-copy p {
+  margin: 0 0 10px;
+}
+.rights-onboarding-editor h3 {
+  margin: 20px 0 10px;
+  font-size: 15px;
+}
+.rights-onboarding-editor .onboarding-rule-row {
+  border-bottom: 1px solid var(--line, #e1e7d5);
+  padding: 8px 0;
+  margin-bottom: 0;
+}
+.rights-onboarding-editor .onboarding-rule-row strong {
+  flex: 1;
+  min-width: 120px;
+}
 .help-toc {
   display: flex;
   flex-wrap: wrap;

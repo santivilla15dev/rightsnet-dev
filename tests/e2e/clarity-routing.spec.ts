@@ -66,6 +66,9 @@ test('clarity: demo new creator lands on onboarding', async ({ page }) => {
   await page.getByRole('button', { name: 'Iniciar onboarding de creador' }).click();
   await expect(page).toHaveURL(/\/onboarding/);
   await expect(page.getByText('ALTA DE CREADOR')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Perfil', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Derechos', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Revisión', exact: true })).toBeVisible();
 });
 
 test('clarity: incomplete creator blocked from dashboard', async ({ page }) => {

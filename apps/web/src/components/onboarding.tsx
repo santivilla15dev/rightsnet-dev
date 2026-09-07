@@ -3,8 +3,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowRight, Check } from 'lucide-react';
-import { api } from '@/lib/api';
-import type { AnyPolicy, Asset, LegacyPolicy } from '@/lib/types';
+import { api, labels } from '@/lib/api';
+import type { AnyPolicy, Asset, LegacyPolicy, RightsPolicy, RuleState } from '@/lib/types';
 import { isLegacyPolicy, isRightsPolicy } from '@/lib/policy';
 import {
   canAccessCreatorDashboard,
@@ -21,13 +21,15 @@ const STEPS = [
   { id: 'profile', label: 'Perfil' },
   { id: 'identity', label: 'Identidad' },
   { id: 'likeness', label: 'Likeness' },
-  { id: 'rules', label: 'Reglas de licencia' },
+  { id: 'rules', label: 'Derechos' },
   { id: 'pricing', label: 'Precio' },
   { id: 'consent', label: 'Consentimiento' },
   { id: 'review', label: 'Revisión' },
 ] as const;
 
 type StepId = (typeof STEPS)[number]['id'];
+
+const RULE_CYCLE: RuleState[] = ['ALLOW', 'REQUIRES_APPROVAL', 'DENY'];
 
 export function Onboarding() {
   const { user, loading: sessionLoading, toast } = useSession(),
@@ -41,6 +43,7 @@ export function Onboarding() {
     [name, setName] = useState(''),
     [bio, setBio] = useState(''),
     [location, setLocation] = useState(''),
+    [languages, setLanguages] = useState('es'),
     [gender, setGender] = useState('unspecified'),
     [ageBand, setAgeBand] = useState('25_34'),
     [consentChecked, setConsentChecked] = useState(false),
@@ -64,6 +67,7 @@ export function Onboarding() {
         setLocation(first.location);
         setGender(first.gender ?? 'unspecified');
         setAgeBand(first.age_band ?? '25_34');
+        setLanguages((first.languages ?? ['es']).join(', '));
         setPolicy(first.policy);
       } else {
         setPolicy(profile.default_policy);
@@ -161,17 +165,25 @@ export function Onboarding() {
     if (i < STEPS.length - 1) setStep(STEPS[i + 1].id);
   }
 
+  function parseLanguages() {
+    return languages
+      .split(/[,;\s]+/)
+      .map((x) => x.trim().toLowerCase())
+      .filter((x) => x.length >= 2)
+      .slice(0, 5);
+  }
+
   return (
     <div className="onboarding-page">
       <p className="login-demo-label">ALTA DE CREADOR</p>
       <h1>Configura tu identidad licenciable</h1>
       <p className="login-lead">
-        Completa cada paso. El dashboard de negocio solo se abre cuando tu perfil está aprobado.
+        Siete pasos. Tras enviar, Ops revisa. El dashboard solo se abre cuando publicas tu perfil.
       </p>
 
       <div className="onboarding-progress" aria-label="Progreso del alta">
         <p className="onboarding-progress-label">
-          Progreso · {progress.completedCount} de {progress.total} completados
+          Paso {stepIndex + 1} de 7 · {progress.completedCount}/{progress.total} completados
         </p>
         <div className="onboarding-bars" role="presentation">
           {STEPS.map((s, i) => {
@@ -199,7 +211,7 @@ export function Onboarding() {
           })}
         </div>
         <p className="muted">
-          Siguiente acción recomendada: <strong>{STEPS.find((s) => s.id === nextIncomplete)?.label}</strong>
+          Siguiente: <strong>{STEPS.find((s) => s.id === nextIncomplete)?.label}</strong>
         </p>
       </div>
 
@@ -221,7 +233,8 @@ export function Onboarding() {
       <section className="panel onboarding-panel-main">
         {step === 'profile' ? (
           <>
-            <h2>1. Perfil — ¿Quién eres?</h2>
+            <h2>1. Perfil</h2>
+            <p className="muted">Cuéntales a las marcas quién eres.</p>
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -230,6 +243,7 @@ export function Onboarding() {
                   goNext();
                   return;
                 }
+                const langs = parseLanguages();
                 void action(
                   'save-profile',
                   () =>
@@ -241,6 +255,7 @@ export function Onboarding() {
                         location,
                         gender,
                         age_band: ageBand,
+                        languages: langs.length ? langs : ['es'],
                         policy: p,
                       },
                     }),
@@ -264,7 +279,15 @@ export function Onboarding() {
                 />
               </label>
               <label>
-                Género (descubrimiento)
+                Idiomas (códigos, separados por coma)
+                <Input
+                  value={languages}
+                  onChange={(e) => setLanguages(e.target.value)}
+                  placeholder="es, en, de"
+                />
+              </label>
+              <label>
+                Categoría / género (descubrimiento)
                 <select value={gender} onChange={(e) => setGender(e.target.value)}>
                   <option value="unspecified">Sin especificar</option>
                   <option value="female">Mujer</option>
@@ -296,19 +319,22 @@ export function Onboarding() {
         {step === 'identity' ? (
           <>
             <h2>2. Identidad</h2>
+            <p className="muted">
+              RightsNet exige demostrar que eres la persona cuya likeness se licencia.
+            </p>
             {!asset ? (
               <p>Primero crea tu perfil.</p>
             ) : (
               <>
-                <p>
-                  Estado:{' '}
-                  <Badge value={asset.identity_status === 'verified' ? 'verified' : asset.identity_status} />
-                </p>
-                <ul className="license-steps">
-                  <li className={asset.identity_status === 'verified' ? 'active' : ''}>
-                    {asset.identity_status === 'verified' ? 'Verified' : 'Not started / Pending'}
-                  </li>
-                </ul>
+                {asset.identity_status === 'verified' ? (
+                  <p className="onboarding-verified">
+                    <Check size={18} /> Identidad verificada ✓
+                  </p>
+                ) : (
+                  <p>
+                    Estado: <Badge value={asset.identity_status} />
+                  </p>
+                )}
                 {asset.identity_status !== 'verified' ? (
                   <Button
                     disabled={!!busy}
@@ -330,10 +356,14 @@ export function Onboarding() {
                           }
                         },
                         'Verificación de identidad iniciada.',
-                      )
+                      ).then((ok) => {
+                        if (ok) goNext();
+                      })
                     }
                   >
-                    {appConfig.identity === 'stripe' ? 'Verificar con Stripe Identity' : 'Simular verificación'}
+                    {appConfig.identity === 'stripe'
+                      ? 'Verificar identidad'
+                      : 'Verificar identidad (simular)'}
                   </Button>
                 ) : (
                   <Button onClick={goNext}>
@@ -348,14 +378,17 @@ export function Onboarding() {
 
         {step === 'likeness' ? (
           <>
-            <h2>3. Likeness — ¿Qué licenciamos?</h2>
+            <h2>3. Likeness</h2>
+            <p className="muted">
+              Sube fotos de referencia claras. Ayudan a verificar qué licenciamos. Sin voz; vídeo más
+              adelante.
+            </p>
             {!asset ? (
               <p>Primero crea tu perfil.</p>
             ) : (
               <>
-                <p>Sube una foto de evidencia visual (PNG/JPEG, máx. 2 MB).</p>
                 <p>
-                  Archivos: {(asset.files?.length ?? 0) > 0 ? <Check size={16} /> : null}{' '}
+                  Fotos: {(asset.files?.length ?? 0) > 0 ? <Check size={16} /> : null}{' '}
                   {asset.files?.length ?? 0}
                 </p>
                 <input
@@ -378,7 +411,8 @@ export function Onboarding() {
 
         {step === 'rules' ? (
           <>
-            <h2>4. Reglas de licencia (My Rights)</h2>
+            <h2>4. Derechos</h2>
+            <p className="muted">Controla cómo la IA puede usar tu likeness.</p>
             {!asset ? (
               <p>Primero crea tu perfil.</p>
             ) : isLegacyPolicy(p) ? (
@@ -390,28 +424,27 @@ export function Onboarding() {
                   void action(
                     'rules',
                     () => api('assets/' + asset.id + '/policies', { method: 'POST', body: p }),
-                    'Reglas guardadas.',
-                  ).then((ok) => { if (ok) goNext(); })
+                    'Derechos guardados.',
+                  ).then((ok) => {
+                    if (ok) goNext();
+                  })
                 }
               />
             ) : isRightsPolicy(p) ? (
-              <p className="muted">
-                Política Rights Core cargada. Ajusta industrias en el editor del dashboard tras la
-                aprobación, o guarda la versión actual.
-                <Button
-                  style={{ display: 'block', marginTop: 12 }}
-                  disabled={!!busy}
-                  onClick={() =>
-                    void action(
-                      'rules',
-                      () => api('assets/' + asset.id + '/policies', { method: 'POST', body: p }),
-                      'Reglas confirmadas.',
-                    ).then((ok) => { if (ok) goNext(); })
-                  }
-                >
-                  Confirmar reglas y continuar
-                </Button>
-              </p>
+              <RightsCoreEditor
+                policy={p}
+                onChange={setPolicy}
+                busy={!!busy}
+                onSave={() =>
+                  void action(
+                    'rules',
+                    () => api('assets/' + asset.id + '/policies', { method: 'POST', body: p }),
+                    'Derechos guardados.',
+                  ).then((ok) => {
+                    if (ok) goNext();
+                  })
+                }
+              />
             ) : null}
           </>
         ) : null}
@@ -419,48 +452,73 @@ export function Onboarding() {
         {step === 'pricing' ? (
           <>
             <h2>5. Precio</h2>
-            {!asset || !isLegacyPolicy(p) ? (
-              isRightsPolicy(p) && asset ? (
-                <div>
-                  <label>
-                    Precio 30 días (céntimos EUR)
-                    <Input
-                      type="number"
-                      value={p.pricing.duration_prices_minor['30'] ?? 0}
-                      onChange={(e) =>
-                        setPolicy({
-                          ...p,
-                          pricing: {
-                            ...p.pricing,
-                            duration_prices_minor: {
-                              ...p.pricing.duration_prices_minor,
-                              '30': Number(e.target.value),
-                            },
-                          },
-                        })
-                      }
-                    />
-                  </label>
-                  <Button
-                    disabled={!!busy}
-                    onClick={() =>
-                      void action(
-                        'price',
-                        () => api('assets/' + asset.id + '/policies', { method: 'POST', body: p }),
-                        'Precio guardado.',
-                      ).then((ok) => { if (ok) goNext(); })
-                    }
-                  >
-                    Guardar precio
-                  </Button>
-                </div>
-              ) : (
-                <p>Completa el perfil primero.</p>
-              )
-            ) : (
+            <p className="muted">Define el precio base de tu licencia de 30 días.</p>
+            {!asset ? (
+              <p>Completa el perfil primero.</p>
+            ) : isRightsPolicy(p) ? (
               <div>
                 <label>
-                  Precio 30 días (EUR)
+                  Licencia base 30 días (€)
+                  <Input
+                    type="number"
+                    min={10}
+                    step={1}
+                    value={(p.pricing.duration_prices_minor['30'] ?? 0) / 100}
+                    onChange={(e) =>
+                      setPolicy({
+                        ...p,
+                        pricing: {
+                          ...p.pricing,
+                          duration_prices_minor: {
+                            ...p.pricing.duration_prices_minor,
+                            '30': Math.round(Number(e.target.value) * 100),
+                          },
+                        },
+                      })
+                    }
+                  />
+                </label>
+                <label>
+                  Opcional · 90 días (€)
+                  <Input
+                    type="number"
+                    min={0}
+                    step={1}
+                    value={(p.pricing.duration_prices_minor['90'] ?? 0) / 100}
+                    onChange={(e) =>
+                      setPolicy({
+                        ...p,
+                        pricing: {
+                          ...p.pricing,
+                          duration_prices_minor: {
+                            ...p.pricing.duration_prices_minor,
+                            '90': Math.round(Number(e.target.value) * 100),
+                          },
+                        },
+                      })
+                    }
+                  />
+                </label>
+                <Button
+                  disabled={!!busy}
+                  onClick={() =>
+                    void action(
+                      'price',
+                      () => api('assets/' + asset.id + '/policies', { method: 'POST', body: p }),
+                      'Precio guardado.',
+                    ).then((ok) => {
+                      if (ok) goNext();
+                    })
+                  }
+                >
+                  Continuar
+                  <ArrowRight size={16} />
+                </Button>
+              </div>
+            ) : isLegacyPolicy(p) ? (
+              <div>
+                <label>
+                  Precio 30 días (€)
                   <Input
                     type="number"
                     value={p.prices['30'] / 100}
@@ -476,7 +534,7 @@ export function Onboarding() {
                   />
                 </label>
                 <label>
-                  Precio 90 días (EUR)
+                  Precio 90 días (€)
                   <Input
                     type="number"
                     value={p.prices['90'] / 100}
@@ -498,13 +556,15 @@ export function Onboarding() {
                       'price',
                       () => api('assets/' + asset.id + '/policies', { method: 'POST', body: p }),
                       'Precio guardado.',
-                    ).then((ok) => { if (ok) goNext(); })
+                    ).then((ok) => {
+                      if (ok) goNext();
+                    })
                   }
                 >
                   Guardar y continuar
                 </Button>
               </div>
-            )}
+            ) : null}
           </>
         ) : null}
 
@@ -516,23 +576,26 @@ export function Onboarding() {
             ) : asset.consented ? (
               <>
                 <p>
-                  <Check size={16} /> Consentimiento registrado para política v{asset.policy_version}.
+                  <Check size={16} /> Consentimiento registrado (política v{asset.policy_version}).
                 </p>
                 <Button onClick={goNext}>Continuar</Button>
               </>
             ) : (
               <>
-                <p>
-                  Al aceptar, confirmas que entiendes las reglas de licencia y el precio asociados a
-                  esta versión de política (hash {asset.policy_hash.slice(0, 12)}…).
-                </p>
+                <div className="consent-review-copy">
+                  <p>
+                    Autorizas a RightsNet a ofrecer licencias según las reglas que configuraste.
+                  </p>
+                  <p>Sigues al control de tu política de licencia.</p>
+                  <p>RightsNet no puede licenciar usos que hayas prohibido explícitamente.</p>
+                </div>
                 <label className="consent-check">
                   <input
                     type="checkbox"
                     checked={consentChecked}
                     onChange={(e) => setConsentChecked(e.target.checked)}
                   />
-                  He leído y acepto las condiciones guardadas de licencia de mi perfil.
+                  Entiendo y acepto.
                 </label>
                 <Button
                   disabled={!!busy || !consentChecked}
@@ -545,10 +608,13 @@ export function Onboarding() {
                           body: { accepted: true, document_hash: asset.policy_hash },
                         }),
                       'Consentimiento registrado.',
-                    ).then((ok) => { if (ok) goNext(); })
+                    ).then((ok) => {
+                      if (ok) goNext();
+                    })
                   }
                 >
-                  Registrar consentimiento
+                  Aceptar y continuar
+                  <ArrowRight size={16} />
                 </Button>
               </>
             )}
@@ -557,21 +623,22 @@ export function Onboarding() {
 
         {step === 'review' ? (
           <>
-            <h2>7. Revisión final</h2>
+            <h2>7. Revisión</h2>
+            <p className="muted">Listo para revisión</p>
             <ul className="onboarding-review-list">
               {(
                 [
                   ['Perfil', progress.profile],
                   ['Identidad', progress.identity],
                   ['Likeness', progress.likeness],
-                  ['Reglas de licencia', progress.licensingRules],
+                  ['Política de derechos', progress.licensingRules],
                   ['Precio', progress.pricing],
                   ['Consentimiento', progress.consent],
                 ] as const
               ).map(([label, ok]) => (
                 <li key={label}>
                   <strong>{label}</strong>
-                  <span>{ok ? '✓ Completo' : 'Pendiente'}</span>
+                  <span>{ok ? '✓' : 'Pendiente'}</span>
                 </li>
               ))}
             </ul>
@@ -601,8 +668,140 @@ export function Onboarding() {
           Guía
         </Link>
         {' · '}
-        Estado: {lifecycle} → {creatorHomePath(lifecycle)}
+        {lifecycle} → {creatorHomePath(lifecycle)}
       </p>
+    </div>
+  );
+}
+
+function RightsCoreEditor({
+  policy,
+  onChange,
+  busy,
+  onSave,
+}: {
+  policy: RightsPolicy;
+  onChange: (p: AnyPolicy) => void;
+  busy: boolean;
+  onSave: () => void;
+}) {
+  function setRule(
+    group: 'industries' | 'territories' | 'channels' | 'operations' | 'purpose',
+    key: string,
+    value: RuleState,
+  ) {
+    const map = { ...policy[group], [key]: value };
+    onChange({ ...policy, [group]: map });
+  }
+
+  function cycle(group: 'industries' | 'operations' | 'purpose', key: string) {
+    const cur = (policy[group] as Record<string, RuleState>)[key] ?? 'DENY';
+    const i = RULE_CYCLE.indexOf(cur);
+    const next = RULE_CYCLE[(i + 1) % RULE_CYCLE.length];
+    setRule(group, key, next);
+  }
+
+  function toggleAllow(group: 'territories' | 'channels', key: string) {
+    const cur = policy[group][key];
+    setRule(group, key, cur === 'ALLOW' ? 'DENY' : 'ALLOW');
+  }
+
+  const industries = [
+    'beauty',
+    'fashion',
+    'lifestyle',
+    'alcohol',
+    'gambling',
+    'political_advertising',
+  ] as const;
+  const operations = [
+    ['synthetic_video', 'Vídeo IA'],
+    ['synthetic_image', 'Imagen IA'],
+  ] as const;
+
+  return (
+    <div className="rights-onboarding-editor">
+      <h3>Uso de IA</h3>
+      {operations.map(([key, label]) => (
+        <div key={key} className="onboarding-rule-row">
+          <strong>{label}</strong>
+          <Badge value={policy.operations[key] ?? 'DENY'} />
+          <Button type="button" size="sm" variant="outline" onClick={() => cycle('operations', key)}>
+            Cambiar
+          </Button>
+        </div>
+      ))}
+      <div className="onboarding-rule-row">
+        <strong>Publicidad comercial</strong>
+        <Badge value={policy.purpose.commercial_advertising ?? 'DENY'} />
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onClick={() => cycle('purpose', 'commercial_advertising')}
+        >
+          Cambiar
+        </Button>
+      </div>
+
+      <h3>Industrias</h3>
+      {industries.map((c) => (
+        <div key={c} className="onboarding-rule-row">
+          <strong>{labels[c] ?? c}</strong>
+          <Badge value={policy.industries[c] ?? 'DENY'} />
+          <Button type="button" size="sm" variant="outline" onClick={() => cycle('industries', c)}>
+            Cambiar
+          </Button>
+        </div>
+      ))}
+
+      <h3>Territorios</h3>
+      {(
+        [
+          ['AT', 'Austria'],
+          ['DE', 'Alemania'],
+        ] as const
+      ).map(([c, l]) => (
+        <div key={c} className="onboarding-rule-row">
+          <strong>{l}</strong>
+          <Badge value={policy.territories[c] ?? 'DENY'} />
+          <Button type="button" size="sm" variant="outline" onClick={() => toggleAllow('territories', c)}>
+            {policy.territories[c] === 'ALLOW' ? 'Quitar' : 'Permitir'}
+          </Button>
+        </div>
+      ))}
+
+      <h3>Canales</h3>
+      {(['instagram', 'tiktok', 'youtube'] as const).map((c) => (
+        <div key={c} className="onboarding-rule-row">
+          <strong>{c}</strong>
+          <Badge value={policy.channels[c] ?? 'DENY'} />
+          <Button type="button" size="sm" variant="outline" onClick={() => toggleAllow('channels', c)}>
+            {policy.channels[c] === 'ALLOW' ? 'Quitar' : 'Permitir'}
+          </Button>
+        </div>
+      ))}
+
+      <label>
+        Modo de aprobación
+        <select
+          value={policy.approval_mode}
+          onChange={(e) =>
+            onChange({
+              ...policy,
+              approval_mode: e.target.value as 'AUTOMATIC' | 'MANUAL',
+            })
+          }
+        >
+          <option value="AUTOMATIC">Automática (ALLOW directo)</option>
+          <option value="MANUAL">Manual (el creador aprueba)</option>
+        </select>
+      </label>
+
+      <Button disabled={busy} onClick={onSave} style={{ marginTop: 16 }}>
+        Guardar derechos y continuar
+        <ArrowRight size={16} />
+      </Button>
     </div>
   );
 }
@@ -636,7 +835,7 @@ function LegacyRulesEditor({
   }
   return (
     <div>
-      <p>Estados explícitos por categoría (ALLOW vía lista permitida / DENY vía denegadas).</p>
+      <p>Estados por categoría (política legacy).</p>
       {cats.map((c) => {
         const allow = policy.categories.includes(c);
         const deny = policy.denied_categories.includes(c);
