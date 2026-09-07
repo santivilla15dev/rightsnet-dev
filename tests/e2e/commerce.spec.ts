@@ -119,14 +119,18 @@ test('creator policy version and manual approval journey', async ({ page, browse
   await buyer.getByRole('button', { name: 'Solicitar aprobación', exact: true }).click();
   await expect(buyer.getByText(/aprobación|Esperando|Camino/i).first()).toBeVisible();
   await page.reload();
-  const row = page.locator('tr').filter({ hasText: campaign });
-  await row.getByRole('button', { name: 'Aprobar', exact: true }).click();
-  await expect(row.getByText('Aprobada', { exact: true })).toBeVisible();
+  const card = page.locator('.request-card').filter({ hasText: campaign });
+  await expect(card.getByRole('heading', { name: campaign })).toBeVisible();
+  await expect(card.getByText(/Por qué me lo piden/i)).toBeVisible();
+  await card.getByRole('button', { name: 'Aprobar', exact: true }).click();
+  await expect(
+    page.locator('tr').filter({ hasText: campaign }).getByText('Aprobada', { exact: true }),
+  ).toBeVisible();
   await buyer.goto('/company');
   await buyer
     .locator('tr')
     .filter({ hasText: campaign })
-    .getByRole('button', { name: 'Continuar', exact: true })
+    .getByRole('button', { name: 'Completar licencia', exact: true })
     .click();
   await expect(buyer.getByRole('heading', { name: 'Resumen de licencia' })).toBeVisible();
   await expect(buyer.getByText('Ver términos completos')).toBeVisible();

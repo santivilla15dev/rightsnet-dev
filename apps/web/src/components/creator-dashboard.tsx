@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { api, money, labels } from '@/lib/api';
+import { api, money, labels, date } from '@/lib/api';
 import type { Asset, LegacyPolicy, RightsPolicy, AnyPolicy, LicenseRequest, Order, ConnectStatus } from '@/lib/types';
 import { isLegacyPolicy, isRightsPolicy } from '@/lib/policy';
 import {
@@ -135,6 +135,11 @@ export function CreatorDashboard() {
   const p = policy,
     a = assets[0],
     editingRights = isRightsPolicy(p);
+  const pendingRequests = requests.filter((r) => r.decision === 'REQUIRES_APPROVAL');
+  const decidedRequests = requests.filter((r) => r.decision !== 'REQUIRES_APPROVAL');
+  const recentSold = orders
+    .filter((o) => o.license_id || o.status === 'fulfilled')
+    .slice(0, 6);
   if (
     (user.has_creator || user.role === 'creator') &&
     !canAccessCreatorDashboard(getCreatorLifecycleState({ asset: a ?? null }))
@@ -225,7 +230,7 @@ export function CreatorDashboard() {
           ) : undefined
         }
       />
-      <div className="stats-grid">
+      <div className="stats-grid" id="overview">
         <div className="stat">
           <span>
             <Wallet size={18} />
@@ -266,9 +271,132 @@ export function CreatorDashboard() {
           <small>Emitidas con tus condiciones</small>
         </div>
       </div>
+
+      {pendingRequests.length || recentSold.length ? (
+        <section className="dashboard-feed" aria-label="Actividad reciente">
+          {pendingRequests.map((r) => (
+            <article className="request-card" key={r.id}>
+              <p className="request-card-eyebrow">Nueva solicitud</p>
+              <h3>{r.usage.campaign_name}</h3>
+              <p className="request-card-org">{r.legal_name}</p>
+              <dl className="request-card-meta">
+                <div>
+                  <dt>Uso</dt>
+                  <dd>
+                    {labels[r.usage.industry ?? r.usage.category ?? ''] ??
+                      r.usage.industry ??
+                      r.usage.category ??
+                      '—'}
+                    {' · '}
+                    {labels[r.usage.generation_type ?? r.usage.operation ?? ''] ??
+                      r.usage.generation_type ??
+                      r.usage.operation ??
+                      '—'}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Territorio / canales</dt>
+                  <dd>
+                    {(r.usage.territories ?? []).join(', ') || '—'} ·{' '}
+                    {(r.usage.channels ?? []).join(', ') || '—'}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Duración</dt>
+                  <dd>{r.usage.duration_days} días</dd>
+                </div>
+              </dl>
+              <details className="request-why">
+                <summary>¿Por qué me lo piden?</summary>
+                <p>
+                  La marca necesita tu aprobación porque tu política exige revisión manual para este
+                  uso
+                  {r.reason_codes?.length
+                    ? ` (${r.reason_codes.map((c) => labels[c] ?? c).join(', ')})`
+                    : ''}
+                  .
+                </p>
+                <p className="muted small">
+                  Campaña «{r.usage.campaign_name}» · recibida {date(r.created_at)}.
+                </p>
+              </details>
+              <div className="inline-actions">
+                <Button
+                  size="sm"
+                  disabled={!!busy}
+                  onClick={() =>
+                    void action(
+                      r.id,
+                      () =>
+                        api('license-requests/' + r.id + '/decision', {
+                          method: 'POST',
+                          body: { decision: 'approve', usage_hash: r.usage_hash },
+                        }),
+                      'Solicitud aprobada. La marca puede completar la licencia.',
+                    )
+                  }
+                >
+                  Aprobar
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!!busy}
+                  onClick={() =>
+                    void action(
+                      r.id,
+                      () =>
+                        api('license-requests/' + r.id + '/decision', {
+                          method: 'POST',
+                          body: { decision: 'reject', usage_hash: r.usage_hash },
+                        }),
+                      'Solicitud rechazada.',
+                    )
+                  }
+                >
+                  Rechazar
+                </Button>
+              </div>
+            </article>
+          ))}
+          {recentSold.map((o) => (
+            <article className="sold-card" key={o.id}>
+              <p className="request-card-eyebrow">Nueva licencia vendida</p>
+              <h3>{o.scope.campaign_name}</h3>
+              <p className="request-card-org">{o.organization_legal_name ?? 'Marca'}</p>
+              <dl className="request-card-meta">
+                <div>
+                  <dt>Tu neto</dt>
+                  <dd>
+                    <b>{money(o.price.creator_minor)}</b>
+                  </dd>
+                </div>
+                <div>
+                  <dt>Total orden</dt>
+                  <dd>{money(o.price.total_minor)}</dd>
+                </div>
+                <div>
+                  <dt>Token</dt>
+                  <dd>
+                    {o.public_token ? (
+                      <Link href={'/verify/' + o.public_token}>
+                        <code>{o.public_token}</code>
+                      </Link>
+                    ) : (
+                      '—'
+                    )}
+                  </dd>
+                </div>
+              </dl>
+              <p className="muted small">{date(o.created_at)}</p>
+            </article>
+          ))}
+        </section>
+      ) : null}
+
       {error ? <ErrorPanel message={error} /> : null}
       <div className="dashboard-layout">
-        <section className="panel">
+        <section className="panel" id="rules">
           <div className="panel-header">
             <ShieldCheck size={22} />
             <h2>{a ? 'Configura tus derechos' : 'Crea tu perfil'}</h2>
@@ -630,7 +758,7 @@ export function CreatorDashboard() {
             </Button>
           </form>
         </section>
-        <aside className="panel onboarding-panel">
+        <aside className="panel onboarding-panel" id="likeness">
           <span className="eyebrow">RIGHTS PASSPORT</span>
           <h2>De tu perfil al permiso.</h2>
           <p className="muted">Completa cada paso para publicar tu likeness.</p>
@@ -928,13 +1056,20 @@ export function CreatorDashboard() {
           )}
         </aside>
       </div>
-      <div className="section-heading spaced">
+      <div className="section-heading spaced" id="requests">
         <div>
           <span className="section-number">02 /</span>
           <h2>Solicitudes de marcas</h2>
         </div>
       </div>
-      {requests.length ? (
+      {pendingRequests.length ? (
+        <p className="muted">
+          Tienes {pendingRequests.length} solicitud
+          {pendingRequests.length === 1 ? '' : 'es'} pendiente
+          {pendingRequests.length === 1 ? '' : 's'} arriba. Revisa y decide.
+        </p>
+      ) : null}
+      {decidedRequests.length ? (
         <div className="table-wrap">
           <table>
             <thead>
@@ -942,11 +1077,10 @@ export function CreatorDashboard() {
                 <th>Campaña</th>
                 <th>Uso</th>
                 <th>Estado</th>
-                <th>Tu decisión</th>
               </tr>
             </thead>
             <tbody>
-              {requests.map((r) => (
+              {decidedRequests.map((r) => (
                 <tr key={r.id}>
                   <td>
                     <b>{r.usage.campaign_name}</b>
@@ -964,57 +1098,104 @@ export function CreatorDashboard() {
                   <td>
                     <Badge value={r.decision} />
                   </td>
-                  <td>
-                    {r.decision === 'REQUIRES_APPROVAL' ? (
-                      <div className="inline-actions">
-                        <Button
-                          size="sm"
-                          disabled={!!busy}
-                          onClick={() =>
-                            void action(
-                              r.id,
-                              () =>
-                                api('license-requests/' + r.id + '/decision', {
-                                  method: 'POST',
-                                  body: { decision: 'approve', usage_hash: r.usage_hash },
-                                }),
-                              'Solicitud aprobada.',
-                            )
-                          }
-                        >
-                          Aprobar
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={!!busy}
-                          onClick={() =>
-                            void action(
-                              r.id,
-                              () =>
-                                api('license-requests/' + r.id + '/decision', {
-                                  method: 'POST',
-                                  body: { decision: 'reject', usage_hash: r.usage_hash },
-                                }),
-                              'Solicitud rechazada.',
-                            )
-                          }
-                        >
-                          Rechazar
-                        </Button>
-                      </div>
-                    ) : (
-                      <span className="muted">Decisión registrada</span>
-                    )}
-                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      ) : (
+      ) : !pendingRequests.length ? (
         <p className="muted">Tus próximas colaboraciones aparecerán aquí.</p>
+      ) : null}
+
+      <div className="section-heading spaced" id="licenses">
+        <div>
+          <span className="section-number">03 /</span>
+          <h2>Licencias emitidas</h2>
+        </div>
+      </div>
+      {recentSold.length ? (
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Campaña</th>
+                <th>Marca</th>
+                <th>Tu neto</th>
+                <th>Token</th>
+              </tr>
+            </thead>
+            <tbody>
+              {orders
+                .filter((o) => o.license_id || o.status === 'fulfilled')
+                .map((o) => (
+                  <tr key={o.id}>
+                    <td>
+                      <b>{o.scope.campaign_name}</b>
+                      <small>{date(o.created_at)}</small>
+                    </td>
+                    <td>{o.organization_legal_name ?? '—'}</td>
+                    <td>{money(o.price.creator_minor)}</td>
+                    <td>
+                      {o.public_token ? (
+                        <Link href={'/verify/' + o.public_token}>
+                          <code>{o.public_token}</code>
+                        </Link>
+                      ) : (
+                        '—'
+                      )}
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <p className="muted">Cuando una marca pague, verás aquí la licencia firmada y tu neto.</p>
       )}
+
+      <div className="section-heading spaced" id="earnings">
+        <div>
+          <span className="section-number">04 /</span>
+          <h2>Ingresos</h2>
+        </div>
+      </div>
+      <div className="stats-grid earnings-detail">
+        <div className="stat">
+          <span>Pagado</span>
+          <b>
+            {money(
+              moneySummary?.paid_minor ??
+                orders
+                  .filter((o) => ['fulfilled', 'paid', 'issuing'].includes(o.status))
+                  .reduce((s, o) => s + o.price.creator_minor, 0),
+            )}
+          </b>
+        </div>
+        <div className="stat">
+          <span>Transferido</span>
+          <b>{money(moneySummary?.transferred_minor ?? 0)}</b>
+        </div>
+        <div className="stat">
+          <span>Payout</span>
+          <b>{money(moneySummary?.payout_minor ?? 0)}</b>
+        </div>
+      </div>
+
+      <section className="panel stub-panel" id="usage">
+        <h2>Uso</h2>
+        <p className="muted">
+          Próximamente: verás cómo las marcas usan tu likeness con contenido vinculado a cada
+          licencia. Stub del MVP.
+        </p>
+      </section>
+
+      <section className="panel stub-panel" id="settings">
+        <h2>Ajustes</h2>
+        <p className="muted">
+          Próximamente: notificaciones, datos de cobro y preferencias de cuenta. Stub del MVP.
+        </p>
+      </section>
+
       <SandboxNote />
     </>
   );

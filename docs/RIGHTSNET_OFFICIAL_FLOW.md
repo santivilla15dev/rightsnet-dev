@@ -71,6 +71,12 @@ Onboarding: exactamente 7 pasos (Perfil, Identidad, Likeness, Derechos con edito
 - Success screen: token, creador, campaña, vigencia, territorio, canales + Ver / Descargar / Verificar.
 - **Registrar contenido IA** = stub (§22 no implementado).
 
+## Dashboard creador (Fase 4)
+
+- Sidebar: Resumen, Likeness, Reglas, Solicitudes, Licencias, Ingresos, Uso (stub), Ajustes (stub) — anclas `#…`.
+- Cards **Nueva solicitud** (¿Por qué me lo piden? + Aprobar/Rechazar) y **Nueva licencia vendida** (neto creador).
+- Buyer tras aprobación: copy «{creador} aprobó…» + CTA **Completar licencia**.
+
 ## STOP
 
 Sin email/push, sin live commerce, sin §22 Generation/Output real (Verification sí).

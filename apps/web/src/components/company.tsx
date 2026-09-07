@@ -284,15 +284,19 @@ export function Company({ licensesOnly = false }: { licensesOnly?: boolean }) {
                       </td>
                       <td>
                         {r.decision === 'ALLOW' ? (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={busy === r.id}
-                            onClick={() => void continueRequest(r.id)}
-                          >
-                            Continuar
-                            <ArrowRight size={14} />
-                          </Button>
+                          <div className="inline-actions buyer-complete-license">
+                            <small className="muted">
+                              {r.display_name} aprobó tu solicitud
+                            </small>
+                            <Button
+                              size="sm"
+                              disabled={busy === r.id}
+                              onClick={() => void continueRequest(r.id)}
+                            >
+                              Completar licencia
+                              <ArrowRight size={14} />
+                            </Button>
+                          </div>
                         ) : r.decision === 'REQUIRES_APPROVAL' ? (
                           <small className="muted">Esperando al creador</small>
                         ) : null}

@@ -658,7 +658,19 @@ export async function listRequests(user: Actor) {
 export async function listOrders(user: Actor) {
   return (
     await pool.query(
-      `SELECT o.id,o.status,o.price,o.scope,o.created_at,c.display_name,c.portrait,l.public_token,l.id as license_id FROM orders o JOIN assets a ON a.id=o.asset_id JOIN creators c ON c.id=a.creator_id LEFT JOIN licenses l ON l.order_id=o.id WHERE c.user_id=$1 OR EXISTS(SELECT 1 FROM organization_members m WHERE m.organization_id=o.organization_id AND m.user_id=$1) ORDER BY o.created_at DESC LIMIT 100`,
+      `SELECT o.id,o.status,o.price,o.scope,o.created_at,c.display_name,c.portrait,
+              org.legal_name as organization_legal_name,
+              l.public_token,l.id as license_id
+       FROM orders o
+       JOIN assets a ON a.id=o.asset_id
+       JOIN creators c ON c.id=a.creator_id
+       JOIN organizations org ON org.id=o.organization_id
+       LEFT JOIN licenses l ON l.order_id=o.id
+       WHERE c.user_id=$1 OR EXISTS(
+         SELECT 1 FROM organization_members m
+         WHERE m.organization_id=o.organization_id AND m.user_id=$1
+       )
+       ORDER BY o.created_at DESC LIMIT 100`,
       [user.id],
     )
   ).rows;

@@ -59,6 +59,11 @@ test('clarity: demo existing creator lands on dashboard', async ({ page }) => {
   await login(page, 'creador');
   await expect(page).toHaveURL(/\/dashboard/);
   await expect(page.getByText('MODO DEMO')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Solicitudes', exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Uso', exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Ajustes', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Uso' })).toBeVisible();
+  await expect(page.getByText(/Stub del MVP/i).first()).toBeVisible();
 });
 
 test('clarity: demo new creator lands on onboarding', async ({ page }) => {

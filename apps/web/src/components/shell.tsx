@@ -128,10 +128,12 @@ export function Shell({ children }: { children: ReactNode }) {
   const creatorLinks = [
     { href: '/dashboard', label: 'Resumen', icon: LayoutDashboard },
     { href: '/dashboard#likeness', label: 'Mi likeness', icon: ImageIcon },
-    { href: '/dashboard#rules', label: 'Reglas de licencia', icon: ScrollText },
+    { href: '/dashboard#rules', label: 'Reglas', icon: ScrollText },
     { href: '/dashboard#requests', label: 'Solicitudes', icon: Inbox },
-    { href: '/company/licenses', label: 'Licencias', icon: FileCheck2 },
+    { href: '/dashboard#licenses', label: 'Licencias', icon: FileCheck2 },
     { href: '/dashboard#earnings', label: 'Ingresos', icon: Wallet },
+    { href: '/dashboard#usage', label: 'Uso', icon: Compass },
+    { href: '/dashboard#settings', label: 'Ajustes', icon: LifeBuoy },
   ];
 
   const publicLinks = [

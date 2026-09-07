@@ -28,12 +28,12 @@ Status: **PASS** (extends Discover v0.2).
 ```
 Rights Check
 ├── ALLOW → Checkout (Continuar en ficha)
-├── REQUIRES_APPROVAL → Solicitud → Creador aprueba → Mis campañas → Continuar → Checkout
+├── REQUIRES_APPROVAL → Solicitud → Creador aprueba → Mis campañas → Completar licencia → Checkout
 └── DENY → Stop
 ```
 
-- En APPROVAL, la ficha explica los pasos y enlaza a Mis campañas.
-- En `/company`, solicitudes `ALLOW` muestran **Continuar** (mismo sentido que la ficha). Mientras esperan: “Esperando al creador”.
+- En APPROVAL, la ficha explica los pasos y enlaza a Mis campañas → **Completar licencia**.
+- En `/company`, solicitudes `ALLOW` muestran «{creador} aprobó…» + **Completar licencia**. Mientras esperan: “Esperando al creador”.
 
 ## Modelo oficial
 

@@ -787,7 +787,7 @@ export function CreatorDetail({ id }: { id: string }) {
                               <li>Espera a que apruebe (o rechace) en su panel.</li>
                               <li>
                                 Cuando esté <strong>Aprobada</strong>, ve a Mis campañas y pulsa{' '}
-                                <strong>Continuar</strong> para el contrato y el pago.
+                                <strong>Completar licencia</strong> para el contrato y el pago.
                               </li>
                             </ol>
                             <Button asChild className="full-width" variant="outline">
