@@ -119,4 +119,31 @@ describe('RN-AUTH list generation-auths', () => {
   it('requires organization_id', async () => {
     await expect(listPlatformGenerationAuths({})).rejects.toThrow();
   });
+
+  it('GET one by id; org mismatch 404; no signature', async () => {
+    const { getPlatformGenerationAuth } = await import(
+      '../apps/api/src/modules/generation-auth.js'
+    );
+    const token = await mintRnAuthToken({
+      grantId,
+      organizationId: demoIds.org,
+      assetId: demoIds.rightsCoreAsset,
+      provider: 'higgsfield',
+      use: {
+        content_type: 'synthetic_video',
+        purpose: 'commercial_advertising',
+        territory: 'DE',
+      },
+      grantValidUntil: '2027-12-31T23:59:59.000Z',
+      now: new Date('2026-08-02T10:00:00.000Z'),
+    });
+    const one = await getPlatformGenerationAuth(token.payload.auth_id, demoIds.org);
+    expect(one.auth_id).toBe(token.payload.auth_id);
+    expect(one.status).toBe('ISSUED');
+    expect(one).not.toHaveProperty('signature');
+
+    await expect(
+      getPlatformGenerationAuth(token.payload.auth_id, demoIds.otherOrg),
+    ).rejects.toMatchObject({ code: 'NOT_FOUND' });
+  });
 });

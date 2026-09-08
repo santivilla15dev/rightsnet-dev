@@ -237,18 +237,64 @@ export async function listPlatformGenerationAuths(query: Record<string, unknown>
   const last = page[page.length - 1];
   return {
     surface: 'platform' as const,
-    items: page.map((row) => ({
-      auth_id: row.id,
-      grant_id: row.grant_id,
-      organization_id: row.organization_id,
-      asset_id: row.asset_id,
-      provider: row.provider,
-      status: row.status,
-      use: row.use_snapshot ?? {},
-      issued_at: new Date(row.issued_at).toISOString(),
-      expires_at: new Date(row.expires_at).toISOString(),
-    })),
+    items: page.map(toAuthItem),
     next_cursor:
       rows.length > f.limit && last ? encodeAuthCursor(last.issued_at, last.id) : null,
   };
+}
+
+function toAuthItem(row: {
+  id: string;
+  grant_id: string;
+  organization_id: string;
+  asset_id: string;
+  provider: string;
+  use_snapshot: unknown;
+  status: string;
+  issued_at: Date | string;
+  expires_at: Date | string;
+}) {
+  return {
+    auth_id: row.id,
+    grant_id: row.grant_id,
+    organization_id: row.organization_id,
+    asset_id: row.asset_id,
+    provider: row.provider,
+    status: row.status,
+    use: row.use_snapshot ?? {},
+    issued_at: new Date(row.issued_at).toISOString(),
+    expires_at: new Date(row.expires_at).toISOString(),
+  };
+}
+
+/**
+ * Partner GET one RN-AUTH by id. Optional organization_id → mismatch = 404.
+ * Never returns signature.
+ */
+export async function getPlatformGenerationAuth(id: string, organizationId?: string) {
+  const authId = z.string().uuid().parse(id);
+  const org = organizationId ? z.string().uuid().parse(organizationId) : undefined;
+  const row = (
+    await pool.query(
+      `SELECT id, grant_id, organization_id, asset_id, provider, use_snapshot,
+              status, issued_at, expires_at
+       FROM generation_auths WHERE id=$1`,
+      [authId],
+    )
+  ).rows[0] as
+    | {
+        id: string;
+        grant_id: string;
+        organization_id: string;
+        asset_id: string;
+        provider: string;
+        use_snapshot: unknown;
+        status: string;
+        issued_at: Date | string;
+        expires_at: Date | string;
+      }
+    | undefined;
+  if (!row) throw new DomainError('NOT_FOUND', 404);
+  if (org && row.organization_id !== org) throw new DomainError('NOT_FOUND', 404);
+  return { surface: 'platform' as const, ...toAuthItem(row) };
 }

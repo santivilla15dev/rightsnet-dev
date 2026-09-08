@@ -121,7 +121,7 @@ No separate mint route. Partner `POST /v1/platform/verify-auth` = **PASS**
 (`docs/RN_AUTH_VERIFY_V0_1.md`; read-only, no consume).
 Partner `POST /v1/platform/revoke-auth` = **PASS**
 (`docs/RN_AUTH_REVOKE_V0_1.md`; ISSUED→REVOKED).
-Partner `GET /v1/platform/generation-auths` = **PASS**
+Partner `GET /v1/platform/generation-auths` (+ `/:id`) = **PASS**
 (`docs/RN_AUTH_LIST_V0_1.md`; metadata only, no signature).
 
 ---

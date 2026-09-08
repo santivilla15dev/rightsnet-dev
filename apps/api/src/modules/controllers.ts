@@ -45,7 +45,7 @@ import {
 } from './platform.js';
 import { platformReportOutput } from './report-output.js';
 import { listPlatformGenerations, getPlatformGeneration } from './generations.js';
-import { listPlatformGenerationAuths } from './generation-auth.js';
+import { listPlatformGenerationAuths, getPlatformGenerationAuth } from './generation-auth.js';
 import { publicVerifyGeneration } from './generation-verify.js';
 import { getRightsGrant, listRightsGrants, syncRightsGrantStatusForLicense } from './rights-grants.js';
 import {
@@ -1193,6 +1193,16 @@ export class PlatformController {
   ) {
     assertPlatformApiAccess(await actor(req));
     return listPlatformGenerationAuths(q);
+  }
+  @Get('generation-auths/:id') async generationAuth(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Query() q: Record<string, unknown>,
+  ) {
+    assertPlatformApiAccess(await actor(req));
+    const organizationId =
+      typeof q.organization_id === 'string' ? q.organization_id : undefined;
+    return getPlatformGenerationAuth(id, organizationId);
   }
   @Post('report-output') @HttpCode(200) async reportOutput(@Req() req: Request, @Body() body: unknown) {
     assertPlatformApiAccess(await actor(req));
