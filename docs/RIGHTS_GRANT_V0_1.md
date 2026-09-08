@@ -166,17 +166,37 @@ Human review mandatory before `grant_active`. No upload/extract API in this mile
 
 ---
 
-## 6. Connect + generation trunk (not this milestone)
+## 6. Connect: `check` vs `authorize_generation`
 
-**Connect v0.1 today:** `platform/check` still uses policy preview only.
+**Shipped today (Connect v0.1):**  
+`POST /v1/platform/check` → policy **preview** (“would this use be compatible?”).  
+Not binding. Not a RightsGrant. See `docs/RIGHTSNET_CONNECT_V0_1.md`.
 
-**Future Connect:** ACTIVE grant match (grantee+asset+use) before/alongside policy path.
+**Specified for later (not implemented):**  
+`POST /v1/platform/authorize-generation` → **executable** authority  
+(“does this org currently have an ACTIVE RightsGrant covering this generation?”).
 
-**Future generation trunk (identical for both deal paths):**
+```text
+Active RightsGrant? → use within grant? → approval satisfied? → AUTHORIZED
+(+ signed RN-AUTH token and report_output in later milestones)
+```
 
-`RightsGrant` → `authorize_generation()` → RN-AUTH → partner → output → `report_output()`.
+Marketplace and Existing Deal both feed the same Grant table; Connect’s generation path
+is identical after that. Do **not** answer authorize via mutating `RightsPolicy`.
 
-Do **not** implement that trunk here.
+**This RightsGrant IMPLEMENT milestone does not change** `/v1/platform/search` or
+`/v1/platform/check`, and does **not** add `authorize-generation`.
+
+---
+
+## 6b. B2B Rights Operations (agency, no marketplace required)
+
+Agencies can operate on **imported Existing Deal grants** without using Discover/checkout:
+portfolio **Rights Overview** + campaign “who is cleared?” queries. Same Grant object;
+same future `authorize_generation` trunk.
+
+See `docs/RIGHTS_OPERATIONS_V0_1.md` (SPECIFY PASS; UI/import **not started**).
+
 
 ---
 
@@ -201,7 +221,9 @@ Do **not** implement that trunk here.
 - Connect `check` unchanged (policy preview).  
 - Zero `authorize_generation` / RN-AUTH / `report_output` / contract-upload code.
 
-**Next decision (one at a time):** Existing Deal ingest · Connect grant-aware `check` · Generation/authorize trunk.
+**Next decision (one at a time):** Existing Deal ingest · Rights Operations read-model ·
+Connect `authorize_generation` IMPLEMENT · Generation/RN-AUTH/`report_output` trunk.
+Keep `check` as policy preview.
 
 ---
 
@@ -209,5 +231,6 @@ Do **not** implement that trunk here.
 
 - `docs/RIGHTSNET_MVP_CONSTITUTION.md`  
 - `docs/RIGHTSNET_CONNECT_V0_1.md`  
+- `docs/RIGHTS_OPERATIONS_V0_1.md`  
 - `docs/RIGHTSNET_OFFICIAL_FLOW.md`  
 - `docs/CREATOR_PUBLISH_RIGHTS_CORE_V0_1.md`  
