@@ -48,6 +48,9 @@ Responses add `surface: "platform"` for traceability. `check` remains **preview*
 - `license()` purchase over API
 - `authorize_generation()` / `report_output()` (GenerationRecord)
 - Outgoing webhooks, MCP, C2PA, provider-specific adapters
+- Grant-aware authorization: Connect will eventually authorize via **RightsGrant** (bilateral
+  machine-readable authority), not by mutating creator `RightsPolicy` — see
+  `docs/RIGHTS_GRANT_V0_1.md` (SPECIFY only; not implemented in Connect v0.1)
 
 ## STOP
 
