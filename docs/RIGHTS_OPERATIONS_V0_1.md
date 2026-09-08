@@ -3,10 +3,10 @@
 **Status:** SPECIFY **PASS** · IMPLEMENT read-model API **PASS** (overview + campaign-query)  
 **Date:** September 2026  
 **UI Overview / campaign UI:** IMPLEMENT PASS (`docs/RIGHTS_OPERATIONS_UI_V0_1.md`)  
-**Org-member access:** SPECIFY **PASS** · IMPLEMENT **L1+L2 PASS**
-(`docs/RIGHTS_OPERATIONS_ORG_MEMBER_V0_1.md`; L3 writes **not started**)  
+**Org-member access:** SPECIFY **PASS** · IMPLEMENT **L1+L2+L3 PASS**
+(`docs/RIGHTS_OPERATIONS_ORG_MEMBER_V0_1.md`; read owner/employee; write owner)  
 **authorize_generation + RN-AUTH + report_output + generation read/verify:** PASS;
-Higgsfield sandbox + live L1 PASS (`docs/HIGGSFIELD_LIVE_V0_1.md`); L2/L3 **not started**
+Higgsfield sandbox + live L1 + Nest L2 + webhook L3 PASS (`docs/HIGGSFIELD_LIVE_V0_1.md`).
 Existing Deal OCR L1+L2+L3 PASS (`docs/EXISTING_DEAL_OCR_V0_1.md`);
 bulk CSV PASS (`docs/EXISTING_DEAL_BULK_CSV_V0_1.md`);
 bulk confirm PASS (`docs/EXISTING_DEAL_BULK_CONFIRM_V0_1.md`).

@@ -69,3 +69,5 @@ Preserve issued license, policy, consent, contract and financial snapshots. Neve
 rewrite historical ES territory grants to AT or reuse an incompatible schema version.
 Austria and Germany are the proposed commercial pilot scope, not a claim of legal clearance.
 Keep live commerce gated until the documented launch conditions are met.
+
+Doc truth-sync (stale “not started” claims): `docs/DOC_TRUTH_SYNC_V0_1.md` — **PASS**.

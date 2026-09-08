@@ -200,7 +200,7 @@ Returns `AUTHORIZED` (+ signed `auth_token`) / `REQUIRES_APPROVAL` / `DENIED` (`
 
 ```text
 Active RightsGrant? → use within grant? → approval satisfied? → AUTHORIZED + RN-AUTH
-(+ report_output in a later milestone)
+(+ report_output / verify / revoke / list — PASS; see RN_AUTH_* docs)
 ```
 
 Marketplace and Existing Deal both feed the same Grant table; Connect’s generation path
@@ -214,9 +214,9 @@ is identical after that. Do **not** answer authorize via mutating `RightsPolicy`
 
 Agencies can operate on **imported Existing Deal grants** without using Discover/checkout:
 portfolio **Rights Overview** + campaign “who is cleared?” queries. Same Grant object;
-same `authorize_generation` trunk (decision shipped; RN-AUTH later).
+same `authorize_generation` + RN-AUTH trunk (**PASS**).
 
-See `docs/RIGHTS_OPERATIONS_V0_1.md` (SPECIFY PASS; UI/import **not started**).
+See `docs/RIGHTS_OPERATIONS_V0_1.md` (API + UI + Existing Deal ingest/bulk **PASS**).
 
 
 ---

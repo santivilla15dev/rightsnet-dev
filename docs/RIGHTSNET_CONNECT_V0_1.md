@@ -111,14 +111,17 @@ Decision path:
 
 - API keys / client credentials
 - `license()` purchase over API
-- Partner generation list/GET — `docs/GENERATION_READ_V0_1.md` (**PASS**)
-- Public generation verify — `docs/GENERATION_VERIFY_V0_1.md` (**PASS**)
-- Outgoing webhooks, MCP, C2PA, live provider adapters —
-  Higgsfield sandbox + live L1 PASS (`docs/HIGGSFIELD_LIVE_V0_1.md`); L2/L3 not started
 - Changing `check` to be grant-aware (it stays policy preview)
+- MFA / voice / music / agents / public developer platform / live commerce
+
+## Already PASS (do not re-open as “not started”)
+
+- Partner generation list/GET — `docs/GENERATION_READ_V0_1.md`
+- Public generation verify — `docs/GENERATION_VERIFY_V0_1.md`
+- RN-AUTH mint / verify / revoke / list / GET — `docs/RN_AUTH_*.md`
+- Higgsfield sandbox + live L1 + Nest L2 + webhook L3 — `docs/HIGGSFIELD_LIVE_V0_1.md`
 
 ## STOP
 
-Connect generation trunk PASS = write + read + public verify + Higgsfield **sandbox** glue.  
-Do **not** ship live Higgsfield / Nest adapter route / other providers without a new decision.  
-Do not expand to license purchase over API without a separate decision.
+Connect generation trunk + HF L1–L3 + RN-AUTH partner surface = **PASS**.  
+Do **not** expand to license purchase over API, MFA, or live commerce without a separate decision.
