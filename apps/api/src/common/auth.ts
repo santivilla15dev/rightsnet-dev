@@ -62,6 +62,24 @@ export async function member(db: DB, user: Actor, orgId: string, write = false) 
   return m;
 }
 
+/** Rights Ops read: admin any org, or owner/employee of that org. Else 404 (no enumeration). */
+export async function assertOpsReadAccess(user: Actor, organizationId: string) {
+  if (user.role === 'admin') return { access: 'admin' as const };
+
+  const m = (
+    await pool.query(
+      'SELECT role FROM organization_members WHERE user_id=$1 AND organization_id=$2',
+      [user.id, organizationId],
+    )
+  ).rows[0] as { role: string } | undefined;
+
+  if (m && (m.role === 'owner' || m.role === 'employee')) {
+    return { access: 'member' as const, role: m.role as 'owner' | 'employee' };
+  }
+
+  throw new DomainError('NOT_FOUND', 404);
+}
+
 export function admin(user: Actor) {
   if (user.role !== 'admin') throw new DomainError('FORBIDDEN', 403);
 }

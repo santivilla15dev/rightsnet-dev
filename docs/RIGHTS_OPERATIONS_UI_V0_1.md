@@ -23,6 +23,6 @@ Code: `apps/web/src/components/rights-operations.tsx`,
 
 ## STOP
 
-Do **not** open org-member IMPLEMENT (SPECIFY:
-`docs/RIGHTS_OPERATIONS_ORG_MEMBER_V0_1.md`), OCR L2 upload UI, or Higgsfield inside Ops
-without a new decision.
+Do **not** open org-member L2 UI / L3 writes, OCR L2 upload UI, or Higgsfield inside Ops
+without a new decision. Org-member **API L1** is shipped
+(`docs/RIGHTS_OPERATIONS_ORG_MEMBER_V0_1.md`).

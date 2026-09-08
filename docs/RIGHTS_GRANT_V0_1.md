@@ -237,8 +237,7 @@ See `docs/RIGHTS_OPERATIONS_V0_1.md` (SPECIFY PASS; UI/import **not started**).
 - Connect `check` unchanged (policy preview).  
 - Zero RN-AUTH / `report_output` / contract-upload code in this Grant projection milestone.
 
-**Next decision (one at a time):** IMPLEMENT org-member Ops L1
-(`docs/RIGHTS_OPERATIONS_ORG_MEMBER_V0_1.md`) · OCR L2 UI · HF Nest L2.
+**Next decision (one at a time):** org-member Ops L2 UI · OCR L2/L3 · HF Nest L2.
 Keep `check` as policy preview.
 
 ---

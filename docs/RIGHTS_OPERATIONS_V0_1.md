@@ -3,7 +3,8 @@
 **Status:** SPECIFY **PASS** · IMPLEMENT read-model API **PASS** (overview + campaign-query)  
 **Date:** September 2026  
 **UI Overview / campaign UI:** IMPLEMENT PASS (`docs/RIGHTS_OPERATIONS_UI_V0_1.md`)  
-**Org-member access:** SPECIFY **PASS** (`docs/RIGHTS_OPERATIONS_ORG_MEMBER_V0_1.md`); IMPLEMENT **not started**  
+**Org-member access:** SPECIFY **PASS** · IMPLEMENT **L1 PASS**
+(`docs/RIGHTS_OPERATIONS_ORG_MEMBER_V0_1.md`; L2 UI / L3 writes **not started**)  
 **authorize_generation + RN-AUTH + report_output + generation read/verify:** PASS;
 Higgsfield sandbox + live L1 PASS (`docs/HIGGSFIELD_LIVE_V0_1.md`); L2/L3 **not started**
 Existing Deal OCR L1 PASS (`docs/EXISTING_DEAL_OCR_V0_1.md`).
@@ -83,7 +84,8 @@ Each confirmed agreement projects one or more **RightsGrant** rows with
 Surface name: **Rights Overview**. Counts are **derived from structured grants / agreement
 state for that organization**, not from mutating marketplace policies.
 
-**Shipped:** `GET /v1/admin/rights-operations/overview?organization_id=` (admin-only).
+**Shipped:** `GET /v1/admin/rights-operations/overview?organization_id=` —
+admin **or** org `owner`/`employee` (own org). See `docs/RIGHTS_OPERATIONS_ORG_MEMBER_V0_1.md`.
 
 | Metric | Meaning (product) |
 |--------|-------------------|
@@ -117,7 +119,8 @@ Example ask:
 
 > Necesito talento disponible para una campaña AI de cosmética en Alemania durante octubre.
 
-**Shipped:** `POST /v1/admin/rights-operations/campaign-query` (admin-only).
+**Shipped:** `POST /v1/admin/rights-operations/campaign-query` —
+admin **or** org `owner`/`employee` (own org).
 
 Inputs (conceptual):
 
@@ -184,7 +187,7 @@ cleared counts.
 
 ### Next milestones (one at a time, explicit decision)
 
-1. IMPLEMENT org-member Ops L1 (`docs/RIGHTS_OPERATIONS_ORG_MEMBER_V0_1.md`)  
+1. Org-member Ops L2 UI (`docs/RIGHTS_OPERATIONS_ORG_MEMBER_V0_1.md`)  
 2. OCR L2 UI / L3 live OCR  
 3. HF Nest L2 (`docs/HIGGSFIELD_LIVE_V0_1.md`)
 

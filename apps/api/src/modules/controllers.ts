@@ -22,7 +22,7 @@ import {
   defaultPolicy,
   beautyDePolicy,
 } from '../../../../packages/domain/src/index.js';
-import { actor, admin, demoLogin } from '../common/auth.js';
+import { actor, admin, demoLogin, assertOpsReadAccess } from '../common/auth.js';
 import { mutate } from '../common/idempotency.js';
 import { config } from '../common/config.js';
 import {
@@ -872,16 +872,23 @@ export class AdminController {
     @Req() req: Request,
     @Query() q: Record<string, unknown>,
   ) {
-    admin(await actor(req));
+    const user = await actor(req);
     const organization_id = typeof q.organization_id === 'string' ? q.organization_id : '';
     uuid(organization_id);
+    await assertOpsReadAccess(user, organization_id);
     return rightsOperationsOverview(organization_id);
   }
   @Post('rights-operations/campaign-query') async opsCampaign(
     @Req() req: Request,
     @Body() body: unknown,
   ) {
-    admin(await actor(req));
+    const user = await actor(req);
+    const organization_id =
+      body && typeof body === 'object' && 'organization_id' in body
+        ? String((body as { organization_id: unknown }).organization_id ?? '')
+        : '';
+    uuid(organization_id);
+    await assertOpsReadAccess(user, organization_id);
     return rightsOperationsCampaignQuery(body);
   }
   @Post('licenses/:id/status') async status(
