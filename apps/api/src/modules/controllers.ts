@@ -42,6 +42,12 @@ import {
 } from './platform.js';
 import { getRightsGrant, listRightsGrants, syncRightsGrantStatusForLicense } from './rights-grants.js';
 import {
+  confirmExternalAgreement,
+  createExternalAgreement,
+  getExternalAgreement,
+  listExternalAgreements,
+} from './external-agreements.js';
+import {
   search,
   getAsset,
   publicAsset,
@@ -768,6 +774,45 @@ export class AdminController {
     admin(await actor(req));
     uuid(id);
     return getRightsGrant(id);
+  }
+  @Post('external-agreements') async createExternal(
+    @Req() req: Request,
+    @Body() body: unknown,
+  ) {
+    const user = await actor(req);
+    admin(user);
+    return mutate(user.id, 'external-agreements', idem(req), body, (db) =>
+      createExternalAgreement(db, user, body),
+    );
+  }
+  @Get('external-agreements') async listExternal(
+    @Req() req: Request,
+    @Query() q: Record<string, unknown>,
+  ) {
+    admin(await actor(req));
+    const organization_id =
+      typeof q.organization_id === 'string' && q.organization_id ? q.organization_id : undefined;
+    const asset_id = typeof q.asset_id === 'string' && q.asset_id ? q.asset_id : undefined;
+    if (organization_id) uuid(organization_id);
+    if (asset_id) uuid(asset_id);
+    const limit = q.limit != null ? Number(q.limit) : undefined;
+    return listExternalAgreements({ organization_id, asset_id, limit });
+  }
+  @Get('external-agreements/:id') async getExternal(@Req() req: Request, @Param('id') id: string) {
+    admin(await actor(req));
+    uuid(id);
+    return getExternalAgreement(id);
+  }
+  @Post('external-agreements/:id/confirm') async confirmExternal(
+    @Req() req: Request,
+    @Param('id') id: string,
+  ) {
+    const user = await actor(req);
+    admin(user);
+    uuid(id);
+    return mutate(user.id, 'external-agreements-confirm/' + id, idem(req), {}, (db) =>
+      confirmExternalAgreement(db, user, id),
+    );
   }
   @Post('licenses/:id/status') async status(
     @Req() req: Request,

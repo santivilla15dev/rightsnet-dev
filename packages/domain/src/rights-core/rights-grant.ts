@@ -108,3 +108,58 @@ export function buildMarketplaceGrantPayload(input: {
     scope_snapshot: input.scope,
   });
 }
+
+/** Structured rights draft for Existing Deal ingest (human-written extract). */
+export const ExternalProposedRightsSchema = z
+  .object({
+    rights: z.record(z.string(), RuleStateSchema),
+    industry: z.array(z.string()).min(1).max(16),
+    territories: z.array(z.string()).min(1).max(32),
+    approval: z.record(z.string(), z.string()).default({}),
+    valid_from: UtcInstantSchema,
+    valid_until: UtcInstantSchema,
+  })
+  .strict()
+  .superRefine((p, ctx) => {
+    if (new Date(p.valid_until) <= new Date(p.valid_from)) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'valid_until must be after valid_from',
+        path: ['valid_until'],
+      });
+    }
+  });
+
+export type ExternalProposedRights = z.infer<typeof ExternalProposedRightsSchema>;
+
+export function buildExternalAgreementGrantPayload(input: {
+  grantId: string;
+  grantorUserId: string;
+  granteeOrganizationId: string;
+  assetId: string;
+  agreementId: string;
+  status: RightsGrantStatus;
+  proposed: ExternalProposedRights;
+}): RightsGrantPayload {
+  const proposed = ExternalProposedRightsSchema.parse(input.proposed);
+  return RightsGrantPayloadSchema.parse({
+    schema_version: 'rightsnet.rights-grant/0.1',
+    grant_id: input.grantId,
+    grantor_user_id: input.grantorUserId,
+    grantee_organization_id: input.granteeOrganizationId,
+    asset_id: input.assetId,
+    source: { type: 'EXISTING_AGREEMENT', id: input.agreementId },
+    rights: proposed.rights,
+    industry: proposed.industry,
+    territories: proposed.territories,
+    approval: proposed.approval,
+    valid_from: new Date(proposed.valid_from).toISOString(),
+    valid_until: new Date(proposed.valid_until).toISOString(),
+    status: input.status,
+    scope_snapshot: {
+      source: 'EXISTING_AGREEMENT',
+      agreement_id: input.agreementId,
+      ...proposed,
+    },
+  });
+}

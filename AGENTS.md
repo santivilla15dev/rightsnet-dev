@@ -20,16 +20,17 @@ RightsNet Connect (partner API foundation): `docs/RIGHTSNET_CONNECT_V0_1.md` —
 authority via ACTIVE **RightsGrant** (SPECIFY in Connect doc; IMPLEMENT **not started**;
 no RN-AUTH yet). Do not collapse the two questions.
 RightsGrant: `docs/RIGHTS_GRANT_V0_1.md` — SPECIFY **PASS**; marketplace License→Grant
-IMPLEMENT v0.1 **PASS** (`rights_grants`, projection on issue, admin GET). Existing Deal
-ingest and post-Grant trunk (`authorize_generation` IMPLEMENT / RN-AUTH / `report_output`)
-are **not started**. Marketplace and Existing Deal converge on RightsGrant; do not mutate
-public `RightsPolicy` for bilateral deals. Do **not** open Existing Deal upload or generation
-APIs without an explicit next-milestone decision. Do not confuse RightsGrant with Stripe
-Connect or Connect routes.
+IMPLEMENT v0.1 **PASS**; Existing Deal structured ingest v0.1 **PASS**
+(`external_agreements` → confirm → `EXISTING_AGREEMENT` grant). File/OCR upload and
+post-Grant trunk (`authorize_generation` IMPLEMENT / RN-AUTH / `report_output`) are
+**not started**. Marketplace and Existing Deal converge on RightsGrant; do not mutate
+public `RightsPolicy` for bilateral deals. Do **not** open generation APIs without an
+explicit next-milestone decision. Do not confuse RightsGrant with Stripe Connect or
+Connect routes.
 Rights Operations B2B: `docs/RIGHTS_OPERATIONS_V0_1.md` — SPECIFY **PASS**; IMPLEMENT
 **not started**. Agency portfolio overview + campaign “who is cleared?” over **own**
-RightsGrants without requiring marketplace. No Overview UI / import pipeline until an
-explicit IMPLEMENT milestone.
+RightsGrants without requiring marketplace. No Overview UI until an explicit IMPLEMENT
+milestone (ingest structured admin APIs exist; bulk import UI does not).
 Default local auth remains `AUTH_PROVIDER=sandbox` for agents/E2E; e2e forces sandbox on :3010/:4010.
 **Uso de producto del founder** = `AUTH_PROVIDER=supabase` + keys + `NEXT_PUBLIC_SUPABASE_*` (ver `docs/runbooks/auth-supabase.md`).
 Default identity remains `IDENTITY_PROVIDER=sandbox`.

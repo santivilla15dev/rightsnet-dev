@@ -1,9 +1,10 @@
 # RightsGrant v0.1 — domain + marketplace projection
 
-**Status:** SPECIFY **PASS** · IMPLEMENT marketplace projection **PASS**  
+**Status:** SPECIFY **PASS** · IMPLEMENT marketplace projection **PASS** · Existing Deal structured ingest **PASS**  
 **Date:** September 2026  
-**Existing Deal ingest:** not started  
+**Existing Deal file/OCR upload:** not started  
 **Post-Grant generation trunk** (`authorize_generation` / RN-AUTH / `report_output`): **not started**
+
 
 Governing scope: `docs/RIGHTSNET_MVP_CONSTITUTION.md`.  
 Connect surface today: `docs/RIGHTSNET_CONNECT_V0_1.md` (policy-based `check` only — not grant-aware yet).
@@ -94,7 +95,7 @@ allowance by mutating policy **fails**.
 | Path | Source of truth before Grant | Grant `source.type` |
 |------|------------------------------|---------------------|
 | New agreement (marketplace) | Policy → check → purchase → issued `License` | `MARKETPLACE_LICENSE` (**implemented**) |
-| Existing agreement | Upload → extract → **human review** → agreement | `EXISTING_AGREEMENT` (**not built**) |
+| Existing agreement | Structured intake → **human confirm** → agreement | `EXISTING_AGREEMENT` (**structured ingest implemented**; file/OCR not) |
 
 ---
 
@@ -156,13 +157,23 @@ Admin read:
 
 ---
 
-## 5. Existing-agreement path (conceptual only)
+## 5. Existing-agreement path (structured ingest v0.1 — implemented)
 
 ```text
-uploaded → extracted → human_reviewed → grant_active
+draft / pending_confirm  →  human confirm  →  grant_active (EXISTING_AGREEMENT)
 ```
 
-Human review mandatory before `grant_active`. No upload/extract API in this milestone.
+**Structured-first:** ops enters proposed rights as JSON (no OCR/PDF in v0.1).  
+Human confirm is mandatory before Grant. Does **not** mutate creator `RightsPolicy`.
+
+| Piece | Location |
+|-------|----------|
+| Table | `external_agreements` (`019_external_agreements.sql`) |
+| APIs (admin) | `POST/GET /v1/admin/external-agreements`, `POST .../:id/confirm` |
+| Projection | `upsertRightsGrantFromExternalAgreement` |
+
+File upload / OCR / bulk CSV = later milestone.  
+See also `docs/RIGHTS_OPERATIONS_V0_1.md` for B2B overview/query (SPECIFY only).
 
 ---
 
@@ -221,7 +232,7 @@ See `docs/RIGHTS_OPERATIONS_V0_1.md` (SPECIFY PASS; UI/import **not started**).
 - Connect `check` unchanged (policy preview).  
 - Zero `authorize_generation` / RN-AUTH / `report_output` / contract-upload code.
 
-**Next decision (one at a time):** Existing Deal ingest · Rights Operations read-model ·
+**Next decision (one at a time):** Rights Operations read-model · Existing Deal files/OCR ·
 Connect `authorize_generation` IMPLEMENT · Generation/RN-AUTH/`report_output` trunk.
 Keep `check` as policy preview.
 

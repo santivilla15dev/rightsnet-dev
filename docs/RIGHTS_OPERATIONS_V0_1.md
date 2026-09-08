@@ -56,13 +56,16 @@ Illustrative scale (product story, not seeded data):
 - 27 brands  
 - 16 countries  
 
-Pipeline (already specified under RightsGrant Existing Deal):
+Pipeline (Existing Deal):
 
 ```text
-uploaded → extracted → human_reviewed → grant_active
+draft / pending_confirm → human confirm → grant_active (EXISTING_AGREEMENT)
 ```
 
-Human review is mandatory before `grant_active`. No CSV/API import in this SPECIFY milestone.
+**Structured ingest v0.1 is implemented** (admin APIs; no OCR/PDF). See
+`docs/RIGHTS_GRANT_V0_1.md` §5 and `POST /v1/admin/external-agreements`.
+
+Human confirm is mandatory before `grant_active`. Bulk CSV / file storage remain later.
 
 Each confirmed agreement projects one or more **RightsGrant** rows with
 `source.type = EXISTING_AGREEMENT` and `grantee_organization_id` = the agency (or brand org).
@@ -173,8 +176,8 @@ generation APIs.
 
 ### Next milestones (one at a time, explicit decision)
 
-1. Existing Deal ingest MVP (upload + human confirm → Grant)  
-2. Operations read-model (overview + campaign query APIs/UI)  
+1. Operations read-model (overview + campaign query APIs/UI)  
+2. Existing Deal files / OCR / bulk import  
 3. `authorize_generation` IMPLEMENT  
 
 ---

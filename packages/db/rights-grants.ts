@@ -1,7 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import {
   buildMarketplaceGrantPayload,
+  buildExternalAgreementGrantPayload,
   licenseStatusToGrantStatus,
+  type ExternalProposedRights,
   type RightsGrantStatus,
 } from '../domain/src/index.js';
 import { pool, type DB } from './index.js';
@@ -81,6 +83,64 @@ export async function upsertRightsGrantFromLicense(
       order.organization_id,
       order.asset_id,
       license.id,
+      JSON.stringify(payload),
+      status,
+      payload.valid_from,
+      payload.valid_until,
+    ],
+  );
+  return payload;
+}
+
+export async function upsertRightsGrantFromExternalAgreement(
+  db: DB,
+  input: {
+    agreementId: string;
+    organizationId: string;
+    assetId: string;
+    grantorUserId: string;
+    proposed: ExternalProposedRights;
+  },
+) {
+  const existing = (
+    await db.query(
+      "SELECT id FROM rights_grants WHERE source_type='EXISTING_AGREEMENT' AND source_id=$1",
+      [input.agreementId],
+    )
+  ).rows[0] as { id: string } | undefined;
+
+  const grantId = existing?.id ?? randomUUID();
+  const status: RightsGrantStatus = 'ACTIVE';
+  const payload = buildExternalAgreementGrantPayload({
+    grantId,
+    grantorUserId: input.grantorUserId,
+    granteeOrganizationId: input.organizationId,
+    assetId: input.assetId,
+    agreementId: input.agreementId,
+    status,
+    proposed: input.proposed,
+  });
+
+  await db.query(
+    `INSERT INTO rights_grants(
+       id, grantor_user_id, grantee_organization_id, asset_id,
+       source_type, source_id, payload, status, valid_from, valid_until, updated_at
+     ) VALUES ($1,$2,$3,$4,'EXISTING_AGREEMENT',$5,$6,$7,$8,$9,now())
+     ON CONFLICT (source_type, source_id) DO UPDATE SET
+       payload = EXCLUDED.payload,
+       status = EXCLUDED.status,
+       valid_from = EXCLUDED.valid_from,
+       valid_until = EXCLUDED.valid_until,
+       grantor_user_id = EXCLUDED.grantor_user_id,
+       grantee_organization_id = EXCLUDED.grantee_organization_id,
+       asset_id = EXCLUDED.asset_id,
+       updated_at = now()`,
+    [
+      grantId,
+      input.grantorUserId,
+      input.organizationId,
+      input.assetId,
+      input.agreementId,
       JSON.stringify(payload),
       status,
       payload.valid_from,

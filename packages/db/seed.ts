@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { pool, transaction, audit, type DB } from './index.js';
 import { defaultPolicy, hash, beautyDePolicy, rightsHash } from '../domain/src/index.js';
-import { backfillMarketplaceRightsGrants } from './rights-grants.js';
+import { backfillMarketplaceRightsGrants, upsertRightsGrantFromExternalAgreement } from './rights-grants.js';
+import { ExternalProposedRightsSchema } from '../domain/src/index.js';
 export const demoIds = {
   buyer: '10000000-0000-4000-8000-000000000001',
   creator: '10000000-0000-4000-8000-000000000002',
@@ -14,6 +15,7 @@ export const demoIds = {
   rightsCoreCreator: '10000000-0000-4000-8000-000000000011',
   rightsCoreAsset: '30000000-0000-4000-8000-000000000010',
   rightsCorePolicy: '40000000-0000-4000-8000-000000000010',
+  externalAgreement: '50000000-0000-4000-8000-000000000001',
 };
 
 type Gender = 'female' | 'male' | 'non_binary' | 'unspecified';
@@ -291,6 +293,64 @@ export async function seedRightsCoreFixture() {
     });
   });
   await backfillMarketplaceRightsGrants(pool);
+  await seedExternalDealFixture();
+}
+
+async function seedExternalDealFixture() {
+  await transaction(async (db) => {
+    if (
+      (await db.query('SELECT 1 FROM external_agreements WHERE id=$1', [demoIds.externalAgreement]))
+        .rowCount
+    )
+      return;
+    const asset = (
+      await db.query(
+        `SELECT a.id, c.user_id AS grantor_user_id
+         FROM assets a JOIN creators c ON c.id=a.creator_id
+         WHERE c.user_id=$1 ORDER BY a.created_at ASC LIMIT 1`,
+        [demoIds.creator],
+      )
+    ).rows[0];
+    if (!asset) return;
+    const proposed = ExternalProposedRightsSchema.parse({
+      rights: {
+        synthetic_video: 'ALLOW',
+        synthetic_image: 'ALLOW',
+        commercial_advertising: 'ALLOW',
+      },
+      industry: ['beauty'],
+      territories: ['DE', 'AT'],
+      approval: { creative_approval: 'REQUIRED' },
+      valid_from: new Date('2026-01-01T00:00:00.000Z').toISOString(),
+      valid_until: new Date('2027-12-31T23:59:59.000Z').toISOString(),
+    });
+    await db.query(
+      `INSERT INTO external_agreements(
+         id, organization_id, asset_id, grantor_user_id, status, title, external_ref, proposed_rights,
+         confirmed_at, confirmed_by
+       ) VALUES ($1,$2,$3,$4,'confirmed',$5,$6,$7,now(),$8)`,
+      [
+        demoIds.externalAgreement,
+        demoIds.org,
+        asset.id,
+        asset.grantor_user_id,
+        'Sandbox Existing Deal · Estudio Norte × Lucía',
+        'AGR-SANDBOX-001',
+        JSON.stringify(proposed),
+        demoIds.admin,
+      ],
+    );
+    await upsertRightsGrantFromExternalAgreement(db, {
+      agreementId: demoIds.externalAgreement,
+      organizationId: demoIds.org,
+      assetId: asset.id,
+      grantorUserId: asset.grantor_user_id,
+      proposed,
+    });
+    await audit(db, demoIds.admin, 'sandbox.fixture.external_agreement', demoIds.externalAgreement, {
+      source: 'EXISTING_AGREEMENT',
+    });
+  });
 }
 if (process.argv[1]?.endsWith('seed.ts'))
   seed()
