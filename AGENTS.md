@@ -28,7 +28,7 @@ SPECIFY **PASS**; IMPLEMENT **PASS** (`RN-GEN-…` + `/verify/generation/…`).
 Higgsfield adapter: `docs/HIGGSFIELD_ADAPTER_V0_1.md` — sandbox IMPLEMENT **PASS**;
 live SPECIFY **PASS** (`docs/HIGGSFIELD_LIVE_V0_1.md`); live IMPLEMENT **not started**.
 Rights Operations **UI**: `docs/RIGHTS_OPERATIONS_UI_V0_1.md` — SPECIFY **PASS**;
-IMPLEMENT **not started** (read-model API already PASS).
+IMPLEMENT **PASS** (`/ops/rights`, `/ops/rights/campaign`).
 Do not collapse preview vs executable authority.
 RightsGrant: `docs/RIGHTS_GRANT_V0_1.md` — SPECIFY **PASS**; marketplace License→Grant
 IMPLEMENT v0.1 **PASS**; Existing Deal structured ingest v0.1 **PASS**
@@ -37,7 +37,7 @@ Marketplace and Existing Deal converge on RightsGrant; do not mutate public `Rig
 for bilateral deals. Do not confuse RightsGrant with Stripe Connect or Connect routes.
 Rights Operations B2B: `docs/RIGHTS_OPERATIONS_V0_1.md` — SPECIFY **PASS**; read-model API
 IMPLEMENT v0.1 **PASS** (`GET .../overview`, `POST .../campaign-query`, admin-only).
-Overview/campaign **UI**: SPECIFY PASS (`docs/RIGHTS_OPERATIONS_UI_V0_1.md`); IMPLEMENT **not started**.
+Overview/campaign **UI**: IMPLEMENT PASS (`docs/RIGHTS_OPERATIONS_UI_V0_1.md`).
 Org-member access **not started**.
 Default local auth remains `AUTH_PROVIDER=sandbox` for agents/E2E; e2e forces sandbox on :3010/:4010.
 **Uso de producto del founder** = `AUTH_PROVIDER=supabase` + keys + `NEXT_PUBLIC_SUPABASE_*` (ver `docs/runbooks/auth-supabase.md`).

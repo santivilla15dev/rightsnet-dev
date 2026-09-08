@@ -152,10 +152,15 @@ export function Admin() {
         title="Confianza, por diseño."
         description="Verificación, operaciones y trazabilidad de principio a fin."
         action={
-          <Button variant="outline" onClick={() => void load()}>
-            <RefreshCw size={16} />
-            Actualizar
-          </Button>
+          <span style={{ display: 'inline-flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <Button variant="outline" asChild>
+              <Link href="/ops/rights">Rights Operations</Link>
+            </Button>
+            <Button variant="outline" onClick={() => void load()}>
+              <RefreshCw size={16} />
+              Actualizar
+            </Button>
+          </span>
         }
       />
       <div className="stats-grid">

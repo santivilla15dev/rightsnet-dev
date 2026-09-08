@@ -234,9 +234,9 @@ See `docs/RIGHTS_OPERATIONS_V0_1.md` (SPECIFY PASS; UI/import **not started**).
 - Connect `check` unchanged (policy preview).  
 - Zero RN-AUTH / `report_output` / contract-upload code in this Grant projection milestone.
 
-**Next decision (one at a time):** Operations UI IMPLEMENT (`docs/RIGHTS_OPERATIONS_UI_V0_1.md`) ·
-Existing Deal files/OCR · live Higgsfield L1 (`docs/HIGGSFIELD_LIVE_V0_1.md`).
-Keep `check` as policy preview. Connect generation + sandbox HF glue are shipped.
+**Next decision (one at a time):** live Higgsfield L1 (`docs/HIGGSFIELD_LIVE_V0_1.md`) ·
+Existing Deal files/OCR · org-member Operations access.
+Keep `check` as policy preview. Connect generation + sandbox HF + Operations UI are shipped.
 
 ---
 

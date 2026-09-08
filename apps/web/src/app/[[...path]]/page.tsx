@@ -6,6 +6,10 @@ import { CreatorDetail } from '@/components/creator-detail';
 import { Company, OrderDetail } from '@/components/company';
 import { CreatorDashboard } from '@/components/creator-dashboard';
 import { Admin } from '@/components/admin';
+import {
+  RightsOperationsOverview,
+  RightsOperationsCampaign,
+} from '@/components/rights-operations';
 import { Verify } from '@/components/verify';
 import { GenerationVerify } from '@/components/generation-verify';
 import { Login } from '@/components/login';
@@ -64,6 +68,18 @@ export default async function Page({ params }: { params: Promise<{ path?: string
   if (route === 'dashboard') return <CreatorDashboard />;
   if (route === 'admin') redirect('/ops');
   if (route === 'ops') return <Admin />;
+  if (route === 'ops/rights')
+    return (
+      <Suspense fallback={<Loading />}>
+        <RightsOperationsOverview />
+      </Suspense>
+    );
+  if (route === 'ops/rights/campaign')
+    return (
+      <Suspense fallback={<Loading />}>
+        <RightsOperationsCampaign />
+      </Suspense>
+    );
   if (route === 'help') return <Help />;
   if (path.length === 2 && path[0] === 'creators') return <CreatorDetail id={path[1]} />;
   if (path.length === 2 && path[0] === 'verify') {

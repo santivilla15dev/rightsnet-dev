@@ -109,8 +109,8 @@ without a new milestone decision.
 
 ### Next milestones (one at a time)
 
-1. Operations UI (`docs/RIGHTS_OPERATIONS_UI_V0_1.md`)  
-2. Live Higgsfield L1 (`docs/HIGGSFIELD_LIVE_V0_1.md`)  
+1. Live Higgsfield L1 (`docs/HIGGSFIELD_LIVE_V0_1.md`)  
+2. Existing Deal OCR / org-member Ops  
 
 ---
 
