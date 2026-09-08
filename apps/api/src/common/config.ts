@@ -15,6 +15,14 @@ export const config = {
    * Not Stripe Connect. Requires admin Bearer when enabled.
    */
   platformApiEnabled: process.env.PLATFORM_API_ENABLED === 'true',
+  /**
+   * Optional Higgsfield glue (authorize → stub/live HF → report). Off by default.
+   * Live HF calls require a separate decision + keys; default mode is sandbox stub.
+   */
+  higgsfieldAdapterEnabled: process.env.HIGGSFIELD_ADAPTER_ENABLED === 'true',
+  higgsfieldMode: (process.env.HIGGSFIELD_MODE === 'live' ? 'live' : 'sandbox') as
+    | 'sandbox'
+    | 'live',
   port: Number(process.env.API_PORT ?? 4000),
 };
 export function assertConfiguration() {

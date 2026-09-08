@@ -109,7 +109,7 @@ without a new milestone decision.
 
 ### Next milestones (one at a time)
 
-1. Higgsfield adapter IMPLEMENT (`docs/HIGGSFIELD_ADAPTER_V0_1.md`)  
+1. Live Higgsfield / Nest route (optional)  
 2. Operations UI  
 
 ---

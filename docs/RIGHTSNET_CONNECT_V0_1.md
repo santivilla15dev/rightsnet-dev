@@ -109,12 +109,12 @@ Decision path:
 - `license()` purchase over API
 - Partner generation list/GET — `docs/GENERATION_READ_V0_1.md` (**PASS**)
 - Public generation verify — `docs/GENERATION_VERIFY_V0_1.md` (**PASS**)
-- Outgoing webhooks, MCP, C2PA, provider-specific adapters —
-  Higgsfield SPECIFY: `docs/HIGGSFIELD_ADAPTER_V0_1.md` (IMPLEMENT not started)
+- Outgoing webhooks, MCP, C2PA, live provider adapters —
+  Higgsfield **sandbox** PASS (`docs/HIGGSFIELD_ADAPTER_V0_1.md`); live HF not started
 - Changing `check` to be grant-aware (it stays policy preview)
 
 ## STOP
 
-Connect generation trunk PASS = write (authorize + RN-AUTH + report) + read + public verify.  
-Higgsfield adapter: SPECIFY PASS; do **not** IMPLEMENT without a new decision.  
+Connect generation trunk PASS = write + read + public verify + Higgsfield **sandbox** glue.  
+Do **not** ship live Higgsfield / Nest adapter route / other providers without a new decision.  
 Do not expand to license purchase over API without a separate decision.

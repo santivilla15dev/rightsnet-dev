@@ -1,4 +1,5 @@
 import { beforeAll, afterAll, describe, it, expect } from 'vitest';
+import { randomUUID } from 'node:crypto';
 import pg from 'pg';
 import { pool } from '../packages/db/index.js';
 import { migrate } from '../packages/db/migrate.js';
@@ -73,12 +74,13 @@ describe('report_output / GenerationRecord', () => {
   it('records output, consumes auth, rejects second report', async () => {
     const token = await mint();
     const now = new Date('2026-06-15T12:30:00.000Z');
+    const idem = `job-report-${randomUUID()}`;
     const first = await platformReportOutput(
       {
         auth_id: token.payload.auth_id,
         organization_id: demoIds.org,
         provider: 'higgsfield',
-        idempotency_key: 'job-report-read-verify-1',
+        idempotency_key: idem,
         output: {
           content_type: 'synthetic_video',
           external_job_id: 'hf_1',
@@ -103,7 +105,7 @@ describe('report_output / GenerationRecord', () => {
         auth_id: token.payload.auth_id,
         organization_id: demoIds.org,
         provider: 'higgsfield',
-        idempotency_key: 'job-report-read-verify-1',
+        idempotency_key: idem,
         output: {
           content_type: 'synthetic_video',
           external_job_id: 'hf_1',

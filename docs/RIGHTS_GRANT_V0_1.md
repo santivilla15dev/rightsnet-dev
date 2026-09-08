@@ -5,7 +5,7 @@
 **Existing Deal file/OCR upload:** not started  
 **Post-Grant generation trunk:** write + partner read + public verify IMPLEMENT **PASS**
 (`docs/GENERATION_READ_V0_1.md`, `docs/GENERATION_VERIFY_V0_1.md`);
-Higgsfield adapter SPECIFY PASS (`docs/HIGGSFIELD_ADAPTER_V0_1.md`); IMPLEMENT **not started**
+Higgsfield adapter sandbox PASS (`docs/HIGGSFIELD_ADAPTER_V0_1.md`); live HF **not started**
 
 
 Governing scope: `docs/RIGHTSNET_MVP_CONSTITUTION.md`.  
@@ -235,8 +235,8 @@ See `docs/RIGHTS_OPERATIONS_V0_1.md` (SPECIFY PASS; UI/import **not started**).
 - Zero RN-AUTH / `report_output` / contract-upload code in this Grant projection milestone.
 
 **Next decision (one at a time):** Operations UI · Existing Deal files/OCR ·
-Higgsfield adapter IMPLEMENT (`docs/HIGGSFIELD_ADAPTER_V0_1.md`).
-Keep `check` as policy preview. Connect generation read/write/verify trunk is shipped.
+live Higgsfield / Nest adapter route.
+Keep `check` as policy preview. Connect generation + sandbox HF glue are shipped.
 
 ---
 
