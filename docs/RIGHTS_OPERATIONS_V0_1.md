@@ -1,8 +1,9 @@
 # RightsNet Rights Operations v0.1 (SPECIFY)
 
-**Status:** SPECIFY **PASS** — documentation only  
+**Status:** SPECIFY **PASS** · IMPLEMENT read-model API **PASS** (overview + campaign-query)  
 **Date:** September 2026  
-**IMPLEMENT:** not started  
+**UI Overview / campaign UI:** not started  
+**authorize_generation / RN-AUTH:** not started  
 
 Governing scope: `docs/RIGHTSNET_MVP_CONSTITUTION.md`.  
 Depends on: `docs/RIGHTS_GRANT_V0_1.md` (Policy vs Agreement vs Grant; Existing Deal path).  
@@ -72,10 +73,12 @@ Each confirmed agreement projects one or more **RightsGrant** rows with
 
 ---
 
-## Rights Overview (product metrics — no UI yet)
+## Rights Overview (API v0.1)
 
 Surface name: **Rights Overview**. Counts are **derived from structured grants / agreement
 state for that organization**, not from mutating marketplace policies.
+
+**Shipped:** `GET /v1/admin/rights-operations/overview?organization_id=` (admin-only).
 
 | Metric | Meaning (product) |
 |--------|-------------------|
@@ -103,11 +106,13 @@ Missing structured rights        201
 
 ---
 
-## Campaign query (product — no UI yet)
+## Campaign query (API v0.1)
 
 Example ask:
 
 > Necesito talento disponible para una campaña AI de cosmética en Alemania durante octubre.
+
+**Shipped:** `POST /v1/admin/rights-operations/campaign-query` (admin-only).
 
 Inputs (conceptual):
 
@@ -157,28 +162,28 @@ cleared counts.
 
 ---
 
-## Non-goals (this SPECIFY)
+## Non-goals (this IMPLEMENT)
 
-- Building the Overview or query UI  
-- Contract upload / OCR / extract jobs  
+- Building the Overview or query **UI**  
+- Contract upload / OCR / extract jobs (structured ingest already exists)  
 - Changing Connect v0.1 routes  
 - Implementing `authorize_generation` or RN-AUTH  
-- Live commerce  
+- Live commerce / non-admin org-member access  
 
 ---
 
 ## STOP
 
-**SPECIFY PASS** when this file exists, AGENTS points here, and RightsGrant doc links Operations.
+**IMPLEMENT read-model API PASS** when overview + campaign-query work, tests pass, AGENTS updated.
 
-**Do not start in the same breath:** dashboard, import pipeline, grant-aware `check`, or
-generation APIs.
+**Do not start in the same breath:** Overview UI, authorize_generation, org-self-serve RBAC.
 
 ### Next milestones (one at a time, explicit decision)
 
-1. Operations read-model (overview + campaign query APIs/UI)  
+1. Operations UI (Overview + query)  
 2. Existing Deal files / OCR / bulk import  
 3. `authorize_generation` IMPLEMENT  
+4. Org-member (non-admin) access to Operations  
 
 ---
 

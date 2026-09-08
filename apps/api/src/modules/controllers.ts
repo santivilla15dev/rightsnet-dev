@@ -48,6 +48,10 @@ import {
   listExternalAgreements,
 } from './external-agreements.js';
 import {
+  rightsOperationsCampaignQuery,
+  rightsOperationsOverview,
+} from './rights-operations.js';
+import {
   search,
   getAsset,
   publicAsset,
@@ -813,6 +817,22 @@ export class AdminController {
     return mutate(user.id, 'external-agreements-confirm/' + id, idem(req), {}, (db) =>
       confirmExternalAgreement(db, user, id),
     );
+  }
+  @Get('rights-operations/overview') async opsOverview(
+    @Req() req: Request,
+    @Query() q: Record<string, unknown>,
+  ) {
+    admin(await actor(req));
+    const organization_id = typeof q.organization_id === 'string' ? q.organization_id : '';
+    uuid(organization_id);
+    return rightsOperationsOverview(organization_id);
+  }
+  @Post('rights-operations/campaign-query') async opsCampaign(
+    @Req() req: Request,
+    @Body() body: unknown,
+  ) {
+    admin(await actor(req));
+    return rightsOperationsCampaignQuery(body);
   }
   @Post('licenses/:id/status') async status(
     @Req() req: Request,

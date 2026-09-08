@@ -27,10 +27,9 @@ post-Grant trunk (`authorize_generation` IMPLEMENT / RN-AUTH / `report_output`) 
 public `RightsPolicy` for bilateral deals. Do **not** open generation APIs without an
 explicit next-milestone decision. Do not confuse RightsGrant with Stripe Connect or
 Connect routes.
-Rights Operations B2B: `docs/RIGHTS_OPERATIONS_V0_1.md` — SPECIFY **PASS**; IMPLEMENT
-**not started**. Agency portfolio overview + campaign “who is cleared?” over **own**
-RightsGrants without requiring marketplace. No Overview UI until an explicit IMPLEMENT
-milestone (ingest structured admin APIs exist; bulk import UI does not).
+Rights Operations B2B: `docs/RIGHTS_OPERATIONS_V0_1.md` — SPECIFY **PASS**; read-model API
+IMPLEMENT v0.1 **PASS** (`GET .../overview`, `POST .../campaign-query`, admin-only).
+Overview/campaign **UI**, org-member access, and `authorize_generation` are **not started**.
 Default local auth remains `AUTH_PROVIDER=sandbox` for agents/E2E; e2e forces sandbox on :3010/:4010.
 **Uso de producto del founder** = `AUTH_PROVIDER=supabase` + keys + `NEXT_PUBLIC_SUPABASE_*` (ver `docs/runbooks/auth-supabase.md`).
 Default identity remains `IDENTITY_PROVIDER=sandbox`.

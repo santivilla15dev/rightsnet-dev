@@ -232,7 +232,7 @@ See `docs/RIGHTS_OPERATIONS_V0_1.md` (SPECIFY PASS; UI/import **not started**).
 - Connect `check` unchanged (policy preview).  
 - Zero `authorize_generation` / RN-AUTH / `report_output` / contract-upload code.
 
-**Next decision (one at a time):** Rights Operations read-model · Existing Deal files/OCR ·
+**Next decision (one at a time):** Operations UI · Existing Deal files/OCR ·
 Connect `authorize_generation` IMPLEMENT · Generation/RN-AUTH/`report_output` trunk.
 Keep `check` as policy preview.
 
