@@ -8,7 +8,9 @@ import {
   type RnAuthPayload,
 } from '../../../../packages/domain/src/index.js';
 import { pool, transaction } from '../../../../packages/db/index.js';
+import { config } from '../common/config.js';
 import { verifyRnAuthPayload } from '../integrations/signing.js';
+import { nextPublicGenerationToken } from './generations.js';
 
 const ReportOutputSchema = z
   .object({
@@ -40,17 +42,22 @@ function recordedResponse(row: {
   grant_id: string;
   asset_id: string;
   organization_id: string;
+  public_token: string | null;
 }) {
+  const verify_hint = row.public_token
+    ? `${config.webUrl}/verify/generation/${row.public_token}`
+    : null;
   return {
     surface: 'platform' as const,
     status: 'RECORDED' as const,
     generation_id: row.id,
+    public_token: row.public_token,
     auth_id: row.auth_id,
     grant_id: row.grant_id,
     asset_id: row.asset_id,
     organization_id: row.organization_id,
     consumed: true,
-    verify_hint: null,
+    verify_hint,
   };
 }
 
@@ -64,7 +71,7 @@ export async function platformReportOutput(body: unknown, now: Date = new Date()
   if (data.idempotency_key) {
     const existing = (
       await pool.query(
-        `SELECT id, auth_id, grant_id, asset_id, organization_id
+        `SELECT id, auth_id, grant_id, asset_id, organization_id, public_token
          FROM generation_records
          WHERE organization_id=$1 AND idempotency_key=$2`,
         [data.organization_id, data.idempotency_key],
@@ -76,9 +83,23 @@ export async function platformReportOutput(body: unknown, now: Date = new Date()
           grant_id: string;
           asset_id: string;
           organization_id: string;
+          public_token: string | null;
         }
       | undefined;
-    if (existing) return recordedResponse(existing);
+    if (existing) {
+      if (!existing.public_token) {
+        const token = await transaction(async (db) => {
+          const minted = await nextPublicGenerationToken(db);
+          await db.query(
+            `UPDATE generation_records SET public_token=$1 WHERE id=$2 AND public_token IS NULL`,
+            [minted, existing.id],
+          );
+          return minted;
+        });
+        existing.public_token = token;
+      }
+      return recordedResponse(existing);
+    }
   }
 
   const auth = (
@@ -135,22 +156,22 @@ export async function platformReportOutput(body: unknown, now: Date = new Date()
     reported_at: reportedAt,
   });
 
+  let publicToken = '';
   await transaction(async (db) => {
     const locked = (
-      await db.query(
-        `SELECT status FROM generation_auths WHERE id=$1 FOR UPDATE`,
-        [data.auth_id],
-      )
+      await db.query(`SELECT status FROM generation_auths WHERE id=$1 FOR UPDATE`, [data.auth_id])
     ).rows[0] as { status: string } | undefined;
     if (!locked || locked.status !== 'ISSUED') {
       throw new DomainError('AUTH_CONSUMED', 409);
     }
 
+    publicToken = await nextPublicGenerationToken(db);
+
     await db.query(
       `INSERT INTO generation_records(
          id, auth_id, grant_id, organization_id, asset_id, provider,
-         idempotency_key, payload, reported_at
-       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9)`,
+         idempotency_key, payload, reported_at, public_token
+       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9,$10)`,
       [
         generationId,
         auth.id,
@@ -161,6 +182,7 @@ export async function platformReportOutput(body: unknown, now: Date = new Date()
         data.idempotency_key ?? null,
         JSON.stringify(recordPayload),
         reportedAt,
+        publicToken,
       ],
     );
 
@@ -177,5 +199,6 @@ export async function platformReportOutput(body: unknown, now: Date = new Date()
     grant_id: auth.grant_id,
     asset_id: auth.asset_id,
     organization_id: auth.organization_id,
+    public_token: publicToken,
   });
 }

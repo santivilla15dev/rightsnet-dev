@@ -42,6 +42,8 @@ import {
   platformAuthorizeGeneration,
 } from './platform.js';
 import { platformReportOutput } from './report-output.js';
+import { listPlatformGenerations, getPlatformGeneration } from './generations.js';
+import { publicVerifyGeneration } from './generation-verify.js';
 import { getRightsGrant, listRightsGrants, syncRightsGrantStatusForLicense } from './rights-grants.js';
 import {
   confirmExternalAgreement,
@@ -115,6 +117,7 @@ const reasonSchema = z.object({ reason: z.string().trim().min(10).max(1000) }).s
 const tokenSchema = z
   .string()
   .regex(/^(?:[A-Za-z0-9_-]{32}|RN-LIC-\d{4}-\d{6})$/);
+const generationTokenSchema = z.string().regex(/^RN-GEN-\d{4}-\d{6}$/);
 const idem = (req: Request) =>
   typeof req.headers['idempotency-key'] === 'string' ? req.headers['idempotency-key'] : undefined;
 @Controller('v1')
@@ -165,6 +168,14 @@ export class PublicController {
       checked_at: new Date().toISOString(),
       sandbox: true,
     };
+  }
+  @Get('public/generations/:token/verify') async verifyGeneration(
+    @Param('token') token: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    generationTokenSchema.parse(token);
+    res.setHeader('Cache-Control', 'no-store');
+    return publicVerifyGeneration(token);
   }
   @Get('public/signing-key') key() {
     const { kid, pem } = signingKeys();
@@ -1026,6 +1037,20 @@ export class PlatformController {
   @Post('report-output') @HttpCode(200) async reportOutput(@Req() req: Request, @Body() body: unknown) {
     assertPlatformApiAccess(await actor(req));
     return platformReportOutput(body);
+  }
+  @Get('generations') async generations(@Req() req: Request, @Query() q: Record<string, unknown>) {
+    assertPlatformApiAccess(await actor(req));
+    return listPlatformGenerations(q);
+  }
+  @Get('generations/:id') async generation(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Query() q: Record<string, unknown>,
+  ) {
+    assertPlatformApiAccess(await actor(req));
+    const organizationId =
+      typeof q.organization_id === 'string' ? q.organization_id : undefined;
+    return getPlatformGeneration(id, organizationId);
   }
 }
 @Controller('v1/webhooks')

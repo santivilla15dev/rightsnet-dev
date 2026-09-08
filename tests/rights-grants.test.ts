@@ -177,7 +177,7 @@ describe('RightsGrant marketplace projection', () => {
     expect(bf.created).toBe(0);
   });
 
-  it('ships report-output but not public generation verify routes', async () => {
+  it('ships report-output, generations read, and public generation verify', async () => {
     const { readFile } = await import('node:fs/promises');
     const controllers = await readFile(
       new URL('../apps/api/src/modules/controllers.ts', import.meta.url),
@@ -185,6 +185,7 @@ describe('RightsGrant marketplace projection', () => {
     );
     expect(controllers).toMatch(/authorize-generation/);
     expect(controllers).toMatch(/report-output/);
-    expect(controllers).not.toMatch(/verify-generation/);
+    expect(controllers).toMatch(/generations/);
+    expect(controllers).toMatch(/public\/generations\/:token\/verify/);
   });
 });

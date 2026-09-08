@@ -182,3 +182,18 @@ export type Verification = {
   checked_at: string;
   sandbox: boolean;
 };
+export type GenerationVerification = {
+  surface: 'public';
+  status: string;
+  public_token: string;
+  generation_id: string;
+  reported_at: string;
+  provider: string;
+  content_type: string | null;
+  sha256: string | null;
+  external_job_id: string | null;
+  asset_id: string;
+  organization_id: string;
+  grant_id: string;
+  auth_consumed: boolean;
+};

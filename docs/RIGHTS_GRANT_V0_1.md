@@ -3,9 +3,8 @@
 **Status:** SPECIFY **PASS** · IMPLEMENT marketplace projection **PASS** · Existing Deal structured ingest **PASS**  
 **Date:** September 2026  
 **Existing Deal file/OCR upload:** not started  
-**Post-Grant generation trunk:** write path IMPLEMENT **PASS** (authorize + RN-AUTH + report);
-partner **read** SPECIFY PASS (`docs/GENERATION_READ_V0_1.md`); public **verify** SPECIFY PASS
-(`docs/GENERATION_VERIFY_V0_1.md`); both IMPLEMENT **not started**
+**Post-Grant generation trunk:** write + partner read + public verify IMPLEMENT **PASS**
+(`docs/GENERATION_READ_V0_1.md`, `docs/GENERATION_VERIFY_V0_1.md`); provider adapters **not started**
 
 
 Governing scope: `docs/RIGHTSNET_MVP_CONSTITUTION.md`.  
@@ -235,8 +234,8 @@ See `docs/RIGHTS_OPERATIONS_V0_1.md` (SPECIFY PASS; UI/import **not started**).
 - Zero RN-AUTH / `report_output` / contract-upload code in this Grant projection milestone.
 
 **Next decision (one at a time):** Operations UI · Existing Deal files/OCR ·
-generation list/GET IMPLEMENT · public generation verify IMPLEMENT.
-Keep `check` as policy preview. Connect generation **write** trunk is shipped.
+provider adapters.
+Keep `check` as policy preview. Connect generation read/write/verify trunk is shipped.
 
 ---
 

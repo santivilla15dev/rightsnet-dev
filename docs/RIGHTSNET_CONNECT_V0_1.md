@@ -71,7 +71,10 @@ RightsNet Connect **must call** existing domain logic:
 | `GET` | `/v1/platform/search` | Same filters/results as `GET /v1/search` |
 | `POST` | `/v1/platform/check` | Same decision as `POST /v1/public/rights-check` (preview, non-binding) |
 | `POST` | `/v1/platform/authorize-generation` | ACTIVE RightsGrant → `AUTHORIZED` (+ RN-AUTH) / `REQUIRES_APPROVAL` / `DENIED` |
-| `POST` | `/v1/platform/report-output` | GenerationRecord + consume RN-AUTH (`docs/REPORT_OUTPUT_V0_1.md`) |
+| `POST` | `/v1/platform/report-output` | GenerationRecord + consume RN-AUTH + `RN-GEN` token |
+| `GET` | `/v1/platform/generations` | Partner list (org-scoped) |
+| `GET` | `/v1/platform/generations/:id` | Partner GET |
+| `GET` | `/v1/public/generations/:token/verify` | Public verify (`RN-GEN-…`) |
 
 Responses add `surface: "platform"` for traceability. `check` remains **preview** (`preview: true`): not a paid license, not a RightsGrant, and not generation authority. `authorize-generation` is **not** preview (`preview: false`); on `AUTHORIZED` returns a signed `auth_token` (see `docs/RN_AUTH_V0_1.md`).
 
@@ -104,13 +107,13 @@ Decision path:
 
 - API keys / client credentials
 - `license()` purchase over API
-- Partner generation list/GET — SPECIFY `docs/GENERATION_READ_V0_1.md` (IMPLEMENT not started)
-- Public generation verify — SPECIFY `docs/GENERATION_VERIFY_V0_1.md` (IMPLEMENT not started)
+- Partner generation list/GET — `docs/GENERATION_READ_V0_1.md` (**PASS**)
+- Public generation verify — `docs/GENERATION_VERIFY_V0_1.md` (**PASS**)
 - Outgoing webhooks, MCP, C2PA, provider-specific adapters
 - Changing `check` to be grant-aware (it stays policy preview)
 
 ## STOP
 
-Connect write trunk PASS = search + check + authorize-generation + RN-AUTH + report-output + tests.  
-Generation **read** / **public verify**: SPECIFY PASS; do **not** IMPLEMENT without a new decision.  
+Connect generation trunk PASS = write (authorize + RN-AUTH + report) + read + public verify.  
+Do **not** ship provider adapters or grant-aware `check` without a new milestone decision.  
 Do not expand to license purchase over API without a separate decision.

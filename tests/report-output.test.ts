@@ -78,7 +78,7 @@ describe('report_output / GenerationRecord', () => {
         auth_id: token.payload.auth_id,
         organization_id: demoIds.org,
         provider: 'higgsfield',
-        idempotency_key: 'job-report-1',
+        idempotency_key: 'job-report-read-verify-1',
         output: {
           content_type: 'synthetic_video',
           external_job_id: 'hf_1',
@@ -90,7 +90,8 @@ describe('report_output / GenerationRecord', () => {
     expect(first.status).toBe('RECORDED');
     expect(first.consumed).toBe(true);
     expect(first.generation_id).toBeTruthy();
-    expect(first.verify_hint).toBeNull();
+    expect(first.public_token).toMatch(/^RN-GEN-\d{4}-\d{6}$/);
+    expect(first.verify_hint).toContain('/verify/generation/');
 
     const auth = (
       await pool.query('SELECT status FROM generation_auths WHERE id=$1', [token.payload.auth_id])
@@ -102,7 +103,7 @@ describe('report_output / GenerationRecord', () => {
         auth_id: token.payload.auth_id,
         organization_id: demoIds.org,
         provider: 'higgsfield',
-        idempotency_key: 'job-report-1',
+        idempotency_key: 'job-report-read-verify-1',
         output: {
           content_type: 'synthetic_video',
           external_job_id: 'hf_1',

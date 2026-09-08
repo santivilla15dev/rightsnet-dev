@@ -7,6 +7,7 @@ import { Company, OrderDetail } from '@/components/company';
 import { CreatorDashboard } from '@/components/creator-dashboard';
 import { Admin } from '@/components/admin';
 import { Verify } from '@/components/verify';
+import { GenerationVerify } from '@/components/generation-verify';
 import { Login } from '@/components/login';
 import { Signup } from '@/components/signup';
 import { Welcome } from '@/components/welcome';
@@ -65,7 +66,12 @@ export default async function Page({ params }: { params: Promise<{ path?: string
   if (route === 'ops') return <Admin />;
   if (route === 'help') return <Help />;
   if (path.length === 2 && path[0] === 'creators') return <CreatorDetail id={path[1]} />;
-  if (path.length === 2 && path[0] === 'verify') return <Verify token={path[1]} />;
+  if (path.length === 2 && path[0] === 'verify') {
+    if (path[1].startsWith('RN-GEN-')) return <GenerationVerify token={path[1]} />;
+    return <Verify token={path[1]} />;
+  }
+  if (path.length === 3 && path[0] === 'verify' && path[1] === 'generation')
+    return <GenerationVerify token={path[2]} />;
   if (path.length === 3 && path[0] === 'company' && ['orders', 'checkout'].includes(path[1]))
     return <OrderDetail id={path[2]} paymentPage={path[1] === 'checkout'} />;
   notFound();

@@ -8,8 +8,8 @@ OutputAsset; Journey 10 = output associated and later verifiable).
 Depends on: `docs/RN_AUTH_V0_1.md` (IMPLEMENT **PASS**), `docs/RIGHTS_GRANT_V0_1.md`,
 `docs/RIGHTSNET_CONNECT_V0_1.md`.
 
-**Public generation verify / partner list:** SPECIFY PASS —
-`docs/GENERATION_READ_V0_1.md`, `docs/GENERATION_VERIFY_V0_1.md`; IMPLEMENT **not started**.
+**Public generation verify / partner list:** IMPLEMENT PASS —
+`docs/GENERATION_READ_V0_1.md`, `docs/GENERATION_VERIFY_V0_1.md`.
 
 ---
 
@@ -109,9 +109,8 @@ without a new milestone decision.
 
 ### Next milestones (one at a time)
 
-1. Partner list/GET IMPLEMENT (`docs/GENERATION_READ_V0_1.md`)  
-2. Public verify IMPLEMENT (`docs/GENERATION_VERIFY_V0_1.md`)  
-3. Provider adapters (Higgsfield, …)
+1. Provider adapters (Higgsfield, …)  
+2. Operations UI  
 
 ---
 

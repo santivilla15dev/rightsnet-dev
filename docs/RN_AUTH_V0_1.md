@@ -138,9 +138,8 @@ No separate mint route. Optional `verify-auth` HTTP route = later.
 
 ### Next milestones (one at a time)
 
-1. Partner list/GET (`docs/GENERATION_READ_V0_1.md`)  
-2. Public verify (`docs/GENERATION_VERIFY_V0_1.md`)  
-3. Provider adapters (Higgsfield, etc.)  
+1. Provider adapters (Higgsfield, etc.)  
+2. Operations UI  
 
 ---
 
