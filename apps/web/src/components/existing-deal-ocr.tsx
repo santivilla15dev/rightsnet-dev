@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { api } from '@/lib/api';
 import { DEMO_ORGANIZATIONS } from '@/lib/rights-operations-ui';
 import { useSession } from './session';
@@ -10,6 +11,8 @@ import { AuthRequired, ErrorPanel, Loading, SandboxNote, Title } from './common'
 
 /** Seed Rights Core asset used in sandbox demos. */
 const DEMO_ASSET_ID = '30000000-0000-4000-8000-000000000010';
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 type AgreementRow = {
   id: string;
@@ -42,6 +45,7 @@ function canWriteIngest(user: { role: string; organizations?: { id: string; role
 
 export function ExistingDealOcrIngest() {
   const { user, loading: sessionLoading } = useSession();
+  const search = useSearchParams();
   const isAdmin = user?.role === 'admin';
   const ownerOrgs = useMemo(
     () => (user?.organizations ?? []).filter((o) => o.role === 'owner'),
@@ -78,9 +82,17 @@ export function ExistingDealOcrIngest() {
 
   useEffect(() => {
     if (!user) return;
-    if (isAdmin) setOrganizationId(DEMO_ORGANIZATIONS[0].id);
-    else if (ownerOrgs[0]) setOrganizationId(ownerOrgs[0].id);
-  }, [user, isAdmin, ownerOrgs]);
+    const q = search.get('organization_id');
+    if (isAdmin) {
+      setOrganizationId(q && UUID_RE.test(q) ? q : DEMO_ORGANIZATIONS[0].id);
+      return;
+    }
+    if (q && ownerOrgs.some((o) => o.id === q)) {
+      setOrganizationId(q);
+      return;
+    }
+    if (ownerOrgs[0]) setOrganizationId(ownerOrgs[0].id);
+  }, [user, isAdmin, ownerOrgs, search]);
 
   const defaultProposed = {
     rights: {

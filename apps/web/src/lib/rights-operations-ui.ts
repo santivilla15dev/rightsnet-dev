@@ -45,7 +45,7 @@ export const OVERVIEW_METRIC_ROWS = [
   { key: 'ai_use_prohibited', label: 'Uso AI prohibido' },
   { key: 'approval_required', label: 'Requieren aprobación' },
   { key: 'conflicting_exclusivity', label: 'Exclusividad en conflicto' },
-  { key: 'missing_structured_rights', label: 'Derechos estructurados pendientes' },
+  { key: 'missing_structured_rights', label: 'Borradores Existing Deal (pending)' },
 ] as const;
 
 export type OverviewMetricKey = (typeof OVERVIEW_METRIC_ROWS)[number]['key'];

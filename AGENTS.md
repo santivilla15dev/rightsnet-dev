@@ -50,7 +50,8 @@ Marketplace and Existing Deal converge on RightsGrant; do not mutate public `Rig
 for bilateral deals. Do not confuse RightsGrant with Stripe Connect or Connect routes.
 Rights Operations B2B: `docs/RIGHTS_OPERATIONS_V0_1.md` — SPECIFY **PASS**; read-model API
 IMPLEMENT v0.1 **PASS** (`GET .../overview`, `POST .../campaign-query`).
-Overview/campaign **UI**: IMPLEMENT PASS (`docs/RIGHTS_OPERATIONS_UI_V0_1.md`).
+Overview/campaign **UI**: IMPLEMENT PASS (`docs/RIGHTS_OPERATIONS_UI_V0_1.md`);
+pending CTA overview→ingest **PASS** (`docs/OPS_OVERVIEW_PENDING_CTA_V0_1.md`).
 Org-member access: `docs/RIGHTS_OPERATIONS_ORG_MEMBER_V0_1.md` — SPECIFY **PASS**;
 IMPLEMENT **L1+L2+L3 PASS** (read owner/employee; write owner for Existing Deal ingest).
 Rights Operations overview/campaign remain under `/v1/admin/rights-operations/*` with

@@ -103,7 +103,16 @@ export function RightsOperationsOverview() {
         {isAdmin || ownerOrgs.length ? (
           <>
             {' · '}
-            <Link href="/ops/rights/ingest">Existing Deal / OCR</Link>
+            <Link
+              href={
+                '/ops/rights/ingest' +
+                (organizationId
+                  ? '?organization_id=' + encodeURIComponent(organizationId)
+                  : '')
+              }
+            >
+              Existing Deal / OCR
+            </Link>
           </>
         ) : null}
       </p>
@@ -205,6 +214,27 @@ export function RightsOperationsOverview() {
               </tbody>
             </table>
           </div>
+          {(data.metrics.missing_structured_rights ?? 0) > 0 ? (
+            <p role="status" className="muted">
+              Hay <b>{data.metrics.missing_structured_rights}</b> borradores Existing Deal
+              (draft / pending_confirm) sin Grant aún.
+              {isAdmin || ownerOrgs.length ? (
+                <>
+                  {' '}
+                  <Link
+                    href={
+                      '/ops/rights/ingest?organization_id=' +
+                      encodeURIComponent(data.organization_id)
+                    }
+                  >
+                    Revisar / confirmar en ingest →
+                  </Link>
+                </>
+              ) : (
+                <> Un owner de la organización debe confirmarlos en ingest.</>
+              )}
+            </p>
+          ) : null}
           <p>
             <Button asChild>
               <Link
