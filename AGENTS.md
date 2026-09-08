@@ -25,7 +25,8 @@ IMPLEMENT **PASS** (`POST .../report-output` → record + consume auth).
 Generation partner **list/GET**: `docs/GENERATION_READ_V0_1.md` — SPECIFY **PASS**;
 IMPLEMENT **PASS**. Public generation **verify**: `docs/GENERATION_VERIFY_V0_1.md` —
 SPECIFY **PASS**; IMPLEMENT **PASS** (`RN-GEN-…` + `/verify/generation/…`).
-Provider adapters **not started**. Do not collapse preview vs executable authority.
+Higgsfield adapter: `docs/HIGGSFIELD_ADAPTER_V0_1.md` — SPECIFY **PASS**; IMPLEMENT **not started**.
+Do not collapse preview vs executable authority.
 RightsGrant: `docs/RIGHTS_GRANT_V0_1.md` — SPECIFY **PASS**; marketplace License→Grant
 IMPLEMENT v0.1 **PASS**; Existing Deal structured ingest v0.1 **PASS**
 (`external_agreements` → confirm → `EXISTING_AGREEMENT` grant). File/OCR upload **not started**.

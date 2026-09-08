@@ -109,11 +109,12 @@ Decision path:
 - `license()` purchase over API
 - Partner generation list/GET — `docs/GENERATION_READ_V0_1.md` (**PASS**)
 - Public generation verify — `docs/GENERATION_VERIFY_V0_1.md` (**PASS**)
-- Outgoing webhooks, MCP, C2PA, provider-specific adapters
+- Outgoing webhooks, MCP, C2PA, provider-specific adapters —
+  Higgsfield SPECIFY: `docs/HIGGSFIELD_ADAPTER_V0_1.md` (IMPLEMENT not started)
 - Changing `check` to be grant-aware (it stays policy preview)
 
 ## STOP
 
 Connect generation trunk PASS = write (authorize + RN-AUTH + report) + read + public verify.  
-Do **not** ship provider adapters or grant-aware `check` without a new milestone decision.  
+Higgsfield adapter: SPECIFY PASS; do **not** IMPLEMENT without a new decision.  
 Do not expand to license purchase over API without a separate decision.

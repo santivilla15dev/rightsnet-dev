@@ -4,7 +4,7 @@
 **Date:** September 2026  
 **UI Overview / campaign UI:** not started  
 **authorize_generation + RN-AUTH + report_output + generation read/verify:** PASS;
-provider adapters **not started**
+Higgsfield adapter: SPECIFY PASS (`docs/HIGGSFIELD_ADAPTER_V0_1.md`); IMPLEMENT **not started**
 
 Governing scope: `docs/RIGHTSNET_MVP_CONSTITUTION.md`.  
 Depends on: `docs/RIGHTS_GRANT_V0_1.md` (Policy vs Agreement vs Grant; Existing Deal path).  
@@ -183,7 +183,7 @@ cleared counts.
 
 1. Operations UI (Overview + query)  
 2. Existing Deal files / OCR / bulk import  
-3. Provider adapters (Higgsfield, …)
+3. Higgsfield adapter IMPLEMENT (`docs/HIGGSFIELD_ADAPTER_V0_1.md`)
 4. Org-member (non-admin) access to Operations  
 
 ---

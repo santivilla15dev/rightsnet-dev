@@ -138,7 +138,7 @@ No separate mint route. Optional `verify-auth` HTTP route = later.
 
 ### Next milestones (one at a time)
 
-1. Provider adapters (Higgsfield, etc.)  
+1. Higgsfield adapter IMPLEMENT (`docs/HIGGSFIELD_ADAPTER_V0_1.md`) — sandbox script first  
 2. Operations UI  
 
 ---
