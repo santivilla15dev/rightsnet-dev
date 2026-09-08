@@ -26,7 +26,8 @@ Generation partner **list/GET**: `docs/GENERATION_READ_V0_1.md` — SPECIFY **PA
 IMPLEMENT **PASS**. Public generation **verify**: `docs/GENERATION_VERIFY_V0_1.md` —
 SPECIFY **PASS**; IMPLEMENT **PASS** (`RN-GEN-…` + `/verify/generation/…`).
 Higgsfield adapter: `docs/HIGGSFIELD_ADAPTER_V0_1.md` — sandbox IMPLEMENT **PASS**;
-live SPECIFY **PASS** (`docs/HIGGSFIELD_LIVE_V0_1.md`); live IMPLEMENT **not started**.
+live L1 IMPLEMENT **PASS** (`docs/HIGGSFIELD_LIVE_V0_1.md`; Nest L2 / webhooks L3 **not started**).
+CI stays sandbox / mocked live (no network HF). Live keys only in env.
 Rights Operations **UI**: `docs/RIGHTS_OPERATIONS_UI_V0_1.md` — SPECIFY **PASS**;
 IMPLEMENT **PASS** (`/ops/rights`, `/ops/rights/campaign`).
 Do not collapse preview vs executable authority.

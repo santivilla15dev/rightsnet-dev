@@ -1,6 +1,6 @@
 /**
- * Higgsfield adapter — orchestrates RightsNet Connect + (sandbox) generation stub.
- * Not a second rights engine. Live HF API is NOT implemented in v0.1.
+ * Higgsfield adapter — orchestrates RightsNet Connect + sandbox stub or live HF (L1).
+ * Not a second rights engine. Nest route (L2) and webhooks (L3) are out of scope.
  */
 import { createHash, randomUUID } from 'node:crypto';
 import { z } from 'zod';
@@ -9,6 +9,11 @@ import { config } from '../../common/config.js';
 import { platformAuthorizeGeneration } from '../platform.js';
 import { platformReportOutput } from '../report-output.js';
 import { publicVerifyGeneration } from '../generation-verify.js';
+import {
+  liveHiggsfieldJob,
+  type HiggsfieldLiveClientDeps,
+  type HiggsfieldLiveJobResult,
+} from './higgsfield-live-client.js';
 
 const RunSchema = z
   .object({
@@ -23,8 +28,10 @@ const RunSchema = z
         at: z.string().datetime().optional(),
       })
       .strict(),
-    /** Optional prompt / brief for future live HF — ignored in sandbox stub. */
+    /** Prompt / brief forwarded to live HF; ignored by sandbox stub shape. */
     brief: z.string().trim().max(2000).optional(),
+    /** Optional HF model path override (e.g. higgsfield-ai/soul/v2/standard). */
+    model: z.string().trim().min(1).max(128).optional(),
   })
   .strict();
 
@@ -40,7 +47,7 @@ export type HiggsfieldAdapterResult =
       generation_id: string;
       public_token: string;
       verify_hint: string | null;
-      mode: 'sandbox';
+      mode: 'sandbox' | 'live';
     }
   | {
       ok: false;
@@ -85,23 +92,32 @@ export function assertHiggsfieldAdapterEnabled() {
   }
 }
 
+export type RunHiggsfieldOpts = {
+  requireFlag?: boolean;
+  /** Force mode (tests). Defaults to config.higgsfieldMode. */
+  mode?: 'sandbox' | 'live';
+  /** Inject live client deps (mock fetch) — CI must not hit real HF. */
+  liveClient?: HiggsfieldLiveClientDeps;
+  /** Replace entire live job (unit tests). */
+  liveJobFn?: (
+    input: Parameters<typeof liveHiggsfieldJob>[0],
+    deps?: HiggsfieldLiveClientDeps,
+  ) => Promise<HiggsfieldLiveJobResult>;
+  /** Clock for RN-AUTH expiry guard before report. */
+  nowFn?: () => Date;
+};
+
 /**
- * authorize → sandbox HF stub → report_output → optional verify.
+ * authorize → sandbox stub | live HF → report_output → optional verify.
  * Requires cleared ACTIVE grant for AUTHORIZED path.
  */
-export async function runHiggsfieldSandboxAdapter(
+export async function runHiggsfieldAdapter(
   input: unknown,
-  opts: { requireFlag?: boolean } = {},
+  opts: RunHiggsfieldOpts = {},
 ): Promise<HiggsfieldAdapterResult> {
   if (opts.requireFlag !== false) assertHiggsfieldAdapterEnabled();
-  if (config.higgsfieldMode === 'live') {
-    throw new DomainError(
-      'HIGGSFIELD_LIVE_NOT_IMPLEMENTED',
-      501,
-      'Modo live de Higgsfield no está implementado; use HIGGSFIELD_MODE=sandbox.',
-    );
-  }
 
+  const mode = opts.mode ?? config.higgsfieldMode;
   const data = RunSchema.parse(input);
   const authz = await platformAuthorizeGeneration({
     organization_id: data.organization_id,
@@ -120,18 +136,57 @@ export async function runHiggsfieldSandboxAdapter(
   }
 
   const auth_id = authz.auth_token.payload.auth_id;
-  const job = sandboxHiggsfieldJob({
-    auth_id,
-    organization_id: data.organization_id,
-    asset_id: data.asset_id,
-    content_type: data.use.content_type,
-  });
+  const now = opts.nowFn ?? (() => new Date());
+
+  let job: {
+    hf_job_id: string;
+    uri: string;
+    sha256: string;
+  };
+
+  if (mode === 'live') {
+    const prompt =
+      data.brief?.trim() ||
+      `RightsNet licensed likeness generation for asset ${data.asset_id}`;
+    const jobFn = opts.liveJobFn ?? liveHiggsfieldJob;
+    const live = await jobFn(
+      {
+        prompt,
+        model_path: data.model,
+        metadata: {
+          auth_id,
+          grant_id: authz.grant_id!,
+          organization_id: data.organization_id,
+          asset_id: data.asset_id,
+        },
+      },
+      opts.liveClient,
+    );
+    job = live;
+  } else {
+    job = sandboxHiggsfieldJob({
+      auth_id,
+      organization_id: data.organization_id,
+      asset_id: data.asset_id,
+      content_type: data.use.content_type,
+    });
+  }
+
+  // Fail closed if RN-AUTH already expired (or <30s left) before report.
+  const expiresAt = new Date(authz.auth_token.payload.expires_at).getTime();
+  if (expiresAt - now().getTime() < 30_000) {
+    throw new DomainError(
+      'HIGGSFIELD_AUTH_EXPIRED',
+      409,
+      'RN-AUTH expiró (o está a punto de expirar) antes de report_output; re-autorizar.',
+    );
+  }
 
   const reported = await platformReportOutput({
     auth_id,
     organization_id: data.organization_id,
     provider: 'higgsfield',
-    idempotency_key: job.hf_job_id,
+    idempotency_key: job.hf_job_id.slice(0, 64),
     output: {
       content_type: data.use.content_type,
       external_job_id: job.hf_job_id,
@@ -144,7 +199,6 @@ export async function runHiggsfieldSandboxAdapter(
     throw new DomainError('ADAPTER_MISSING_PUBLIC_TOKEN', 500);
   }
 
-  // Sanity: public verify must succeed for the minted RN-GEN token.
   await publicVerifyGeneration(reported.public_token);
 
   return {
@@ -156,6 +210,14 @@ export async function runHiggsfieldSandboxAdapter(
     generation_id: reported.generation_id,
     public_token: reported.public_token,
     verify_hint: reported.verify_hint,
-    mode: 'sandbox',
+    mode,
   };
+}
+
+/** @deprecated Prefer runHiggsfieldAdapter — kept for CLI/tests. */
+export async function runHiggsfieldSandboxAdapter(
+  input: unknown,
+  opts: RunHiggsfieldOpts = {},
+): Promise<HiggsfieldAdapterResult> {
+  return runHiggsfieldAdapter(input, opts);
 }

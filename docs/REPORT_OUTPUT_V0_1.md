@@ -109,8 +109,8 @@ without a new milestone decision.
 
 ### Next milestones (one at a time)
 
-1. Live Higgsfield L1 (`docs/HIGGSFIELD_LIVE_V0_1.md`)  
-2. Existing Deal OCR / org-member Ops  
+1. Existing Deal OCR / org-member Ops / HF Nest L2  
+   (live L1 already PASS — `docs/HIGGSFIELD_LIVE_V0_1.md`)
 
 ---
 

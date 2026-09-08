@@ -17,12 +17,22 @@ export const config = {
   platformApiEnabled: process.env.PLATFORM_API_ENABLED === 'true',
   /**
    * Optional Higgsfield glue (authorize → stub/live HF → report). Off by default.
-   * Live HF calls require a separate decision + keys; default mode is sandbox stub.
+   * Live mode needs API key id+secret in env; CI must stay on sandbox.
    */
   higgsfieldAdapterEnabled: process.env.HIGGSFIELD_ADAPTER_ENABLED === 'true',
   higgsfieldMode: (process.env.HIGGSFIELD_MODE === 'live' ? 'live' : 'sandbox') as
     | 'sandbox'
     | 'live',
+  /** Official Cloud API base (L1). */
+  higgsfieldApiBase: process.env.HIGGSFIELD_API_BASE ?? 'https://api.higgsfield.ai',
+  /**
+   * Default model path for L1 text→image (no input media).
+   * Override with HIGGSFIELD_MODEL_PATH or adapter input.model.
+   */
+  higgsfieldModelPath:
+    process.env.HIGGSFIELD_MODEL_PATH ?? 'higgsfield-ai/soul/v2/standard',
+  /** Wall-clock budget for submit+poll in live L1 (ms). */
+  higgsfieldPollTimeoutMs: Number(process.env.HIGGSFIELD_POLL_TIMEOUT_MS ?? 300_000),
   port: Number(process.env.API_PORT ?? 4000),
 };
 export function assertConfiguration() {

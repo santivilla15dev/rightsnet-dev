@@ -110,7 +110,7 @@ Decision path:
 - Partner generation list/GET — `docs/GENERATION_READ_V0_1.md` (**PASS**)
 - Public generation verify — `docs/GENERATION_VERIFY_V0_1.md` (**PASS**)
 - Outgoing webhooks, MCP, C2PA, live provider adapters —
-  Higgsfield **sandbox** PASS (`docs/HIGGSFIELD_ADAPTER_V0_1.md`); live HF not started
+  Higgsfield sandbox + live L1 PASS (`docs/HIGGSFIELD_LIVE_V0_1.md`); L2/L3 not started
 - Changing `check` to be grant-aware (it stays policy preview)
 
 ## STOP

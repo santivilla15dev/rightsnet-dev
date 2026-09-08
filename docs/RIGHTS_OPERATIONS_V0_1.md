@@ -4,7 +4,7 @@
 **Date:** September 2026  
 **UI Overview / campaign UI:** IMPLEMENT PASS (`docs/RIGHTS_OPERATIONS_UI_V0_1.md`)  
 **authorize_generation + RN-AUTH + report_output + generation read/verify:** PASS;
-Higgsfield sandbox PASS; live SPECIFY PASS (`docs/HIGGSFIELD_LIVE_V0_1.md`); live IMPLEMENT **not started**
+Higgsfield sandbox + live L1 PASS (`docs/HIGGSFIELD_LIVE_V0_1.md`); L2/L3 **not started**
 
 Governing scope: `docs/RIGHTSNET_MVP_CONSTITUTION.md`.  
 Depends on: `docs/RIGHTS_GRANT_V0_1.md` (Policy vs Agreement vs Grant; Existing Deal path).  
@@ -177,13 +177,13 @@ cleared counts.
 
 **IMPLEMENT read-model API PASS** when overview + campaign-query work, tests pass, AGENTS updated.
 
-**Do not start in the same breath:** live Higgsfield, OCR UI, org-self-serve RBAC.
+**Do not start in the same breath:** HF Nest L2/webhooks, OCR UI, org-self-serve RBAC.
 
 ### Next milestones (one at a time, explicit decision)
 
-1. Live Higgsfield L1 (`docs/HIGGSFIELD_LIVE_V0_1.md`)  
-2. Existing Deal files / OCR / bulk import  
-3. Org-member (non-admin) access to Operations  
+1. Existing Deal files / OCR / bulk import  
+2. Org-member (non-admin) access to Operations  
+3. HF Nest L2 (`docs/HIGGSFIELD_LIVE_V0_1.md`)
 
 ---
 
