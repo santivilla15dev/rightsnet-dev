@@ -1,17 +1,62 @@
-# RightsGrant v0.1 — domain concept (SPECIFY)
+# RightsGrant v0.1 — domain + marketplace projection
 
-**Status:** SPECIFY **PASS** — documentation only  
+**Status:** SPECIFY **PASS** · IMPLEMENT marketplace projection **PASS**  
 **Date:** September 2026  
-**IMPLEMENT:** not started (see STOP)
-
-This document fixes the missing middle object between creator willingness (policy),
-legal evidence (agreement / license), and what AI platforms must read at generation time.
-
-It does **not** add SQL, Zod schemas, or API routes. Runtime remains Policy → Request →
-License as implemented today.
+**Existing Deal ingest:** not started  
+**Post-Grant generation trunk** (`authorize_generation` / RN-AUTH / `report_output`): **not started**
 
 Governing scope: `docs/RIGHTSNET_MVP_CONSTITUTION.md`.  
-Connect surface today: `docs/RIGHTSNET_CONNECT_V0_1.md` (policy-based `check` only).
+Connect surface today: `docs/RIGHTSNET_CONNECT_V0_1.md` (policy-based `check` only — not grant-aware yet).
+
+---
+
+## Convergence (critical)
+
+Marketplace and Existing Deal are **different paths to legal evidence**. After a **RightsGrant** exists, the rest of RightsNet is **identical**.
+
+```text
+Marketplace:
+Creator Policy
+    ↓
+Brand request
+    ↓
+Rights Check
+    ↓
+Contract
+    ↓
+Payment
+    ↓
+RightsNet License
+    ↓
+RIGHTS GRANT
+
+Existing Deal:
+Existing Contract
+    ↓
+Rights extraction
+    ↓
+Human confirmation
+    ↓
+Existing Agreement
+    ↓
+RIGHTS GRANT
+
+From this point the rest of RightsNet is identical:
+
+RIGHTS GRANT
+      ↓
+authorize_generation()     ← future milestone
+      ↓
+RN-AUTH token              ← future
+      ↓
+Higgsfield / Runway / …    ← future
+      ↓
+output
+      ↓
+report_output()            ← future (GenerationRecord)
+```
+
+This convergence is why Grant must not be collapsed into Policy, and why Existing Deal must not mutate the creator’s public policy.
 
 ---
 
@@ -19,9 +64,9 @@ Connect surface today: `docs/RIGHTSNET_CONNECT_V0_1.md` (policy-based `check` on
 
 | Concept | Question it answers | Today in code | Role |
 |---------|---------------------|---------------|------|
-| **RightsPolicy** | What is the creator willing to allow *in general*? | `policies` + `RightsPolicy` (`packages/domain/src/rights-core/schemas.ts`) | Pre-transaction / Discover / Rights Check |
+| **RightsPolicy** | What is the creator willing to allow *in general*? | `policies` + `RightsPolicy` | Pre-transaction / Discover / Rights Check |
 | **Agreement / License** | What legal evidence did two parties agree? | Marketplace: `orders` + `contract_*` + `licenses`. External agreements: **not built** | Immutable legal evidence |
-| **RightsGrant** | What is *this* party currently authorized to do, machine-readable? | **Does not exist** | What Connect / AI should consult for bilateral authority |
+| **RightsGrant** | What is *this* party currently authorized to do, machine-readable? | Table `rights_grants` + Zod `rightsnet.rights-grant/0.1` | Bilateral authority for Connect/AI (generation trunk later) |
 
 ### Anti-examples (do not do this)
 
@@ -34,243 +79,129 @@ Connect surface today: `docs/RIGHTSNET_CONNECT_V0_1.md` (policy-based `check` on
 
 ### Golden rule (Nike vs Adidas)
 
-Cristiano’s **policy** may say Sportswear → `REQUIRES_APPROVAL`.  
-Nike has a **bilateral** deal. Create a **RightsGrant** Nike → Cristiano.  
-Do **not** rewrite the general policy to `ALLOW`.
-
 ```text
-Nike → Cristiano     ✓ RightsGrant ACTIVE exists
-Adidas → Cristiano   ✕ no RightsGrant for that pair
+Nike → Cristiano     ✓ RightsGrant ACTIVE exists for that grantee+asset
+Adidas → Cristiano   ✕ no RightsGrant for Adidas → not authorized by that path
 ```
 
 Conceptual acceptance test: any design that would make Adidas inherit Nike’s sportswear
-allowance by mutating policy **fails** this milestone’s intent.
+allowance by mutating policy **fails**.
 
 ---
 
 ## 2. Two paths to the same RightsGrant
 
-Both paths must end in a **RightsGrant**. They must not end only in a mutated policy.
-
-```text
-                    RIGHTSNET
-
-           ┌────────────┴────────────┐
-           │                         │
-           ▼                         ▼
-    NUEVO ACUERDO              ACUERDO EXISTENTE
-    Marketplace                 Brand + Talent
-           │                         │
-    Creator Policy              Upload Contract
-           │                         │
-      Rights Check              Extract Rights
-           │                         │
-       Purchase                  Human Review
-           │                         │
-    RN License                       │
-    (Agreement)                      │
-           └────────────┬────────────┘
-                        ▼
-                   RIGHTS GRANT
-                        │
-                        ▼
-                Machine-readable
-                     rights
-                        │
-                        ▼
-                RightsNet Connect
-                        │
-            ┌───────────┼───────────┐
-            ▼           ▼           ▼
-       Higgsfield     Runway       Adobe
-                        │
-                        ▼
-                   Generation
-                        │
-                        ▼
-                  Report Output
-                  (future GenerationRecord)
-```
-
-| Path | Source of truth before Grant | Grant `source.type` (v0.1 draft) |
-|------|------------------------------|----------------------------------|
-| New agreement (marketplace) | Active `RightsPolicy` → check → purchase → issued `License` | `MARKETPLACE_LICENSE` |
-| Existing agreement | Uploaded contract → extract → **human review** → external agreement record | `EXISTING_AGREEMENT` |
+| Path | Source of truth before Grant | Grant `source.type` |
+|------|------------------------------|---------------------|
+| New agreement (marketplace) | Policy → check → purchase → issued `License` | `MARKETPLACE_LICENSE` (**implemented**) |
+| Existing agreement | Upload → extract → **human review** → agreement | `EXISTING_AGREEMENT` (**not built**) |
 
 ---
 
-## 3. Canonical shape (data-contract draft — not Zod/SQL yet)
+## 3. Canonical shape (`rightsnet.rights-grant/0.1`)
 
-Illustrative IDs (`RG_*`, `PERSON_*`, …) are **product language**, not current DB primary keys.
-When IMPLEMENT lands, map to UUIDs (`users` / `organizations` / `assets` / `licenses` / future
-`agreements`).
+Runtime rows use UUIDs. Product language (`RG_*`, `ORG_NIKE`) remains illustrative.
 
-```json
-{
-  "schema_version": "rightsnet.rights-grant/0.1-draft",
-  "grant_id": "RG_839201",
-  "grantor": "PERSON_CR7",
-  "grantee": "ORG_NIKE",
-  "asset": "AST_CR7_LIKENESS",
-  "source": {
-    "type": "EXISTING_AGREEMENT",
-    "id": "AGR_8392"
-  },
-  "rights": {
-    "synthetic_video": "ALLOW",
-    "synthetic_image": "ALLOW",
-    "commercial_advertising": "ALLOW"
-  },
-  "industry": ["sportswear"],
-  "territories": ["WORLDWIDE"],
-  "approval": {
-    "creative_approval": "REQUIRED"
-  },
-  "valid_from": "2026-01-01T00:00:00.000Z",
-  "valid_until": "2027-12-31T23:59:59.000Z",
-  "status": "ACTIVE"
-}
-```
-
-Marketplace projection example (same shape, different source):
+Marketplace projection payload (built at license issuance):
 
 ```json
 {
-  "schema_version": "rightsnet.rights-grant/0.1-draft",
-  "grant_id": "RG_FROM_LICENSE",
-  "grantor": "<creator_user_or_person_ref>",
-  "grantee": "<orders.organization_id>",
-  "asset": "<orders.asset_id>",
+  "schema_version": "rightsnet.rights-grant/0.1",
+  "grant_id": "<uuid>",
+  "grantor_user_id": "<assets.user_id>",
+  "grantee_organization_id": "<orders.organization_id>",
+  "asset_id": "<orders.asset_id>",
   "source": {
     "type": "MARKETPLACE_LICENSE",
     "id": "<licenses.id>"
   },
-  "rights": {},
-  "industry": [],
-  "territories": [],
+  "rights": { "synthetic_video": "ALLOW" },
+  "industry": ["beauty"],
+  "territories": ["DE"],
   "approval": {},
-  "valid_from": "<license starts_at>",
-  "valid_until": "<license ends_at>",
-  "status": "ACTIVE"
+  "valid_from": "<license.starts_at>",
+  "valid_until": "<license.ends_at>",
+  "status": "ACTIVE",
+  "scope_snapshot": { }
 }
 ```
 
-Field notes for IMPLEMENT later:
-
-- `rights` / `industry` / `territories` / `approval` should be derived from frozen order
-  `scope` + policy snapshot for marketplace grants — never from “current” creator policy alone.
-- `status` lifecycle (draft idea): `ACTIVE` | `SUSPENDED` | `EXPIRED` | `REVOKED`.
-- Grant is **not** a second signed license blob; it is the operational authorization view.
+`scope_snapshot` is the frozen order `scope` at issuance — never the live creator policy.
 
 ---
 
-## 4. Projection from today’s marketplace (conceptual)
+## 4. Marketplace projection (implemented)
 
-Current chain (already shipped):
+Chain:
 
-1. `requests` (org + asset + usage + decision)  
-2. `quotes` → `orders` (`organization_id`, `asset_id`, `scope`, `policy_snapshot`, contract hashes)  
-3. `licenses` (1:1 `order_id`, signed `rightsnet.license/0.1` payload)
+1. `requests` → `quotes` → `orders` → `licenses`  
+2. On issue ([`apps/api/src/modules/payments.ts`](../apps/api/src/modules/payments.ts) `issueLicenses`):  
+   `upsertRightsGrantFromLicense` ([`apps/api/src/modules/rights-grants.ts`](../apps/api/src/modules/rights-grants.ts))  
+3. Schema: [`packages/db/migrations/018_rights_grants.sql`](../packages/db/migrations/018_rights_grants.sql)  
+4. Backfill: `backfillMarketplaceRightsGrants` (idempotent; run from seed)
 
-See [`packages/db/migrations/001_core.sql`](../packages/db/migrations/001_core.sql) and issuance in
-[`apps/api/src/modules/payments.ts`](../apps/api/src/modules/payments.ts) (`issueLicenses`).
+**Projection rule (does):**
 
-**Projection rule (SPECIFY):**
+> When a marketplace License is issued, RightsNet upserts a RightsGrant with
+> `source.type = MARKETPLACE_LICENSE`, grantee = `orders.organization_id`, asset =
+> `orders.asset_id`, validity from license dates, **without** rewriting `policies.payload`.
 
-> When a marketplace License becomes issued/active, RightsNet **shall** (in a future IMPLEMENT
-> milestone) upsert a RightsGrant with `source.type = MARKETPLACE_LICENSE`, grantee =
-> `orders.organization_id`, asset = `orders.asset_id`, validity from license scope, without
-> rewriting `policies.payload`.
+License admin status changes sync grant status (`issued`→`ACTIVE`, `suspended`→`SUSPENDED`,
+`revoked`→`REVOKED`).
 
-Until that IMPLEMENT milestone, Connect and the engine continue to use policy + license verify
-as today. This doc only defines the target model.
+Admin read:
+
+- `GET /v1/admin/rights-grants?organization_id=&asset_id=`
+- `GET /v1/admin/rights-grants/:id`
 
 ---
 
 ## 5. Existing-agreement path (conceptual only)
 
-Not built. Intended v0 states:
-
 ```text
 uploaded → extracted → human_reviewed → grant_active
 ```
 
-| State | Meaning |
-|-------|---------|
-| `uploaded` | Contract file / metadata stored; no machine authority yet |
-| `extracted` | Candidate rights fields proposed (tooling may assist; not binding) |
-| `human_reviewed` | Operator/legal confirms extraction against the agreement |
-| `grant_active` | RightsGrant `ACTIVE` with `source.type = EXISTING_AGREEMENT` |
-
-**Human review is mandatory** before `grant_active` in v0.  
-No public API for upload/extract in this SPECIFY milestone. No automatic mutation of
-`RightsPolicy` from an external deal.
+Human review mandatory before `grant_active`. No upload/extract API in this milestone.
 
 ---
 
-## 6. How RightsNet Connect should evolve (design only — not implemented)
+## 6. Connect + generation trunk (not this milestone)
 
-**Today (Connect v0.1):**  
-`POST /v1/platform/check` → `previewRightsCheck` → evaluates against the creator **policy**
-(and related preview rules). Partner-gated; `preview: true`. See
-`docs/RIGHTSNET_CONNECT_V0_1.md`.
+**Connect v0.1 today:** `platform/check` still uses policy preview only.
 
-**Future (after RightsGrant IMPLEMENT + explicit Connect milestone):**
+**Future Connect:** ACTIVE grant match (grantee+asset+use) before/alongside policy path.
 
-1. Resolve **grantee** (partner org) + **asset** + requested **use**.  
-2. If an **ACTIVE** RightsGrant matches (grantee, asset, time window, use dimensions) →  
-   authorize under that grant (including `approval` constraints such as creative approval).  
-3. Else → fall back to marketplace policy preview **or** DENY, per product rules decided in
-   that milestone (do not invent dual engines).  
-4. Still **must not** duplicate Rights Core evaluation logic for the policy path.
+**Future generation trunk (identical for both deal paths):**
 
-**This SPECIFY milestone does not change** `/v1/platform/search` or `/v1/platform/check`.
+`RightsGrant` → `authorize_generation()` → RN-AUTH → partner → output → `report_output()`.
 
-Generation / `report_output` / GenerationRecord remain later constitution items, fed by Grant
-authority — not replacements for Grant.
+Do **not** implement that trunk here.
 
 ---
 
-## 7. Invariants (constitution-aligned)
+## 7. Invariants
 
-1. **Snapshots stay frozen.** Changing policy tomorrow must not rewrite yesterday’s contract,
-   license, or (future) grant source hashes.  
-2. **Grant does not replace Agreement/License.** Legal evidence remains order/contract/license
-   or the external agreement record. Grant is the machine-readable authorization view.  
-3. **Grant is not GenerationRecord.** Linking outputs to authority is a separate future object.  
-4. **No silent ES→AT territory rewrites** or incompatible schema reuse on historical rows.  
-5. **AT/DE pilot scope ≠ legal clearance.** Grants are operational records, not legal opinions.  
-6. **Live commerce stays gated** until documented launch conditions are met.  
-7. **Do not open** public API platform, API keys, MFA, voice, music, or agents without an
-   explicit next-milestone decision (`AGENTS.md`).
+1. Snapshots stay frozen (policy/license/grant source).  
+2. Grant does not replace Agreement/License.  
+3. Grant is not GenerationRecord.  
+4. No silent territory/schema rewrites on historical rows.  
+5. AT/DE pilot ≠ legal clearance.  
+6. Live commerce gated.  
+7. No public API platform / keys / MFA / voice / music / agents without an explicit decision.
 
 ---
 
 ## 8. STOP
 
-**SPECIFY PASS** when:
+**IMPLEMENT marketplace PASS** when:
 
-- This file exists with sections 1–8.  
-- `AGENTS.md` points here and forbids parallel IMPLEMENT without a decision.  
-- No SQL / evaluator / platform route changes shipped under this milestone.  
-- Nike vs Adidas acceptance test is written above.
+- `rights_grants` + Zod + License→Grant on issue + backfill + admin GET + tests.  
+- Docs/AGENTS state convergence and forbid generation trunk / Existing Deal ingest without a decision.  
+- Connect `check` unchanged (policy preview).  
+- Zero `authorize_generation` / RN-AUTH / `report_output` / contract-upload code.
 
-**Do not start in the same breath:**
-
-- `rights_grants` table or Zod `rightsnet.rights-grant/0.1`  
-- Automatic License→Grant projection in `payments.ts`  
-- Connect `check` that reads grants  
-- Contract upload / extract / human-review UI  
-- `authorize_generation()` / GenerationRecord  
-
-### Next milestone (separate decision only)
-
-`RIGHTS_GRANT_IMPLEMENT_V0_1` (suggested): table + Zod + marketplace License→Grant projection +
-admin read path.  
-
-**After that:** Connect milestone to consult ACTIVE grants.  
-
-**Later still:** existing-agreement upload + human review pipeline.
+**Next decision (one at a time):** Existing Deal ingest · Connect grant-aware `check` · Generation/authorize trunk.
 
 ---
 

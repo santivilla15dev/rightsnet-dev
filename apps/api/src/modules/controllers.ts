@@ -40,6 +40,7 @@ import {
   platformSearch,
   platformCheck,
 } from './platform.js';
+import { getRightsGrant, listRightsGrants, syncRightsGrantStatusForLicense } from './rights-grants.js';
 import {
   search,
   getAsset,
@@ -750,6 +751,24 @@ export class AdminController {
       return { status: 'suspended' };
     });
   }
+  @Get('rights-grants') async listGrants(
+    @Req() req: Request,
+    @Query() q: Record<string, unknown>,
+  ) {
+    admin(await actor(req));
+    const organization_id =
+      typeof q.organization_id === 'string' && q.organization_id ? q.organization_id : undefined;
+    const asset_id = typeof q.asset_id === 'string' && q.asset_id ? q.asset_id : undefined;
+    if (organization_id) uuid(organization_id);
+    if (asset_id) uuid(asset_id);
+    const limit = q.limit != null ? Number(q.limit) : undefined;
+    return listRightsGrants({ organization_id, asset_id, limit });
+  }
+  @Get('rights-grants/:id') async getGrant(@Req() req: Request, @Param('id') id: string) {
+    admin(await actor(req));
+    uuid(id);
+    return getRightsGrant(id);
+  }
   @Post('licenses/:id/status') async status(
     @Req() req: Request,
     @Param('id') id: string,
@@ -774,6 +793,7 @@ export class AdminController {
         'INSERT INTO license_status_events(id,license_id,actor_id,status,reason) VALUES($1,$2,$3,$4,$5)',
         [randomUUID(), id, user.id, data.status, data.reason],
       );
+      await syncRightsGrantStatusForLicense(db, id, data.status);
       await audit(db, user.id, 'license.status_changed', id, data);
       return { status: data.status };
     });

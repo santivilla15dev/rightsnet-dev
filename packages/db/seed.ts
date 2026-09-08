@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { pool, transaction, audit, type DB } from './index.js';
 import { defaultPolicy, hash, beautyDePolicy, rightsHash } from '../domain/src/index.js';
+import { backfillMarketplaceRightsGrants } from './rights-grants.js';
 export const demoIds = {
   buyer: '10000000-0000-4000-8000-000000000001',
   creator: '10000000-0000-4000-8000-000000000002',
@@ -289,6 +290,7 @@ export async function seedRightsCoreFixture() {
       schema: 'rightsnet.rights-policy/0.1',
     });
   });
+  await backfillMarketplaceRightsGrants(pool);
 }
 if (process.argv[1]?.endsWith('seed.ts'))
   seed()

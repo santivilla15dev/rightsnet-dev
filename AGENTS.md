@@ -15,11 +15,13 @@ Creator Rights Core publish editor v0.1 is **PASS** —
 see `docs/CREATOR_PUBLISH_RIGHTS_CORE_V0_1.md`.
 Official buyer/creator flow: `docs/RIGHTSNET_OFFICIAL_FLOW.md` (Discover sin cuenta; auth en Continuar; Approved ≠ Published; pago Success + RN-LIC; dashboard cards Fase 4).
 RightsNet Connect (partner API foundation): `docs/RIGHTSNET_CONNECT_V0_1.md` — module `platform` / `/v1/platform/*`; **not** Stripe Connect; requires `PLATFORM_API_ENABLED` + admin.
-RightsGrant domain concept: `docs/RIGHTS_GRANT_V0_1.md` — SPECIFY **PASS**; IMPLEMENT **not started**.
-Distinguishes RightsPolicy (general willingness), Agreement/License (legal evidence), and
-RightsGrant (machine-readable bilateral authority for Connect/AI). Do **not** start
-`rights_grants` schema, License→Grant projection, or grant-aware Connect `check` without an
-explicit IMPLEMENT milestone. Do not confuse RightsGrant with Stripe Connect or Connect routes.
+RightsGrant: `docs/RIGHTS_GRANT_V0_1.md` — SPECIFY **PASS**; marketplace License→Grant
+IMPLEMENT v0.1 **PASS** (`rights_grants`, projection on issue, admin GET). Existing Deal
+ingest and post-Grant trunk (`authorize_generation` / RN-AUTH / `report_output`) are **not
+started**. Marketplace and Existing Deal converge on RightsGrant; do not mutate public
+`RightsPolicy` for bilateral deals. Do **not** open grant-aware Connect `check`, Existing
+Deal upload, or generation APIs without an explicit next-milestone decision. Do not confuse
+RightsGrant with Stripe Connect or Connect routes.
 Default local auth remains `AUTH_PROVIDER=sandbox` for agents/E2E; e2e forces sandbox on :3010/:4010.
 **Uso de producto del founder** = `AUTH_PROVIDER=supabase` + keys + `NEXT_PUBLIC_SUPABASE_*` (ver `docs/runbooks/auth-supabase.md`).
 Default identity remains `IDENTITY_PROVIDER=sandbox`.

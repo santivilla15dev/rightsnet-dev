@@ -8,6 +8,7 @@ import { signPayload } from '../integrations/signing.js';
 export { stripeClient } from '../integrations/stripe.js';
 import { stripeCheckout } from './stripe-checkout.js';
 import { isRightsPolicy, policyContentHash } from './rights-core-path.js';
+import { upsertRightsGrantFromLicense } from '../../../../packages/db/rights-grants.js';
 
 /** Human-readable public id: RN-LIC-YYYY-###### (UTC year + per-year sequence). */
 export async function nextPublicLicenseToken(db: DB): Promise<string> {
@@ -234,8 +235,13 @@ export async function issueLicenses() {
         if (!job) return;
         const o = (await db.query('SELECT * FROM orders WHERE id=$1 FOR UPDATE', [job.order_id]))
           .rows[0];
-        const asset = (await db.query('SELECT status FROM assets WHERE id=$1', [o.asset_id]))
-          .rows[0];
+        const asset = (
+          await db.query(
+            `SELECT a.id, a.status, c.user_id
+             FROM assets a JOIN creators c ON c.id=a.creator_id WHERE a.id=$1`,
+            [o.asset_id],
+          )
+        ).rows[0];
         if (o.status !== 'paid' && o.status !== 'issuing') {
           await db.query("UPDATE outbox SET status='done' WHERE id=$1", [job.id]);
           return;
@@ -291,8 +297,8 @@ export async function issueLicenses() {
           sandbox: true,
         };
         const signed = signPayload(payload);
-        await db.query(
-          "INSERT INTO licenses(id,order_id,public_token,status,starts_at,ends_at,payload,signature,key_id) VALUES($1,$2,$3,'issued',$4,$5,$6,$7,$8) ON CONFLICT(order_id) DO NOTHING",
+        const inserted = await db.query(
+          "INSERT INTO licenses(id,order_id,public_token,status,starts_at,ends_at,payload,signature,key_id) VALUES($1,$2,$3,'issued',$4,$5,$6,$7,$8) ON CONFLICT(order_id) DO NOTHING RETURNING *",
           [
             id,
             o.id,
@@ -304,6 +310,21 @@ export async function issueLicenses() {
             signed.key_id,
           ],
         );
+        const license =
+          inserted.rows[0] ??
+          (await db.query('SELECT * FROM licenses WHERE order_id=$1', [o.id])).rows[0];
+        if (license) {
+          await upsertRightsGrantFromLicense(db, {
+            license,
+            order: {
+              id: o.id,
+              organization_id: o.organization_id,
+              asset_id: o.asset_id,
+              scope: o.scope,
+            },
+            asset: { id: asset.id, user_id: asset.user_id },
+          });
+        }
         if (config.payments === 'sandbox')
           await journal(db, o.id, 'sandbox_transfer', [
             { account: 'creator_payable', side: 'debit', amount: o.price.creator_minor },
@@ -311,7 +332,7 @@ export async function issueLicenses() {
           ]);
         await db.query("UPDATE orders SET status='fulfilled' WHERE id=$1", [o.id]);
         await db.query("UPDATE outbox SET status='done' WHERE id=$1", [job.id]);
-        await audit(db, null, 'license.issued', id, { sandbox: true });
+        await audit(db, null, 'license.issued', license?.id ?? id, { sandbox: true });
       });
     } catch (e) {
       await pool.query(

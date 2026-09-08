@@ -50,7 +50,8 @@ Responses add `surface: "platform"` for traceability. `check` remains **preview*
 - Outgoing webhooks, MCP, C2PA, provider-specific adapters
 - Grant-aware authorization: Connect will eventually authorize via **RightsGrant** (bilateral
   machine-readable authority), not by mutating creator `RightsPolicy` — see
-  `docs/RIGHTS_GRANT_V0_1.md` (SPECIFY only; not implemented in Connect v0.1)
+  `docs/RIGHTS_GRANT_V0_1.md`. Marketplace License→Grant projection is implemented; Connect
+  `check` remains policy preview until an explicit grant-aware milestone.
 
 ## STOP
 
