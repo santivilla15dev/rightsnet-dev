@@ -3,13 +3,13 @@
  * Named `platform` to avoid collision with Stripe Connect (creator payouts).
  */
 import { z } from 'zod';
-import { pool } from '../../../../packages/db/index.js';
+import { pool, transaction } from '../../../../packages/db/index.js';
 import { DomainError } from '../../../../packages/domain/src/index.js';
 import { config } from '../common/config.js';
 import { admin, type Actor } from '../common/auth.js';
 import { search } from './marketplace.js';
 import { previewRightsCheck } from './licensing.js';
-import { mintRnAuthToken, verifyRnAuthToken } from './generation-auth.js';
+import { mintRnAuthToken, verifyRnAuthToken, revokeRnAuthToken } from './generation-auth.js';
 
 export function assertPlatformApiAccess(user: Actor) {
   if (!config.platformApiEnabled) {
@@ -238,5 +238,31 @@ export async function platformVerifyAuth(body: unknown, now: Date = new Date()) 
     reason: result.reason,
     status: null,
     payload: null,
+  };
+}
+
+const RevokeAuthBodySchema = z
+  .object({
+    auth_id: z.string().uuid(),
+    organization_id: z.string().uuid(),
+  })
+  .strict();
+
+/**
+ * Partner revoke ISSUED RN-AUTH. Idempotent if already REVOKED. Not for CONSUMED.
+ */
+export async function platformRevokeAuth(body: unknown) {
+  const data = RevokeAuthBodySchema.parse(body);
+  const result = await transaction((db) =>
+    revokeRnAuthToken(
+      { authId: data.auth_id, organizationId: data.organization_id },
+      db,
+    ),
+  );
+  return {
+    surface: 'platform' as const,
+    auth_id: result.auth_id,
+    status: result.status,
+    idempotent: result.idempotent,
   };
 }

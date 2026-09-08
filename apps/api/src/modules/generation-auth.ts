@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import {
+  DomainError,
   RnAuthPayloadSchema,
   RnAuthTokenSchema,
   computeRnAuthExpiry,
@@ -118,4 +119,43 @@ export async function verifyRnAuthToken(
   }
 
   return { ok: true, payload, status: row.status };
+}
+
+/**
+ * Mark ISSUED RN-AUTH as REVOKED. Idempotent if already REVOKED.
+ * organization_id must match ledger (cross-org revoke denied as NOT_FOUND).
+ */
+export async function revokeRnAuthToken(
+  input: { authId: string; organizationId: string },
+  db: DB = pool,
+): Promise<{ auth_id: string; status: 'REVOKED'; idempotent: boolean }> {
+  const row = (
+    await db.query(
+      `SELECT id, organization_id, status FROM generation_auths WHERE id=$1 FOR UPDATE`,
+      [input.authId],
+    )
+  ).rows[0] as { id: string; organization_id: string; status: string } | undefined;
+
+  if (!row || row.organization_id !== input.organizationId) {
+    throw new DomainError('NOT_FOUND', 404, 'RN-AUTH no encontrado para esa organización.');
+  }
+  if (row.status === 'REVOKED') {
+    return { auth_id: row.id, status: 'REVOKED', idempotent: true };
+  }
+  if (row.status === 'CONSUMED') {
+    throw new DomainError(
+      'AUTH_ALREADY_CONSUMED',
+      409,
+      'No se puede revocar un RN-AUTH ya consumido por report_output.',
+    );
+  }
+  if (row.status !== 'ISSUED') {
+    throw new DomainError('INVALID_STATUS', 409, `Estado RN-AUTH no revocable: ${row.status}`);
+  }
+
+  await db.query(
+    `UPDATE generation_auths SET status='REVOKED' WHERE id=$1 AND status='ISSUED'`,
+    [row.id],
+  );
+  return { auth_id: row.id, status: 'REVOKED', idempotent: false };
 }

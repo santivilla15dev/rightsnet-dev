@@ -119,6 +119,8 @@ Code: `apps/api/src/modules/generation-auth.ts`, Zod in
 
 No separate mint route. Partner `POST /v1/platform/verify-auth` = **PASS**
 (`docs/RN_AUTH_VERIFY_V0_1.md`; read-only, no consume).
+Partner `POST /v1/platform/revoke-auth` = **PASS**
+(`docs/RN_AUTH_REVOKE_V0_1.md`; ISSUED→REVOKED).
 
 ---
 
@@ -147,6 +149,7 @@ No separate mint route. Partner `POST /v1/platform/verify-auth` = **PASS**
 ## Related docs
 
 - `docs/RN_AUTH_VERIFY_V0_1.md`  
+- `docs/RN_AUTH_REVOKE_V0_1.md`  
 - `docs/REPORT_OUTPUT_V0_1.md`  
 - `docs/RIGHTSNET_CONNECT_V0_1.md`  
 - `docs/RIGHTS_GRANT_V0_1.md`  

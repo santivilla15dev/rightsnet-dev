@@ -41,6 +41,7 @@ import {
   platformCheck,
   platformAuthorizeGeneration,
   platformVerifyAuth,
+  platformRevokeAuth,
 } from './platform.js';
 import { platformReportOutput } from './report-output.js';
 import { listPlatformGenerations, getPlatformGeneration } from './generations.js';
@@ -1179,6 +1180,11 @@ export class PlatformController {
   @Post('verify-auth') @HttpCode(200) async verifyAuth(@Req() req: Request, @Body() body: unknown) {
     assertPlatformApiAccess(await actor(req));
     return platformVerifyAuth(body);
+  }
+  /** Revoke ISSUED RN-AUTH — does not create GenerationRecord. */
+  @Post('revoke-auth') @HttpCode(200) async revokeAuth(@Req() req: Request, @Body() body: unknown) {
+    assertPlatformApiAccess(await actor(req));
+    return platformRevokeAuth(body);
   }
   @Post('report-output') @HttpCode(200) async reportOutput(@Req() req: Request, @Body() body: unknown) {
     assertPlatformApiAccess(await actor(req));
