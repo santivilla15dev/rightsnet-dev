@@ -149,7 +149,7 @@ describe('RightsNet Connect platform wrappers', () => {
     expect(adidas.auth_token).toBeNull();
   });
 
-  it('authorizeGeneration: cleared grant → AUTHORIZED (decision only, no RN-AUTH)', async () => {
+  it('authorizeGeneration: cleared grant → AUTHORIZED + signed RN-AUTH', async () => {
     config.platformApiEnabled = true;
     assertPlatformApiAccess(admin);
     const grantId = '60000000-0000-4000-8000-000000000099';
@@ -178,6 +178,7 @@ describe('RightsNet Connect platform wrappers', () => {
       ],
     );
 
+    const { verifyRnAuthToken } = await import('../apps/api/src/modules/generation-auth.js');
     const ok = await platformAuthorizeGeneration({
       organization_id: demoIds.org,
       asset_id: demoIds.rightsCoreAsset,
@@ -193,7 +194,14 @@ describe('RightsNet Connect platform wrappers', () => {
     expect(ok.decision).toBe('AUTHORIZED');
     expect(ok.reason_codes).toContain('ACTIVE_RIGHTS_GRANT');
     expect(ok.grant_id).toBe(grantId);
-    expect(ok.auth_token).toBeNull();
+    expect(ok.auth_token).toBeTruthy();
+    expect(ok.auth_token?.payload.schema_version).toBe('rightsnet.rn-auth/0.1');
+    expect(ok.auth_token?.payload.grant_id).toBe(grantId);
+    expect(ok.auth_token?.payload.organization_id).toBe(demoIds.org);
     expect(ok.preview).toBe(false);
+
+    const verified = await verifyRnAuthToken(ok.auth_token);
+    expect(verified.ok).toBe(true);
+    if (verified.ok) expect(verified.payload.auth_id).toBe(ok.auth_token!.payload.auth_id);
   });
 });

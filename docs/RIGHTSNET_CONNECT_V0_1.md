@@ -30,7 +30,7 @@ Marketplace purchase and Existing Deal both converge on a **RightsGrant** (see
 | Operation | Question | Looks at | Binding? |
 |-----------|----------|----------|----------|
 | **`check`** (shipped) | Would this *use* be **compatible** with the creator’s general willingness / marketplace policy? | `RightsPolicy` via `previewRightsCheck` | **No** — preview only (`preview: true`) |
-| **`authorize_generation`** (decision v0.1 **PASS**) | Does this **organization** currently hold **executable** authority to run **this generation**? | Active **RightsGrant** (grantee + asset + use + approvals) | **Decision binding** (`preview: false`); signed RN-AUTH token = later milestone (`auth_token: null` today) |
+| **`authorize_generation`** (decision v0.1 **PASS**) | Does this **organization** currently hold **executable** authority to run **this generation**? | Active **RightsGrant** (grantee + asset + use + approvals) | **Decision binding** (`preview: false`); on `AUTHORIZED` mints signed RN-AUTH (`docs/RN_AUTH_V0_1.md`) |
 
 ```text
 check()
@@ -45,7 +45,7 @@ authorize_generation()
            ↓ YES
         Approval satisfied?
            ↓ YES
-        AUTHORIZED  (+ signed token in a later step)
+        AUTHORIZED  (+ signed RN-AUTH token)
 ```
 
 **Do not** answer the second question by mutating the creator’s public `RightsPolicy`
@@ -70,11 +70,11 @@ RightsNet Connect **must call** existing domain logic:
 |--------|------|----------|
 | `GET` | `/v1/platform/search` | Same filters/results as `GET /v1/search` |
 | `POST` | `/v1/platform/check` | Same decision as `POST /v1/public/rights-check` (preview, non-binding) |
-| `POST` | `/v1/platform/authorize-generation` | ACTIVE RightsGrant match → `AUTHORIZED` / `REQUIRES_APPROVAL` / `DENIED`; `auth_token: null` |
+| `POST` | `/v1/platform/authorize-generation` | ACTIVE RightsGrant → `AUTHORIZED` (+ RN-AUTH) / `REQUIRES_APPROVAL` / `DENIED` |
 
-Responses add `surface: "platform"` for traceability. `check` remains **preview** (`preview: true`): not a paid license, not a RightsGrant, and not generation authority. `authorize-generation` is **not** preview (`preview: false`) but does **not** yet mint a signed RN-AUTH token.
+Responses add `surface: "platform"` for traceability. `check` remains **preview** (`preview: true`): not a paid license, not a RightsGrant, and not generation authority. `authorize-generation` is **not** preview (`preview: false`); on `AUTHORIZED` returns a signed `auth_token` (see `docs/RN_AUTH_V0_1.md`).
 
-## `authorize-generation` (decision-only PASS)
+## `authorize-generation` + RN-AUTH
 
 Body:
 
@@ -97,20 +97,18 @@ Decision path:
 1. Active RightsGrant for `(organization_id, asset_id)` in validity window?  
 2. Requested `use` within grant dimensions (`rights` / industry / territories / …)?  
 3. Grant `approval` constraints empty / satisfied?  
-4. → `AUTHORIZED` | `REQUIRES_APPROVAL` | `DENIED` (`auth_token` always `null` in this milestone)
+4. → `AUTHORIZED` (mint RN-AUTH) | `REQUIRES_APPROVAL` | `DENIED` (`auth_token: null`)
 
 ## Out of scope (later milestones)
 
 - API keys / client credentials
 - `license()` purchase over API
-- Signed RN-AUTH token — SPECIFY in `docs/RN_AUTH_V0_1.md` (IMPLEMENT not started)
 - `report_output()` (GenerationRecord) — after RN-AUTH
 - Outgoing webhooks, MCP, C2PA, provider-specific adapters
 - Changing `check` to be grant-aware (it stays policy preview)
 
 ## STOP
 
-Connect decision trunk PASS = search + check + authorize-generation (decision only) + tests.  
-RN-AUTH: SPECIFY **PASS** (`docs/RN_AUTH_V0_1.md`); do **not** mint tokens without IMPLEMENT decision.  
+Connect trunk PASS = search + check + authorize-generation + RN-AUTH mint + tests.  
 Do **not** ship `report_output` or grant-aware `check` without a new milestone decision.  
 Do not expand to license purchase over API without a separate decision.

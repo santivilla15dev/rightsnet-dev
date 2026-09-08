@@ -9,6 +9,7 @@ import { config } from '../common/config.js';
 import { admin, type Actor } from '../common/auth.js';
 import { search } from './marketplace.js';
 import { previewRightsCheck } from './licensing.js';
+import { mintRnAuthToken } from './generation-auth.js';
 
 export function assertPlatformApiAccess(user: Actor) {
   if (!config.platformApiEnabled) {
@@ -74,7 +75,7 @@ type GrantRow = {
 
 /**
  * Executable authority via ACTIVE RightsGrant (not policy preview).
- * v0.1: decision only — no RN-AUTH signed token yet.
+ * AUTHORIZED mints a short-lived signed RN-AUTH token (ledger + Ed25519).
  */
 export async function platformAuthorizeGeneration(body: unknown) {
   const data = AuthorizeGenerationSchema.parse(body);
@@ -183,6 +184,20 @@ export async function platformAuthorizeGeneration(body: unknown) {
     };
   }
 
+  const auth_token = await mintRnAuthToken({
+    grantId: matched.id,
+    organizationId: data.organization_id,
+    assetId: data.asset_id,
+    provider: data.provider,
+    use: {
+      content_type: data.use.content_type,
+      purpose: data.use.purpose,
+      territory: data.use.territory,
+      ...(data.use.industry ? { industry: data.use.industry } : {}),
+    },
+    grantValidUntil: matched.valid_until,
+  });
+
   return {
     surface: 'platform' as const,
     decision: 'AUTHORIZED' as const,
@@ -191,7 +206,7 @@ export async function platformAuthorizeGeneration(body: unknown) {
     asset_id: data.asset_id,
     provider: data.provider,
     grant_id: matched.id,
-    auth_token: null,
+    auth_token,
     preview: false,
   };
 }

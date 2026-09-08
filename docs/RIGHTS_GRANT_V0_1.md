@@ -3,7 +3,7 @@
 **Status:** SPECIFY **PASS** · IMPLEMENT marketplace projection **PASS** · Existing Deal structured ingest **PASS**  
 **Date:** September 2026  
 **Existing Deal file/OCR upload:** not started  
-**Post-Grant generation trunk:** `authorize_generation` decision **PASS**; RN-AUTH SPECIFY **PASS** (`docs/RN_AUTH_V0_1.md`); RN-AUTH IMPLEMENT / `report_output` **not started**
+**Post-Grant generation trunk:** `authorize_generation` + RN-AUTH IMPLEMENT **PASS** (`docs/RN_AUTH_V0_1.md`); `report_output` **not started**
 
 
 Governing scope: `docs/RIGHTSNET_MVP_CONSTITUTION.md`.  
@@ -46,9 +46,9 @@ From this point the rest of RightsNet is identical:
 
 RIGHTS GRANT
       ↓
-authorize_generation()     ← decision PASS (no RN-AUTH token yet)
+authorize_generation()     ← decision PASS
       ↓
-RN-AUTH token              ← SPECIFY PASS · IMPLEMENT later
+RN-AUTH token              ← IMPLEMENT PASS
       ↓
 Higgsfield / Runway / …    ← future
       ↓
@@ -183,14 +183,14 @@ See also `docs/RIGHTS_OPERATIONS_V0_1.md` for B2B overview/query (SPECIFY only).
 `POST /v1/platform/check` → policy **preview** (“would this use be compatible?”).  
 Not binding. Not a RightsGrant. See `docs/RIGHTSNET_CONNECT_V0_1.md`.
 
-**Shipped (Connect decision v0.1):**  
+**Shipped (Connect decision + RN-AUTH):**  
 `POST /v1/platform/authorize-generation` → **executable** authority decision  
 (“does this org currently have an ACTIVE RightsGrant covering this generation?”).  
-Returns `AUTHORIZED` / `REQUIRES_APPROVAL` / `DENIED` with `auth_token: null`.
+Returns `AUTHORIZED` (+ signed `auth_token`) / `REQUIRES_APPROVAL` / `DENIED` (`auth_token: null`).
 
 ```text
-Active RightsGrant? → use within grant? → approval satisfied? → AUTHORIZED
-(+ signed RN-AUTH token and report_output in later milestones)
+Active RightsGrant? → use within grant? → approval satisfied? → AUTHORIZED + RN-AUTH
+(+ report_output in a later milestone)
 ```
 
 Marketplace and Existing Deal both feed the same Grant table; Connect’s generation path
@@ -233,8 +233,8 @@ See `docs/RIGHTS_OPERATIONS_V0_1.md` (SPECIFY PASS; UI/import **not started**).
 - Zero RN-AUTH / `report_output` / contract-upload code in this Grant projection milestone.
 
 **Next decision (one at a time):** Operations UI · Existing Deal files/OCR ·
-RN-AUTH IMPLEMENT (`docs/RN_AUTH_V0_1.md`) · `report_output` trunk.
-Keep `check` as policy preview. `authorize_generation` decision is shipped in Connect.
+`report_output` trunk.
+Keep `check` as policy preview. `authorize_generation` + RN-AUTH mint are shipped in Connect.
 
 ---
 
