@@ -33,6 +33,13 @@ export const config = {
     process.env.HIGGSFIELD_MODEL_PATH ?? 'higgsfield-ai/soul/v2/standard',
   /** Wall-clock budget for submit+poll in live L1 (ms). */
   higgsfieldPollTimeoutMs: Number(process.env.HIGGSFIELD_POLL_TIMEOUT_MS ?? 300_000),
+  /**
+   * Existing Deal OCR live extract (L3). Off by default; CI stays sandbox.
+   * Requires OCR_API_BASE + OCR_API_KEY when mode=live.
+   */
+  ocrLiveEnabled: process.env.OCR_LIVE_ENABLED === 'true',
+  ocrApiBase: process.env.OCR_API_BASE ?? '',
+  ocrApiKey: process.env.OCR_API_KEY ?? '',
   port: Number(process.env.API_PORT ?? 4000),
 };
 export function assertConfiguration() {

@@ -172,7 +172,7 @@ describe('Existing Deal OCR L1 (upload + sandbox extract)', () => {
     expect(confirmed.grant.status).toBe('ACTIVE');
   });
 
-  it('extract without file fails; live mode 501', async () => {
+  it('extract without file fails; live without flag fails; live with mock succeeds', async () => {
     const created = await transaction((db) =>
       createExternalAgreement(db, admin, {
         organization_id: demoIds.org,
@@ -201,14 +201,35 @@ describe('Existing Deal OCR L1 (upload + sandbox extract)', () => {
       }),
     );
 
-    try {
-      await transaction((db) =>
-        extractExternalAgreement(db, admin, created.id, { mode: 'live' }),
-      );
-      expect.unreachable('expected live 501');
-    } catch (e) {
-      expect((e as DomainError).code).toBe('OCR_LIVE_NOT_IMPLEMENTED');
-      expect((e as DomainError).status).toBe(501);
-    }
+    await expect(
+      transaction((db) =>
+        extractExternalAgreement(db, admin, created.id, { mode: 'live' }, {
+          liveOcr: { enabled: false },
+        }),
+      ),
+    ).rejects.toMatchObject({ code: 'OCR_LIVE_DISABLED' });
+
+    const live = await transaction((db) =>
+      extractExternalAgreement(
+        db,
+        admin,
+        created.id,
+        { mode: 'live' },
+        {
+          liveOcrFn: async () => ({
+            rights: { synthetic_video: 'ALLOW', commercial_advertising: 'ALLOW' },
+            industry: ['beauty'],
+            territories: ['DE'],
+            approval: { ocr_extract: 'live_v0.1' },
+            valid_from: '2026-01-01T00:00:00.000Z',
+            valid_until: '2027-01-01T00:00:00.000Z',
+          }),
+        },
+      ),
+    );
+    expect(live.mode).toBe('live');
+    expect(live.grant_created).toBe(false);
+    expect(live.proposed_rights.approval.ocr_extract).toBe('live_v0.1');
+    expect(live.agreement.extract_status).toBe('ready');
   });
 });

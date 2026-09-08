@@ -114,7 +114,7 @@ export function ExistingDealOcrIngest() {
     }
   }
 
-  async function runExtract() {
+  async function runExtract(mode: 'sandbox' | 'live' = 'sandbox') {
     if (!agreement) return;
     setBusy('extract');
     setError('');
@@ -123,16 +123,17 @@ export function ExistingDealOcrIngest() {
         agreement: AgreementRow;
         proposed_rights: unknown;
         grant_created: boolean;
+        mode: string;
       }>('admin/external-agreements/' + agreement.id + '/extract', {
         method: 'POST',
-        body: { mode: 'sandbox' },
+        body: { mode },
       });
       setAgreement(result.agreement);
       setProposedJson(JSON.stringify(result.proposed_rights, null, 2));
       setMessage(
         result.grant_created
           ? 'Extract inesperado creó grant.'
-          : 'Extract sandbox listo — revisa proposed_rights (aún sin Grant).',
+          : `Extract ${result.mode} listo — revisa proposed_rights (aún sin Grant).`,
       );
     } catch (err) {
       setError((err as Error).message);
@@ -260,16 +261,23 @@ export function ExistingDealOcrIngest() {
             </fieldset>
           </form>
 
-          <p>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={!!busy}
-              onClick={() => void runExtract()}
-            >
-              {busy === 'extract' ? 'Extrayendo…' : '3. Extract sandbox'}
-            </Button>
-          </p>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={!!busy}
+                onClick={() => void runExtract('sandbox')}
+              >
+                {busy === 'extract' ? 'Extrayendo…' : '3. Extract sandbox'}
+              </Button>{' '}
+              <Button
+                type="button"
+                variant="outline"
+                disabled={!!busy}
+                onClick={() => void runExtract('live')}
+              >
+                Extract live (L3)
+              </Button>
+            </p>
 
           <form className="intent-form" onSubmit={(e) => void saveProposed(e)}>
             <fieldset>

@@ -58,6 +58,10 @@ import {
   uploadExternalAgreementFile,
 } from './external-agreement-ocr.js';
 import {
+  assertHiggsfieldAdapterEnabled,
+  runHiggsfieldAdapter,
+} from './adapters/higgsfield.js';
+import {
   rightsOperationsCampaignQuery,
   rightsOperationsOverview,
 } from './rights-operations.js';
@@ -1108,6 +1112,17 @@ export class PlatformController {
     const organizationId =
       typeof q.organization_id === 'string' ? q.organization_id : undefined;
     return getPlatformGeneration(id, organizationId);
+  }
+  /**
+   * Higgsfield adapter L2 — authorize → sandbox|live HF → report.
+   * Requires PLATFORM_API_ENABLED + admin + HIGGSFIELD_ADAPTER_ENABLED.
+   */
+  @Post('adapters/higgsfield/run')
+  @HttpCode(200)
+  async higgsfieldRun(@Req() req: Request, @Body() body: unknown) {
+    assertPlatformApiAccess(await actor(req));
+    assertHiggsfieldAdapterEnabled();
+    return runHiggsfieldAdapter(body, { requireFlag: true });
   }
 }
 @Controller('v1/webhooks')

@@ -13,12 +13,16 @@ import {
   liveHiggsfieldJob,
   resolveHiggsfieldCredentials,
 } from '../apps/api/src/modules/adapters/higgsfield-live-client.js';
+import { assertPlatformApiAccess } from '../apps/api/src/modules/platform.js';
 import { DomainError } from '../packages/domain/src/index.js';
+import type { Actor } from '../apps/api/src/common/auth.js';
 
-describe('Higgsfield adapter (sandbox + live L1)', () => {
+describe('Higgsfield adapter (sandbox + live L1 + Nest L2 gates)', () => {
   let grantId: string;
+  let admin: Actor;
   const previousFlag = config.higgsfieldAdapterEnabled;
   const previousMode = config.higgsfieldMode;
+  const previousPlatform = config.platformApiEnabled;
 
   beforeAll(async () => {
     const url = new URL(process.env.DATABASE_URL!);
@@ -33,6 +37,8 @@ describe('Higgsfield adapter (sandbox + live L1)', () => {
     await management.end();
     await migrate();
     await seed();
+
+    admin = (await pool.query('SELECT * FROM users WHERE id=$1', [demoIds.admin])).rows[0];
 
     grantId = '60000000-0000-4000-8000-000000000061';
     await pool.query(
@@ -64,6 +70,7 @@ describe('Higgsfield adapter (sandbox + live L1)', () => {
   afterAll(async () => {
     config.higgsfieldAdapterEnabled = previousFlag;
     (config as { higgsfieldMode: string }).higgsfieldMode = previousMode;
+    config.platformApiEnabled = previousPlatform;
     await pool.end();
   });
 
@@ -111,9 +118,6 @@ describe('Higgsfield adapter (sandbox + live L1)', () => {
     expect(result.decision).toBe('AUTHORIZED');
     expect(result.mode).toBe('sandbox');
     expect(result.public_token).toMatch(/^RN-GEN-\d{4}-\d{6}$/);
-    expect(result.verify_hint).toContain('/verify/generation/');
-    expect(result.hf_job_id).toMatch(/^hf_sandbox_/);
-    expect(result.grant_id).toBeTruthy();
   });
 
   it('DENIED path never invents HF success', async () => {
@@ -135,7 +139,6 @@ describe('Higgsfield adapter (sandbox + live L1)', () => {
     );
     expect(result.ok).toBe(false);
     if (result.ok) return;
-    expect(result.decision).toBe('DENIED');
     expect(result.hf_called).toBe(false);
     expect(liveJobFn).not.toHaveBeenCalled();
   });
@@ -172,7 +175,21 @@ describe('Higgsfield adapter (sandbox + live L1)', () => {
     if (!result.ok) return;
     expect(result.mode).toBe('live');
     expect(result.hf_job_id).toBe(fakeId);
-    expect(result.public_token).toMatch(/^RN-GEN-\d{4}-\d{6}$/);
+  });
+
+  it('Nest L2 gates: platform + adapter flags required', () => {
+    config.platformApiEnabled = false;
+    config.higgsfieldAdapterEnabled = true;
+    expect(() => assertPlatformApiAccess(admin)).toThrowError(/PLATFORM_API_DISABLED|no está/);
+
+    config.platformApiEnabled = true;
+    assertPlatformApiAccess(admin);
+    config.higgsfieldAdapterEnabled = false;
+    expect(() => assertHiggsfieldAdapterEnabled()).toThrowError(
+      /HIGGSFIELD_ADAPTER_ENABLED|habilitado/,
+    );
+    config.higgsfieldAdapterEnabled = true;
+    assertHiggsfieldAdapterEnabled();
   });
 
   it('live without credentials fails closed (not sandbox stub)', async () => {

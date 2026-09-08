@@ -26,7 +26,8 @@ Generation partner **list/GET**: `docs/GENERATION_READ_V0_1.md` — SPECIFY **PA
 IMPLEMENT **PASS**. Public generation **verify**: `docs/GENERATION_VERIFY_V0_1.md` —
 SPECIFY **PASS**; IMPLEMENT **PASS** (`RN-GEN-…` + `/verify/generation/…`).
 Higgsfield adapter: `docs/HIGGSFIELD_ADAPTER_V0_1.md` — sandbox IMPLEMENT **PASS**;
-live L1 IMPLEMENT **PASS** (`docs/HIGGSFIELD_LIVE_V0_1.md`; Nest L2 / webhooks L3 **not started**).
+live L1 + Nest L2 IMPLEMENT **PASS** (`docs/HIGGSFIELD_LIVE_V0_1.md`;
+webhooks L3 **not started**).
 CI stays sandbox / mocked live (no network HF). Live keys only in env.
 Rights Operations **UI**: `docs/RIGHTS_OPERATIONS_UI_V0_1.md` — SPECIFY **PASS**;
 IMPLEMENT **PASS** (`/ops/rights`, `/ops/rights/campaign`).
@@ -35,7 +36,8 @@ RightsGrant: `docs/RIGHTS_GRANT_V0_1.md` — SPECIFY **PASS**; marketplace Licen
 IMPLEMENT v0.1 **PASS**; Existing Deal structured ingest v0.1 **PASS**
 (`external_agreements` → confirm → `EXISTING_AGREEMENT` grant).
 Existing Deal files/OCR: `docs/EXISTING_DEAL_OCR_V0_1.md` — SPECIFY **PASS**;
-IMPLEMENT **L1+L2 PASS** (API + admin ingest UI `/ops/rights/ingest`; L3 live OCR **not started**).
+IMPLEMENT **L1+L2+L3 PASS** (upload, sandbox+live extract, admin ingest UI;
+bulk CSV **not started**).
 Marketplace and Existing Deal converge on RightsGrant; do not mutate public `RightsPolicy`
 for bilateral deals. Do not confuse RightsGrant with Stripe Connect or Connect routes.
 Rights Operations B2B: `docs/RIGHTS_OPERATIONS_V0_1.md` — SPECIFY **PASS**; read-model API

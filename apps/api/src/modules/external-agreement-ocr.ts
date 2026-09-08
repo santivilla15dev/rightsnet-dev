@@ -1,8 +1,9 @@
 /**
  * Existing Deal OCR L1 — file attach + sandbox extract (no live OCR, no Grant).
+ * L3 live: optional HTTP OCR provider via ocr-live-client.
  */
 import { createHash, randomUUID } from 'node:crypto';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { z } from 'zod';
 import { pool, audit, type DB } from '../../../../packages/db/index.js';
@@ -13,6 +14,10 @@ import {
 } from '../../../../packages/domain/src/index.js';
 import type { Actor } from '../common/auth.js';
 import { getExternalAgreement } from './external-agreements.js';
+import {
+  liveOcrExtractProposedRights,
+  type LiveOcrDeps,
+} from './adapters/ocr-live-client.js';
 
 export const AGREEMENT_FILE_MAX_BYTES = 10 * 1024 * 1024;
 export const AGREEMENT_FILE_MIMES = ['application/pdf', 'image/jpeg', 'image/png'] as const;
@@ -136,7 +141,6 @@ export async function uploadExternalAgreementFile(
   await mkdir(dir, { recursive: true, mode: 0o700 });
   await writeFile(path.join(dir, fid), buffer, { mode: 0o600, flag: 'wx' });
 
-  // Sandbox L1: mark clean immediately (no external scanner).
   const row = (
     await db.query(
       `INSERT INTO external_agreement_files(
@@ -171,11 +175,17 @@ export async function uploadExternalAgreementFile(
   return { ...row, sandbox: true };
 }
 
+export type ExtractOpts = {
+  liveOcr?: LiveOcrDeps;
+  liveOcrFn?: typeof liveOcrExtractProposedRights;
+};
+
 export async function extractExternalAgreement(
   db: DB,
   user: Actor,
   agreementId: string,
   body: unknown = {},
+  extractOpts: ExtractOpts = {},
 ) {
   const opts = z
     .object({
@@ -183,14 +193,6 @@ export async function extractExternalAgreement(
     })
     .strict()
     .parse(body ?? {});
-
-  if (opts.mode === 'live') {
-    throw new DomainError(
-      'OCR_LIVE_NOT_IMPLEMENTED',
-      501,
-      'OCR live (L3) no está implementado; use mode=sandbox.',
-    );
-  }
 
   const agreement = (
     await db.query('SELECT * FROM external_agreements WHERE id=$1 FOR UPDATE', [agreementId])
@@ -214,43 +216,71 @@ export async function extractExternalAgreement(
     throw new DomainError('FILE_REJECTED', 409, 'El archivo fue rechazado; no se puede extraer.');
   }
 
+  const mode = opts.mode;
   await db.query(
     `UPDATE external_agreements
-     SET extract_status='pending', extract_mode='sandbox', extract_error=NULL, updated_at=now()
+     SET extract_status='pending', extract_mode=$2, extract_error=NULL, updated_at=now()
      WHERE id=$1`,
-    [agreementId],
+    [agreementId, mode],
   );
 
-  const proposed = sandboxExtractProposedRights(agreement.proposed_rights, {
-    filename: file.original_filename,
-    mime_type: file.mime_type,
-  });
+  let proposed: ExternalProposedRights;
+  try {
+    if (mode === 'live') {
+      const buffer = await readFile(path.join(uploadsDir(), file.storage_key));
+      const liveFn = extractOpts.liveOcrFn ?? liveOcrExtractProposedRights;
+      proposed = await liveFn(
+        {
+          mime_type: file.mime_type,
+          filename: file.original_filename,
+          sha256: file.sha256,
+          content_base64: buffer.toString('base64'),
+          current_proposed_rights: agreement.proposed_rights,
+        },
+        extractOpts.liveOcr,
+      );
+      proposed = ExternalProposedRightsSchema.parse(proposed);
+    } else {
+      proposed = sandboxExtractProposedRights(agreement.proposed_rights, {
+        filename: file.original_filename,
+        mime_type: file.mime_type,
+      });
+    }
+  } catch (e) {
+    const msg = e instanceof Error ? e.message.slice(0, 500) : 'extract failed';
+    await db.query(
+      `UPDATE external_agreements
+       SET extract_status='failed', extract_mode=$2, extract_error=$3, updated_at=now()
+       WHERE id=$1`,
+      [agreementId, mode, msg],
+    );
+    throw e;
+  }
 
   const updated = (
     await db.query(
       `UPDATE external_agreements
        SET proposed_rights=$2::jsonb,
            extract_status='ready',
-           extract_mode='sandbox',
+           extract_mode=$3,
            extract_error=NULL,
            updated_at=now()
        WHERE id=$1
        RETURNING *`,
-      [agreementId, JSON.stringify(proposed)],
+      [agreementId, JSON.stringify(proposed), mode],
     )
   ).rows[0];
 
-  await audit(db, user.id, 'external_agreement.extract_sandbox', agreementId, {
+  await audit(db, user.id, `external_agreement.extract_${mode}`, agreementId, {
     file_id: file.id,
     extract_status: 'ready',
   });
 
-  // Explicit: no grant created here.
   return {
     agreement: updated,
     proposed_rights: proposed,
     extract_status: 'ready' as const,
     grant_created: false,
-    mode: 'sandbox' as const,
+    mode,
   };
 }
