@@ -3,11 +3,11 @@
 **Status:** SPECIFY **PASS** · IMPLEMENT read-model API **PASS** (overview + campaign-query)  
 **Date:** September 2026  
 **UI Overview / campaign UI:** IMPLEMENT PASS (`docs/RIGHTS_OPERATIONS_UI_V0_1.md`)  
-**Org-member access:** SPECIFY **PASS** · IMPLEMENT **L1 PASS**
-(`docs/RIGHTS_OPERATIONS_ORG_MEMBER_V0_1.md`; L2 UI / L3 writes **not started**)  
+**Org-member access:** SPECIFY **PASS** · IMPLEMENT **L1+L2 PASS**
+(`docs/RIGHTS_OPERATIONS_ORG_MEMBER_V0_1.md`; L3 writes **not started**)  
 **authorize_generation + RN-AUTH + report_output + generation read/verify:** PASS;
 Higgsfield sandbox + live L1 PASS (`docs/HIGGSFIELD_LIVE_V0_1.md`); L2/L3 **not started**
-Existing Deal OCR L1 PASS (`docs/EXISTING_DEAL_OCR_V0_1.md`).
+Existing Deal OCR L1+L2 PASS (`docs/EXISTING_DEAL_OCR_V0_1.md`).
 
 Governing scope: `docs/RIGHTSNET_MVP_CONSTITUTION.md`.  
 Depends on: `docs/RIGHTS_GRANT_V0_1.md` (Policy vs Agreement vs Grant; Existing Deal path).  
@@ -187,8 +187,8 @@ cleared counts.
 
 ### Next milestones (one at a time, explicit decision)
 
-1. Org-member Ops L2 UI (`docs/RIGHTS_OPERATIONS_ORG_MEMBER_V0_1.md`)  
-2. OCR L2 UI / L3 live OCR  
+1. OCR L3 live provider / bulk CSV  
+2. Org-member L3 writes (confirm / ingest)  
 3. HF Nest L2 (`docs/HIGGSFIELD_LIVE_V0_1.md`)
 
 ---

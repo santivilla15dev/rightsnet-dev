@@ -94,6 +94,40 @@ export async function getExternalAgreement(id: string) {
   return row;
 }
 
+export async function updateExternalAgreementProposedRights(
+  db: DB,
+  user: Actor,
+  agreementId: string,
+  body: unknown,
+) {
+  const data = z
+    .object({ proposed_rights: ExternalProposedRightsSchema })
+    .strict()
+    .parse(body);
+  const agreement = (
+    await db.query('SELECT * FROM external_agreements WHERE id=$1 FOR UPDATE', [agreementId])
+  ).rows[0];
+  if (!agreement) throw new DomainError('NOT_FOUND', 404);
+  if (agreement.status !== 'draft' && agreement.status !== 'pending_confirm') {
+    throw new DomainError(
+      'INVALID_STATE',
+      409,
+      'Solo se puede editar proposed_rights en draft o pending_confirm.',
+    );
+  }
+  const updated = (
+    await db.query(
+      `UPDATE external_agreements
+       SET proposed_rights=$2::jsonb, updated_at=now()
+       WHERE id=$1
+       RETURNING *`,
+      [agreementId, JSON.stringify(data.proposed_rights)],
+    )
+  ).rows[0];
+  await audit(db, user.id, 'external_agreement.proposed_rights_updated', agreementId, {});
+  return updated;
+}
+
 export async function confirmExternalAgreement(db: DB, user: Actor, id: string) {
   const row = (
     await db.query('SELECT * FROM external_agreements WHERE id=$1 FOR UPDATE', [id])

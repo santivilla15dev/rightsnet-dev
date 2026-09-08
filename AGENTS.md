@@ -35,14 +35,14 @@ RightsGrant: `docs/RIGHTS_GRANT_V0_1.md` — SPECIFY **PASS**; marketplace Licen
 IMPLEMENT v0.1 **PASS**; Existing Deal structured ingest v0.1 **PASS**
 (`external_agreements` → confirm → `EXISTING_AGREEMENT` grant).
 Existing Deal files/OCR: `docs/EXISTING_DEAL_OCR_V0_1.md` — SPECIFY **PASS**;
-IMPLEMENT **L1 PASS** (upload + sandbox extract; L2 UI / L3 live OCR **not started**).
+IMPLEMENT **L1+L2 PASS** (API + admin ingest UI `/ops/rights/ingest`; L3 live OCR **not started**).
 Marketplace and Existing Deal converge on RightsGrant; do not mutate public `RightsPolicy`
 for bilateral deals. Do not confuse RightsGrant with Stripe Connect or Connect routes.
 Rights Operations B2B: `docs/RIGHTS_OPERATIONS_V0_1.md` — SPECIFY **PASS**; read-model API
 IMPLEMENT v0.1 **PASS** (`GET .../overview`, `POST .../campaign-query`, admin-only).
 Overview/campaign **UI**: IMPLEMENT PASS (`docs/RIGHTS_OPERATIONS_UI_V0_1.md`).
 Org-member access: `docs/RIGHTS_OPERATIONS_ORG_MEMBER_V0_1.md` — SPECIFY **PASS**;
-IMPLEMENT **L1 PASS** (owner/employee read overview+campaign for own org; L2 UI / L3 writes **not started**).
+IMPLEMENT **L1+L2 PASS** (API + UI own-org; L3 member writes **not started**).
 Rights Operations overview/campaign remain under `/v1/admin/rights-operations/*` with
 `assertOpsReadAccess` (admin or org owner/employee).
 Default local auth remains `AUTH_PROVIDER=sandbox` for agents/E2E; e2e forces sandbox on :3010/:4010.

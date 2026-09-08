@@ -1,4 +1,6 @@
 /** Labels + demo orgs for Rights Operations UI (no invented API metrics). */
+import type { User } from './types';
+
 export const DEMO_ORGANIZATIONS = [
   {
     id: '20000000-0000-4000-8000-000000000001',
@@ -9,6 +11,32 @@ export const DEMO_ORGANIZATIONS = [
     legal_name: 'Otra empresa · Sandbox',
   },
 ] as const;
+
+export const OPS_MEMBER_ROLES = new Set(['owner', 'employee']);
+
+export function opsReadableOrganizations(user: User | null | undefined) {
+  if (!user?.organizations?.length) return [];
+  return user.organizations.filter((o) => OPS_MEMBER_ROLES.has(o.role));
+}
+
+export function canAccessOpsRightsUi(user: User | null | undefined) {
+  if (!user) return false;
+  if (user.role === 'admin') return true;
+  return opsReadableOrganizations(user).length > 0;
+}
+
+export function defaultOpsOrganizationId(
+  user: User | null | undefined,
+  queryOrg: string | null,
+): string {
+  if (user?.role === 'admin') {
+    if (queryOrg) return queryOrg;
+    return DEMO_ORGANIZATIONS[0].id;
+  }
+  const readable = opsReadableOrganizations(user);
+  if (queryOrg && readable.some((o) => o.id === queryOrg)) return queryOrg;
+  return readable[0]?.id ?? '';
+}
 
 export const OVERVIEW_METRIC_ROWS = [
   { key: 'active_talent_agreements', label: 'Acuerdos de talento activos' },

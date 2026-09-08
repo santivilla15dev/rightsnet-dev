@@ -135,6 +135,43 @@ describe('Existing Deal OCR L1 (upload + sandbox extract)', () => {
     expect(confirmed.agreement.proposed_rights.approval.ocr_extract).toBe('sandbox_v0.1');
   });
 
+  it('proposed-rights update then confirm (OCR L2 review path)', async () => {
+    const created = await transaction((db) =>
+      createExternalAgreement(db, admin, {
+        organization_id: demoIds.org,
+        asset_id: assetId,
+        title: 'Review draft ' + randomUUID().slice(0, 8),
+        status: 'pending_confirm',
+        proposed_rights: {
+          rights: { synthetic_video: 'ALLOW' },
+          industry: ['beauty'],
+          territories: ['DE'],
+          approval: {},
+          valid_from: '2026-01-01T00:00:00.000Z',
+          valid_until: '2027-01-01T00:00:00.000Z',
+        },
+      }),
+    );
+    const { updateExternalAgreementProposedRights } = await import(
+      '../apps/api/src/modules/external-agreements.js'
+    );
+    const updated = await transaction((db) =>
+      updateExternalAgreementProposedRights(db, admin, created.id, {
+        proposed_rights: {
+          rights: { synthetic_video: 'ALLOW', commercial_advertising: 'ALLOW' },
+          industry: ['beauty'],
+          territories: ['AT'],
+          approval: { reviewed: 'human' },
+          valid_from: '2026-01-01T00:00:00.000Z',
+          valid_until: '2027-01-01T00:00:00.000Z',
+        },
+      }),
+    );
+    expect(updated.proposed_rights.territories).toContain('AT');
+    const confirmed = await transaction((db) => confirmExternalAgreement(db, admin, created.id));
+    expect(confirmed.grant.status).toBe('ACTIVE');
+  });
+
   it('extract without file fails; live mode 501', async () => {
     const created = await transaction((db) =>
       createExternalAgreement(db, admin, {

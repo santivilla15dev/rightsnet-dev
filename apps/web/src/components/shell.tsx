@@ -19,6 +19,7 @@ import {
   ScrollText,
   Inbox,
   Wallet,
+  Scale,
 } from 'lucide-react';
 import { useSession } from './session';
 import { api } from '@/lib/api';
@@ -123,6 +124,7 @@ export function Shell({ children }: { children: ReactNode }) {
     { href: '/saved', label: 'Guardados', icon: Bookmark },
     { href: '/company', label: 'Campañas', icon: LayoutDashboard },
     { href: '/company/licenses', label: 'Licencias', icon: FileCheck2 },
+    { href: '/ops/rights', label: 'Derechos', icon: Scale },
   ];
 
   const creatorLinks = [

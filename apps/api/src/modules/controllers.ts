@@ -50,6 +50,7 @@ import {
   createExternalAgreement,
   getExternalAgreement,
   listExternalAgreements,
+  updateExternalAgreementProposedRights,
 } from './external-agreements.js';
 import {
   extractExternalAgreement,
@@ -834,6 +835,18 @@ export class AdminController {
     uuid(id);
     return mutate(user.id, 'external-agreements-confirm/' + id, idem(req), {}, (db) =>
       confirmExternalAgreement(db, user, id),
+    );
+  }
+  @Post('external-agreements/:id/proposed-rights') async patchProposedRights(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ) {
+    const user = await actor(req);
+    admin(user);
+    uuid(id);
+    return mutate(user.id, 'external-agreements-proposed/' + id, idem(req), body, (db) =>
+      updateExternalAgreementProposedRights(db, user, id, body),
     );
   }
   @Post('external-agreements/:id/files') async uploadExternalFile(

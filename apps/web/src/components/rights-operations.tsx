@@ -9,6 +9,9 @@ import {
   CAMPAIGN_BUCKET_ROWS,
   DEMO_ORGANIZATIONS,
   OVERVIEW_METRIC_ROWS,
+  canAccessOpsRightsUi,
+  defaultOpsOrganizationId,
+  opsReadableOrganizations,
   type CampaignQueryResponse,
   type RightsOverviewResponse,
 } from '@/lib/rights-operations-ui';
@@ -33,11 +36,17 @@ export function RightsOperationsOverview() {
   const { user, loading: sessionLoading } = useSession();
   const search = useSearchParams();
   const router = useRouter();
-  const initialOrg = search.get('organization_id') ?? DEMO_ORGANIZATIONS[0].id;
-  const [organizationId, setOrganizationId] = useState(initialOrg);
+  const isAdmin = user?.role === 'admin';
+  const memberOrgs = useMemo(() => opsReadableOrganizations(user), [user]);
+  const [organizationId, setOrganizationId] = useState('');
   const [data, setData] = useState<RightsOverviewResponse | null>(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    setOrganizationId(defaultOpsOrganizationId(user, search.get('organization_id')));
+  }, [user, search]);
 
   const load = useCallback(async (orgId: string) => {
     if (!UUID_RE.test(orgId)) {
@@ -61,14 +70,14 @@ export function RightsOperationsOverview() {
   }, []);
 
   useEffect(() => {
-    if (user?.role === 'admin') void load(organizationId);
+    if (canAccessOpsRightsUi(user) && organizationId) void load(organizationId);
   }, [user, organizationId, load]);
 
   if (sessionLoading) return <Loading />;
   if (!user) return <AuthRequired />;
-  if (user.role !== 'admin')
+  if (!canAccessOpsRightsUi(user))
     return (
-      <ErrorPanel message="No tienes permiso de administración para Rights Operations." />
+      <ErrorPanel message="No tienes acceso a Rights Operations para ninguna organización." />
     );
 
   return (
@@ -86,7 +95,13 @@ export function RightsOperationsOverview() {
       />
 
       <p className="muted">
-        <Link href="/ops">← Volver a Ops</Link>
+        {isAdmin ? <Link href="/ops">← Volver a Ops</Link> : <Link href="/company">← Campañas</Link>}
+        {isAdmin ? (
+          <>
+            {' · '}
+            <Link href="/ops/rights/ingest">Existing Deal / OCR</Link>
+          </>
+        ) : null}
       </p>
 
       <form
@@ -94,38 +109,63 @@ export function RightsOperationsOverview() {
         onSubmit={(e: FormEvent) => {
           e.preventDefault();
           const next = organizationId.trim();
+          if (!isAdmin && !memberOrgs.some((o) => o.id === next)) {
+            setError('Solo puedes consultar organizaciones de las que eres owner o employee.');
+            return;
+          }
           router.replace('/ops/rights?organization_id=' + encodeURIComponent(next));
           void load(next);
         }}
       >
         <fieldset>
           <legend>Organización</legend>
-          <label>
-            Demo sandbox
-            <select
-              value={DEMO_ORGANIZATIONS.some((o) => o.id === organizationId) ? organizationId : ''}
-              onChange={(e) => {
-                if (!e.target.value) return;
-                setOrganizationId(e.target.value);
-              }}
-            >
-              <option value="">— UUID manual —</option>
-              {DEMO_ORGANIZATIONS.map((o) => (
-                <option key={o.id} value={o.id}>
-                  {o.legal_name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            organization_id
-            <input
-              value={organizationId}
-              onChange={(e) => setOrganizationId(e.target.value.trim())}
-              spellCheck={false}
-              required
-            />
-          </label>
+          {isAdmin ? (
+            <>
+              <label>
+                Demo sandbox
+                <select
+                  value={
+                    DEMO_ORGANIZATIONS.some((o) => o.id === organizationId) ? organizationId : ''
+                  }
+                  onChange={(e) => {
+                    if (!e.target.value) return;
+                    setOrganizationId(e.target.value);
+                  }}
+                >
+                  <option value="">— UUID manual —</option>
+                  {DEMO_ORGANIZATIONS.map((o) => (
+                    <option key={o.id} value={o.id}>
+                      {o.legal_name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                organization_id
+                <input
+                  value={organizationId}
+                  onChange={(e) => setOrganizationId(e.target.value.trim())}
+                  spellCheck={false}
+                  required
+                />
+              </label>
+            </>
+          ) : (
+            <label>
+              Tu organización
+              <select
+                value={organizationId}
+                onChange={(e) => setOrganizationId(e.target.value)}
+                required
+              >
+                {memberOrgs.map((o) => (
+                  <option key={o.id} value={o.id}>
+                    {o.legal_name} ({o.role})
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <Button type="submit" disabled={busy}>
             Cargar overview
           </Button>
@@ -138,7 +178,9 @@ export function RightsOperationsOverview() {
       {data ? (
         <section>
           <h2 className="section-title">Rights Overview</h2>
-          <p className="muted">organization_id: <code>{data.organization_id}</code></p>
+          <p className="muted">
+            organization_id: <code>{data.organization_id}</code>
+          </p>
           <div className="table-wrap">
             <table>
               <thead>
@@ -182,7 +224,8 @@ export function RightsOperationsOverview() {
 export function RightsOperationsCampaign() {
   const { user, loading: sessionLoading } = useSession();
   const search = useSearchParams();
-  const initialOrg = search.get('organization_id') ?? DEMO_ORGANIZATIONS[0].id;
+  const isAdmin = user?.role === 'admin';
+  const memberOrgs = useMemo(() => opsReadableOrganizations(user), [user]);
 
   const defaultWindow = useMemo(() => {
     const start = new Date(Date.UTC(2026, 5, 1, 0, 0, 0));
@@ -190,7 +233,7 @@ export function RightsOperationsCampaign() {
     return { start: toDatetimeLocalValue(start), end: toDatetimeLocalValue(end) };
   }, []);
 
-  const [organizationId, setOrganizationId] = useState(initialOrg);
+  const [organizationId, setOrganizationId] = useState('');
   const [industry, setIndustry] = useState('beauty');
   const [territory, setTerritory] = useState('DE');
   const [windowStart, setWindowStart] = useState(defaultWindow.start);
@@ -201,10 +244,19 @@ export function RightsOperationsCampaign() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
+  useEffect(() => {
+    if (!user) return;
+    setOrganizationId(defaultOpsOrganizationId(user, search.get('organization_id')));
+  }, [user, search]);
+
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     if (!UUID_RE.test(organizationId)) {
       setError('Indica un organization_id UUID válido.');
+      return;
+    }
+    if (!isAdmin && !memberOrgs.some((o) => o.id === organizationId)) {
+      setError('Solo puedes consultar organizaciones de las que eres owner o employee.');
       return;
     }
     setBusy(true);
@@ -234,9 +286,9 @@ export function RightsOperationsCampaign() {
 
   if (sessionLoading) return <Loading />;
   if (!user) return <AuthRequired />;
-  if (user.role !== 'admin')
+  if (!canAccessOpsRightsUi(user))
     return (
-      <ErrorPanel message="No tienes permiso de administración para Rights Operations." />
+      <ErrorPanel message="No tienes acceso a Rights Operations para ninguna organización." />
     );
 
   return (
@@ -251,38 +303,61 @@ export function RightsOperationsCampaign() {
           ← Overview
         </Link>
         {' · '}
-        <Link href="/ops">Ops</Link>
+        {isAdmin ? <Link href="/ops">Ops</Link> : <Link href="/company">Campañas</Link>}
       </p>
 
       <form className="intent-form" onSubmit={(e) => void onSubmit(e)}>
         <fieldset>
           <legend>Campaña</legend>
           <div className="form-grid">
-            <label>
-              Organización (demo)
-              <select
-                value={DEMO_ORGANIZATIONS.some((o) => o.id === organizationId) ? organizationId : ''}
-                onChange={(e) => {
-                  if (e.target.value) setOrganizationId(e.target.value);
-                }}
-              >
-                <option value="">— UUID manual —</option>
-                {DEMO_ORGANIZATIONS.map((o) => (
-                  <option key={o.id} value={o.id}>
-                    {o.legal_name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              organization_id
-              <input
-                value={organizationId}
-                onChange={(e) => setOrganizationId(e.target.value.trim())}
-                spellCheck={false}
-                required
-              />
-            </label>
+            {isAdmin ? (
+              <>
+                <label>
+                  Organización (demo)
+                  <select
+                    value={
+                      DEMO_ORGANIZATIONS.some((o) => o.id === organizationId)
+                        ? organizationId
+                        : ''
+                    }
+                    onChange={(e) => {
+                      if (e.target.value) setOrganizationId(e.target.value);
+                    }}
+                  >
+                    <option value="">— UUID manual —</option>
+                    {DEMO_ORGANIZATIONS.map((o) => (
+                      <option key={o.id} value={o.id}>
+                        {o.legal_name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  organization_id
+                  <input
+                    value={organizationId}
+                    onChange={(e) => setOrganizationId(e.target.value.trim())}
+                    spellCheck={false}
+                    required
+                  />
+                </label>
+              </>
+            ) : (
+              <label>
+                Tu organización
+                <select
+                  value={organizationId}
+                  onChange={(e) => setOrganizationId(e.target.value)}
+                  required
+                >
+                  {memberOrgs.map((o) => (
+                    <option key={o.id} value={o.id}>
+                      {o.legal_name} ({o.role})
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
             <label>
               industry
               <input value={industry} onChange={(e) => setIndustry(e.target.value)} required />

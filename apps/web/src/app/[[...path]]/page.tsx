@@ -10,6 +10,7 @@ import {
   RightsOperationsOverview,
   RightsOperationsCampaign,
 } from '@/components/rights-operations';
+import { ExistingDealOcrIngest } from '@/components/existing-deal-ocr';
 import { Verify } from '@/components/verify';
 import { GenerationVerify } from '@/components/generation-verify';
 import { Login } from '@/components/login';
@@ -78,6 +79,12 @@ export default async function Page({ params }: { params: Promise<{ path?: string
     return (
       <Suspense fallback={<Loading />}>
         <RightsOperationsCampaign />
+      </Suspense>
+    );
+  if (route === 'ops/rights/ingest')
+    return (
+      <Suspense fallback={<Loading />}>
+        <ExistingDealOcrIngest />
       </Suspense>
     );
   if (route === 'help') return <Help />;
