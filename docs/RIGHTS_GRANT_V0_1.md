@@ -2,7 +2,8 @@
 
 **Status:** SPECIFY **PASS** · IMPLEMENT marketplace projection **PASS** · Existing Deal structured ingest **PASS**  
 **Date:** September 2026  
-**Existing Deal file/OCR:** SPECIFY **PASS** (`docs/EXISTING_DEAL_OCR_V0_1.md`); IMPLEMENT **not started**  
+**Existing Deal file/OCR:** SPECIFY **PASS** · IMPLEMENT **L1 PASS**
+(`docs/EXISTING_DEAL_OCR_V0_1.md`; L2 UI / L3 live OCR **not started**)  
 **Post-Grant generation trunk:** write + partner read + public verify IMPLEMENT **PASS**
 (`docs/GENERATION_READ_V0_1.md`, `docs/GENERATION_VERIFY_V0_1.md`);
 Higgsfield adapter sandbox + live L1 PASS (`docs/HIGGSFIELD_LIVE_V0_1.md`); L2/L3 **not started**
@@ -97,7 +98,7 @@ allowance by mutating policy **fails**.
 | Path | Source of truth before Grant | Grant `source.type` |
 |------|------------------------------|---------------------|
 | New agreement (marketplace) | Policy → check → purchase → issued `License` | `MARKETPLACE_LICENSE` (**implemented**) |
-| Existing agreement | Structured intake → **human confirm** → agreement | `EXISTING_AGREEMENT` (**structured ingest implemented**; files/OCR SPECIFY PASS, IMPLEMENT not) |
+| Existing agreement | Structured intake → **human confirm** → agreement | `EXISTING_AGREEMENT` (**structured + OCR L1 upload/extract**; L2/L3 not) |
 
 ---
 
@@ -174,8 +175,8 @@ Human confirm is mandatory before Grant. Does **not** mutate creator `RightsPoli
 | APIs (admin) | `POST/GET /v1/admin/external-agreements`, `POST .../:id/confirm` |
 | Projection | `upsertRightsGrantFromExternalAgreement` |
 
-**Files / OCR path (SPECIFY PASS):** upload → sandbox extract → same confirm → Grant.  
-Doc: `docs/EXISTING_DEAL_OCR_V0_1.md`. IMPLEMENT (L1 upload + sandbox extract) **not started**.  
+**Files / OCR path:** IMPLEMENT **L1 PASS** — upload → sandbox extract → same confirm → Grant.  
+Doc: `docs/EXISTING_DEAL_OCR_V0_1.md`. L2 UI / L3 live OCR **not started**.  
 Bulk CSV remains a later decision.  
 See also `docs/RIGHTS_OPERATIONS_V0_1.md` for B2B overview/query.
 
@@ -236,10 +237,9 @@ See `docs/RIGHTS_OPERATIONS_V0_1.md` (SPECIFY PASS; UI/import **not started**).
 - Connect `check` unchanged (policy preview).  
 - Zero RN-AUTH / `report_output` / contract-upload code in this Grant projection milestone.
 
-**Next decision (one at a time):** IMPLEMENT Existing Deal OCR L1
-(`docs/EXISTING_DEAL_OCR_V0_1.md`) · org-member Operations access · HF Nest L2.
-Keep `check` as policy preview. Connect generation + HF sandbox/live L1 +
-Operations UI + OCR SPECIFY are shipped.
+**Next decision (one at a time):** IMPLEMENT org-member Ops L1
+(`docs/RIGHTS_OPERATIONS_ORG_MEMBER_V0_1.md`) · OCR L2 UI · HF Nest L2.
+Keep `check` as policy preview.
 
 ---
 
@@ -256,5 +256,6 @@ Operations UI + OCR SPECIFY are shipped.
 - `docs/RIGHTS_OPERATIONS_UI_V0_1.md`  
 - `docs/RIGHTS_OPERATIONS_V0_1.md`  
 - `docs/EXISTING_DEAL_OCR_V0_1.md`  
+- `docs/RIGHTS_OPERATIONS_ORG_MEMBER_V0_1.md`  
 - `docs/RIGHTSNET_OFFICIAL_FLOW.md`  
 - `docs/CREATOR_PUBLISH_RIGHTS_CORE_V0_1.md`  

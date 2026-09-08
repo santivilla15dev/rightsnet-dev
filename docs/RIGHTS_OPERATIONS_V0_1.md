@@ -3,8 +3,10 @@
 **Status:** SPECIFY **PASS** · IMPLEMENT read-model API **PASS** (overview + campaign-query)  
 **Date:** September 2026  
 **UI Overview / campaign UI:** IMPLEMENT PASS (`docs/RIGHTS_OPERATIONS_UI_V0_1.md`)  
+**Org-member access:** SPECIFY **PASS** (`docs/RIGHTS_OPERATIONS_ORG_MEMBER_V0_1.md`); IMPLEMENT **not started**  
 **authorize_generation + RN-AUTH + report_output + generation read/verify:** PASS;
 Higgsfield sandbox + live L1 PASS (`docs/HIGGSFIELD_LIVE_V0_1.md`); L2/L3 **not started**
+Existing Deal OCR L1 PASS (`docs/EXISTING_DEAL_OCR_V0_1.md`).
 
 Governing scope: `docs/RIGHTSNET_MVP_CONSTITUTION.md`.  
 Depends on: `docs/RIGHTS_GRANT_V0_1.md` (Policy vs Agreement vs Grant; Existing Deal path).  
@@ -67,8 +69,9 @@ draft / pending_confirm → human confirm → grant_active (EXISTING_AGREEMENT)
 **Structured ingest v0.1 is implemented** (admin APIs). See
 `docs/RIGHTS_GRANT_V0_1.md` §5 and `POST /v1/admin/external-agreements`.
 
-**Files / OCR:** SPECIFY **PASS** (`docs/EXISTING_DEAL_OCR_V0_1.md`); IMPLEMENT **not started**.
-Human confirm is mandatory before `grant_active`. Bulk CSV remains a later decision.
+**Files / OCR:** SPECIFY **PASS** · IMPLEMENT **L1 PASS** (`docs/EXISTING_DEAL_OCR_V0_1.md`);
+L2 UI / L3 live OCR **not started**. Human confirm is mandatory before `grant_active`.
+Bulk CSV remains a later decision.
 
 Each confirmed agreement projects one or more **RightsGrant** rows with
 `source.type = EXISTING_AGREEMENT` and `grantee_organization_id` = the agency (or brand org).
@@ -167,9 +170,9 @@ cleared counts.
 ## Non-goals (this IMPLEMENT)
 
 - Building the Overview or query **UI** (UI shipped separately — see UI doc)  
-- **IMPLEMENT** of contract upload / OCR (SPECIFY only: `docs/EXISTING_DEAL_OCR_V0_1.md`)  
+- **IMPLEMENT** of OCR L2 UI / L3 live provider (L1 upload+extract shipped)  
 - Changing Connect `check` semantics  
-- Live commerce / non-admin org-member access  
+- Live commerce / org-member IMPLEMENT (SPECIFY: `docs/RIGHTS_OPERATIONS_ORG_MEMBER_V0_1.md`)  
 
 ---
 
@@ -177,12 +180,12 @@ cleared counts.
 
 **IMPLEMENT read-model API PASS** when overview + campaign-query work, tests pass, AGENTS updated.
 
-**Do not start in the same breath:** HF Nest L2/webhooks, OCR IMPLEMENT UI, org-self-serve RBAC.
+**Do not start in the same breath:** HF Nest L2/webhooks, OCR L2/L3, org-member IMPLEMENT without decision.
 
 ### Next milestones (one at a time, explicit decision)
 
-1. IMPLEMENT Existing Deal OCR L1 (`docs/EXISTING_DEAL_OCR_V0_1.md`)  
-2. Org-member (non-admin) access to Operations  
+1. IMPLEMENT org-member Ops L1 (`docs/RIGHTS_OPERATIONS_ORG_MEMBER_V0_1.md`)  
+2. OCR L2 UI / L3 live OCR  
 3. HF Nest L2 (`docs/HIGGSFIELD_LIVE_V0_1.md`)
 
 ---
@@ -191,6 +194,7 @@ cleared counts.
 
 - `docs/RIGHTS_GRANT_V0_1.md`  
 - `docs/EXISTING_DEAL_OCR_V0_1.md`  
+- `docs/RIGHTS_OPERATIONS_ORG_MEMBER_V0_1.md`  
 - `docs/RIGHTSNET_CONNECT_V0_1.md`  
 - `docs/RIGHTSNET_MVP_CONSTITUTION.md`  
 - `docs/RIGHTSNET_OFFICIAL_FLOW.md`  

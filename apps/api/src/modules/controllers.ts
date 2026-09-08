@@ -52,6 +52,11 @@ import {
   listExternalAgreements,
 } from './external-agreements.js';
 import {
+  extractExternalAgreement,
+  listExternalAgreementFiles,
+  uploadExternalAgreementFile,
+} from './external-agreement-ocr.js';
+import {
   rightsOperationsCampaignQuery,
   rightsOperationsOverview,
 } from './rights-operations.js';
@@ -829,6 +834,38 @@ export class AdminController {
     uuid(id);
     return mutate(user.id, 'external-agreements-confirm/' + id, idem(req), {}, (db) =>
       confirmExternalAgreement(db, user, id),
+    );
+  }
+  @Post('external-agreements/:id/files') async uploadExternalFile(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ) {
+    const user = await actor(req);
+    admin(user);
+    uuid(id);
+    return mutate(user.id, 'external-agreements-file/' + id, idem(req), body, (db) =>
+      uploadExternalAgreementFile(db, user, id, body),
+    );
+  }
+  @Get('external-agreements/:id/files') async listExternalFiles(
+    @Req() req: Request,
+    @Param('id') id: string,
+  ) {
+    admin(await actor(req));
+    uuid(id);
+    return listExternalAgreementFiles(id);
+  }
+  @Post('external-agreements/:id/extract') async extractExternal(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ) {
+    const user = await actor(req);
+    admin(user);
+    uuid(id);
+    return mutate(user.id, 'external-agreements-extract/' + id, idem(req), body ?? {}, (db) =>
+      extractExternalAgreement(db, user, id, body ?? {}),
     );
   }
   @Get('rights-operations/overview') async opsOverview(

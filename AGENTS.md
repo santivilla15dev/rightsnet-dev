@@ -35,13 +35,14 @@ RightsGrant: `docs/RIGHTS_GRANT_V0_1.md` — SPECIFY **PASS**; marketplace Licen
 IMPLEMENT v0.1 **PASS**; Existing Deal structured ingest v0.1 **PASS**
 (`external_agreements` → confirm → `EXISTING_AGREEMENT` grant).
 Existing Deal files/OCR: `docs/EXISTING_DEAL_OCR_V0_1.md` — SPECIFY **PASS**;
-IMPLEMENT **not started** (upload + sandbox extract L1 deferred).
+IMPLEMENT **L1 PASS** (upload + sandbox extract; L2 UI / L3 live OCR **not started**).
 Marketplace and Existing Deal converge on RightsGrant; do not mutate public `RightsPolicy`
 for bilateral deals. Do not confuse RightsGrant with Stripe Connect or Connect routes.
 Rights Operations B2B: `docs/RIGHTS_OPERATIONS_V0_1.md` — SPECIFY **PASS**; read-model API
 IMPLEMENT v0.1 **PASS** (`GET .../overview`, `POST .../campaign-query`, admin-only).
 Overview/campaign **UI**: IMPLEMENT PASS (`docs/RIGHTS_OPERATIONS_UI_V0_1.md`).
-Org-member access **not started**.
+Org-member access: `docs/RIGHTS_OPERATIONS_ORG_MEMBER_V0_1.md` — SPECIFY **PASS**;
+IMPLEMENT **not started**.
 Default local auth remains `AUTH_PROVIDER=sandbox` for agents/E2E; e2e forces sandbox on :3010/:4010.
 **Uso de producto del founder** = `AUTH_PROVIDER=supabase` + keys + `NEXT_PUBLIC_SUPABASE_*` (ver `docs/runbooks/auth-supabase.md`).
 Default identity remains `IDENTITY_PROVIDER=sandbox`.
