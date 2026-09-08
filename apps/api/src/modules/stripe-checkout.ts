@@ -4,7 +4,7 @@ import { pool, transaction } from '../../../../packages/db/index.js';
 import { DomainError } from '../../../../packages/domain/src/index.js';
 import type { Actor } from '../common/auth.js';
 import { config } from '../common/config.js';
-import { stripeCheckoutPort } from '../integrations/stripe.js';
+import { assertLiveCommerceAllowed, stripeCheckoutPort } from '../integrations/stripe.js';
 import { eligibleRequest, getOrder } from './licensing.js';
 
 export function checkoutRequest(
@@ -127,11 +127,8 @@ export async function stripeCheckout(user: Actor, id: string) {
       [attempt.id, session.id],
     );
   }
-  if (
-    session.livemode ||
-    session.metadata?.order_id !== id ||
-    session.metadata?.attempt_id !== attempt.id
-  )
+  assertLiveCommerceAllowed(Boolean(session.livemode));
+  if (session.metadata?.order_id !== id || session.metadata?.attempt_id !== attempt.id)
     throw new DomainError('PAYMENT_MISMATCH', 409);
   if (session.status !== 'open')
     return { provider: 'stripe', processing: true, attempt_id: attempt.id };

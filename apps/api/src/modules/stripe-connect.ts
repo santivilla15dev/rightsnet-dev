@@ -5,6 +5,7 @@ import { DomainError } from '../../../../packages/domain/src/index.js';
 import type { Actor } from '../common/auth.js';
 import { config } from '../common/config.js';
 import {
+  assertLiveCommerceAllowed,
   stripeConnectPort,
   stripeEnvironment,
   stripeThinPort,
@@ -151,9 +152,11 @@ export async function getConnectStatus(user: Actor): Promise<ConnectStatus> {
     );
   }
   const environment = stripeEnvironment();
-  if (environment === 'live')
-    throw new DomainError('LIVE_EVENT_BLOCKED', 400, 'Connect live no está habilitado.');
-  const platformSetupUrl = 'https://dashboard.stripe.com/test/settings/connect/platform-setup';
+  assertLiveCommerceAllowed(environment === 'live');
+  const platformSetupUrl =
+    environment === 'live'
+      ? 'https://dashboard.stripe.com/settings/connect/platform-setup'
+      : 'https://dashboard.stripe.com/test/settings/connect/platform-setup';
   const row = (
     await pool.query(
       'SELECT * FROM connect_accounts WHERE creator_id=$1 AND environment=$2',
@@ -196,7 +199,7 @@ export async function ensureConnectAccount(user: Actor) {
   if (config.payments !== 'stripe')
     throw new DomainError('STRIPE_NOT_CONFIGURED', 503, 'Activa PAYMENTS_PROVIDER=stripe.');
   const environment = stripeEnvironment();
-  if (environment === 'live') throw new DomainError('LIVE_EVENT_BLOCKED', 400);
+  assertLiveCommerceAllowed(environment === 'live');
   const creator = await creatorRow(user);
   const existing = (
     await pool.query(
@@ -239,7 +242,7 @@ export async function ensureConnectAccount(user: Actor) {
   } catch (error) {
     throw mapConnectStripeError(error);
   }
-  if (account.livemode) throw new DomainError('LIVE_EVENT_BLOCKED', 400);
+  assertLiveCommerceAllowed(Boolean(account.livemode));
   await syncConnectRow(creator.id, account, environment);
   await audit(pool, user.id, 'connect.account_created', creator.id, {
     stripe_account_id: account.id,
@@ -327,7 +330,7 @@ export async function createConnectOnboardingLink(user: Actor) {
       throw mapConnectStripeError(error);
     }
   }
-  if (link.livemode) throw new DomainError('LIVE_EVENT_BLOCKED', 400);
+  assertLiveCommerceAllowed(Boolean(link.livemode));
   // Never persist the ephemeral URL — return it once to the authenticated creator.
   await audit(pool, user.id, 'connect.onboarding_link_created', refreshed.stripe_account_id, {
     use_case: useCaseType,
@@ -368,7 +371,7 @@ export function isConnectAccountEvent(event: Stripe.Event): boolean {
 
 /** Thin Connect events: retrieve authoritative account state; never treat the event payload as a snapshot. */
 export async function ingestConnectAccountEvent(event: Stripe.Event) {
-  if (event.livemode) throw new DomainError('LIVE_EVENT_BLOCKED', 400);
+  assertLiveCommerceAllowed(Boolean(event.livemode));
   if (!isConnectAccountEvent(event)) return;
   if (
     (await pool.query("SELECT 1 FROM provider_events WHERE provider='stripe' AND event_id=$1", [
@@ -396,8 +399,8 @@ export async function ingestConnectAccountEvent(event: Stripe.Event) {
     return;
   }
   const account = await stripeConnectPort().retrieveAccount(accountId);
-  if (account.id !== accountId || account.livemode)
-    throw new DomainError('CONNECT_ACCOUNT_MISMATCH', 409);
+  if (account.id !== accountId) throw new DomainError('CONNECT_ACCOUNT_MISMATCH', 409);
+  assertLiveCommerceAllowed(Boolean(account.livemode));
   const synced = await syncConnectRow(row.creator_id, account, row.environment);
   await pool.query(
     "INSERT INTO provider_events(id,provider,event_id,payload,status) VALUES($1,'stripe',$2,$3,'done') ON CONFLICT(provider,event_id) DO NOTHING",
@@ -439,7 +442,7 @@ export async function ingestThinConnectNotification(
   } catch {
     throw new DomainError('INVALID_SIGNATURE', 400);
   }
-  if (thin.livemode) throw new DomainError('LIVE_EVENT_BLOCKED', 400);
+  assertLiveCommerceAllowed(Boolean(thin.livemode));
   if (!isThinConnectEventType(thin.type)) {
     return { received: true, ignored: true, type: thin.type };
   }
@@ -452,7 +455,7 @@ export async function ingestThinConnectNotification(
     return { received: true, duplicate: true };
 
   const full = await port.retrieveEvent(thin.id);
-  if (full.livemode) throw new DomainError('LIVE_EVENT_BLOCKED', 400);
+  assertLiveCommerceAllowed(Boolean(full.livemode));
 
   const accountId =
     full.related_object?.id?.startsWith('acct_')
@@ -474,7 +477,7 @@ export async function ingestThinConnectNotification(
     id: thin.id,
     object: 'event',
     type: full.type,
-    livemode: false,
+    livemode: Boolean(full.livemode),
     data: { object: { id: accountId } },
     account: accountId,
   } as unknown as Stripe.Event;

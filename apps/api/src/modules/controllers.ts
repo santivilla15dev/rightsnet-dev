@@ -147,7 +147,11 @@ const idem = (req: Request) =>
 export class PublicController {
   @Get('health') async health() {
     await pool.query('SELECT 1');
-    return { status: 'ok', environment: config.env, commerce: 'sandbox_only' };
+    return {
+      status: 'ok',
+      environment: config.env,
+      commerce: config.liveCommerceEnabled ? 'live_enabled' : 'sandbox_only',
+    };
   }
   @Get('config') info() {
     return {
@@ -159,7 +163,7 @@ export class PublicController {
       mfa_enabled: config.mfaEnabled,
       rights_core_purchases: config.rightsCorePurchases,
       platform_api_enabled: config.platformApiEnabled,
-      live_commerce: false,
+      live_commerce: config.liveCommerceEnabled,
     };
   }
   @Get('search') search(@Query() q: Record<string, unknown>) {

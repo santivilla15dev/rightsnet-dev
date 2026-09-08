@@ -5,6 +5,7 @@ import { DomainError } from '../../../../packages/domain/src/index.js';
 import type { Actor } from '../common/auth.js';
 import { config } from '../common/config.js';
 import {
+  assertLiveCommerceAllowed,
   stripeEnvironment,
   stripeReconciliationPort,
   type StripeBalanceTransaction,
@@ -495,7 +496,7 @@ export async function recoverMissedEvents(runId: string, options: { maxPages?: n
     initialSince: Math.floor(Date.now() / 1000) - 7 * 86400,
     fetch: (params) => port.listEvents({ ...params, types: RECOVERABLE_TYPES }),
     consume: async (event) => {
-      if (event.livemode) throw new DomainError('LIVE_EVENT_BLOCKED', 400);
+      assertLiveCommerceAllowed(Boolean(event.livemode));
       if (
         (
           await pool.query(
@@ -556,10 +557,8 @@ export async function runExternalReconciliation(
     );
   }
   const environment = stripeEnvironment();
-  // Live keys are blocked at process boot; keep an explicit guard here.
-  if (environment === 'live') {
-    throw new DomainError('LIVE_COMMERCE_DISABLED', 403);
-  }
+  // Live keys need LIVE_COMMERCE_ENABLED; production APP_ENV stays blocked at boot.
+  assertLiveCommerceAllowed(environment === 'live');
 
   const accountRef = options.accountRef ?? PLATFORM;
   const runId = randomUUID();

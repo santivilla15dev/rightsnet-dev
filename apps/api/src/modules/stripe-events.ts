@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type Stripe from 'stripe';
 import { audit, pool, transaction } from '../../../../packages/db/index.js';
 import { DomainError } from '../../../../packages/domain/src/index.js';
-import { stripeCheckoutPort } from '../integrations/stripe.js';
+import { stripeCheckoutPort, assertLiveCommerceAllowed } from '../integrations/stripe.js';
 import type { PaymentEvent } from './payments.js';
 
 const checkoutEvents = new Set([
@@ -31,8 +31,8 @@ export function confirmedCheckoutEvent(
   const orderId = session.metadata?.order_id,
     attemptId = session.metadata?.attempt_id;
   const expectedDestination = attempt.stripe_request?.payment_intent_data?.transfer_data?.destination;
+  assertLiveCommerceAllowed(Boolean(session.livemode));
   if (
-    session.livemode ||
     session.mode !== 'payment' ||
     attempt.provider !== 'stripe' ||
     attempt.provider_ref !== session.id ||
@@ -49,10 +49,10 @@ export function confirmedCheckoutEvent(
     throw new DomainError('PAYMENT_MISMATCH', 409);
   const pi = session.payment_intent;
   if (typeof pi === 'string') throw new DomainError('PAYMENT_UNCONFIRMED', 409);
+  if (pi) assertLiveCommerceAllowed(Boolean(pi.livemode));
   if (
     pi &&
-    (pi.livemode ||
-      pi.metadata.order_id !== orderId ||
+    (pi.metadata.order_id !== orderId ||
       pi.metadata.attempt_id !== attemptId ||
       pi.amount !== attempt.price.total_minor ||
       pi.currency !== 'eur' ||
@@ -95,7 +95,7 @@ export function confirmedCheckoutEvent(
 
 // Only call after raw-body signature verification in the controller.
 export async function ingestStripeCheckoutEvent(event: Stripe.Event) {
-  if (event.livemode) throw new DomainError('LIVE_EVENT_BLOCKED', 400);
+  assertLiveCommerceAllowed(Boolean(event.livemode));
   if (!checkoutEvents.has(event.type)) return;
   // Destination charges belong to the platform, never a connected-account event scope.
   if (event.account) throw new DomainError('STRIPE_EVENT_SCOPE_MISMATCH', 400);

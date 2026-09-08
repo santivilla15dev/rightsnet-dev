@@ -65,11 +65,13 @@ Default local auth remains `AUTH_PROVIDER=sandbox` for agents/E2E; e2e forces sa
 Default identity remains `IDENTITY_PROVIDER=sandbox`.
 Identity live requires `IDENTITY_LIVE_ENABLED=true` + `IDENTITY_PROVIDER=stripe`
 (see `docs/IDENTITY_KYC_LIVE_V0_1.md`). Does **not** enable live commerce.
+Live commerce L1 (technical gate): `docs/LIVE_COMMERCE_V0_1.md` — SPECIFY **PASS**;
+IMPLEMENT **PASS** (`LIVE_COMMERCE_ENABLED`; CI flag off; no `APP_ENV=production`).
 
-Do **not** open voice, music, agents, public API platform, or live commerce in parallel
-without an explicit next-milestone decision. Roadmap after MFA STOP: **live commerce**
-(one at a time). RightsNet Connect v0.1 is partner-gated only
-(`PLATFORM_API_ENABLED`); do not treat it as a public developer platform.
+Do **not** open voice, music, agents, or public API platform in parallel
+without an explicit next-milestone decision. Live commerce **legal** clearance
+remains in `docs/launch-gates.md` (founder/counsel). RightsNet Connect v0.1 is
+partner-gated only (`PLATFORM_API_ENABLED`); do not treat it as a public developer platform.
 
 Follow SPECIFY → IMPLEMENT → MIGRATE → TEST → RUN → VERIFY → DOCUMENT → STOP.
 Stop after each milestone; begin the next only after the preceding one works.

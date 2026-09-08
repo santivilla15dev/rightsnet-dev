@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import type Stripe from 'stripe';
 import { DomainError } from '../packages/domain/src/index.js';
+import { config } from '../apps/api/src/common/config.js';
 import { confirmedCheckoutEvent } from '../apps/api/src/modules/stripe-events.js';
 
 const orderId = '11111111-1111-4111-8111-111111111111';
@@ -135,15 +136,30 @@ describe('confirmedCheckoutEvent', () => {
     ).toBeNull();
   });
 
-  it('rejects livemode sessions', () => {
+  it('rejects livemode sessions when LIVE_COMMERCE_ENABLED is false', () => {
+    (config as { liveCommerceEnabled: boolean }).liveCommerceEnabled = false;
     expect(() =>
       confirmedCheckoutEvent(session({ livemode: true }), 'checkout.session.completed', attempt()),
     ).toThrow(DomainError);
     try {
       confirmedCheckoutEvent(session({ livemode: true }), 'checkout.session.completed', attempt());
     } catch (e) {
-      expect(e).toMatchObject({ code: 'PAYMENT_MISMATCH', status: 409 });
+      expect(e).toMatchObject({ code: 'LIVE_EVENT_BLOCKED', status: 400 });
     }
+  });
+
+  it('accepts livemode sessions when LIVE_COMMERCE_ENABLED is true', () => {
+    (config as { liveCommerceEnabled: boolean }).liveCommerceEnabled = true;
+    (config as { payments: string }).payments = 'stripe';
+    expect(
+      confirmedCheckoutEvent(session({ livemode: true }), 'checkout.session.completed', attempt())
+        ?.type,
+    ).toBe('payment.succeeded');
+  });
+
+  afterEach(() => {
+    (config as { liveCommerceEnabled: boolean }).liveCommerceEnabled = false;
+    (config as { payments: string }).payments = process.env.PAYMENTS_PROVIDER ?? 'sandbox';
   });
 
   it('rejects amount and currency mismatches', () => {

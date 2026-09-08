@@ -4,7 +4,11 @@ import { audit, pool, transaction } from '../../../../packages/db/index.js';
 import { DomainError } from '../../../../packages/domain/src/index.js';
 import type { Actor } from '../common/auth.js';
 import { config } from '../common/config.js';
-import { stripeEnvironment, stripeMoneyPort } from '../integrations/stripe.js';
+import {
+  assertLiveCommerceAllowed,
+  stripeEnvironment,
+  stripeMoneyPort,
+} from '../integrations/stripe.js';
 
 function objectId(value: string | { id: string } | null | undefined) {
   return typeof value === 'string' ? value : value?.id ?? null;
@@ -85,8 +89,7 @@ async function resolveOrderFromCharge(chargeId: string | null) {
 }
 
 async function upsertTransfer(transfer: Stripe.Transfer) {
-  if ((transfer as { livemode?: boolean }).livemode)
-    throw new DomainError('LIVE_EVENT_BLOCKED', 400);
+  assertLiveCommerceAllowed(Boolean((transfer as { livemode?: boolean }).livemode));
   if (transfer.currency !== 'eur') throw new DomainError('PAYMENT_MISMATCH', 409);
   const destination = objectId(transfer.destination);
   if (!destination) throw new DomainError('PAYMENT_MISMATCH', 409);
@@ -202,8 +205,7 @@ async function upsertTransferReversal(transfer: Stripe.Transfer) {
 }
 
 async function upsertDispute(dispute: Stripe.Dispute) {
-  if ((dispute as { livemode?: boolean }).livemode)
-    throw new DomainError('LIVE_EVENT_BLOCKED', 400);
+  assertLiveCommerceAllowed(Boolean((dispute as { livemode?: boolean }).livemode));
   const charge = objectId(dispute.charge);
   const pi = objectId(dispute.payment_intent);
   const linked =
@@ -279,8 +281,7 @@ async function upsertDispute(dispute: Stripe.Dispute) {
 }
 
 async function upsertPayout(payout: Stripe.Payout, connectedAccount: string | null) {
-  if ((payout as { livemode?: boolean }).livemode)
-    throw new DomainError('LIVE_EVENT_BLOCKED', 400);
+  assertLiveCommerceAllowed(Boolean((payout as { livemode?: boolean }).livemode));
   if (payout.currency !== 'eur') throw new DomainError('PAYMENT_MISMATCH', 409);
   // Connect payouts arrive with event.account set to the connected account.
   const account = connectedAccount ?? payout.metadata?.connected_account ?? null;
@@ -335,7 +336,7 @@ async function upsertPayout(payout: Stripe.Payout, connectedAccount: string | nu
 }
 
 export async function ingestMoneyMovementEvent(event: Stripe.Event) {
-  if (event.livemode) throw new DomainError('LIVE_EVENT_BLOCKED', 400);
+  assertLiveCommerceAllowed(Boolean(event.livemode));
   if (!isMoneyMovementEvent(event)) return;
   if (config.payments !== 'stripe') return;
   if (
@@ -348,8 +349,7 @@ export async function ingestMoneyMovementEvent(event: Stripe.Event) {
   if (transferEvents.has(event.type)) {
     const thin = event.data.object as Stripe.Transfer;
     const transfer = await stripeMoneyPort().retrieveTransfer(thin.id);
-    if ((transfer as { livemode?: boolean }).livemode)
-      throw new DomainError('LIVE_EVENT_BLOCKED', 400);
+    assertLiveCommerceAllowed(Boolean((transfer as { livemode?: boolean }).livemode));
     await upsertTransfer(transfer);
     if (event.type === 'transfer.reversed' || transfer.reversed)
       await upsertTransferReversal(transfer);
@@ -360,8 +360,7 @@ export async function ingestMoneyMovementEvent(event: Stripe.Event) {
   if (disputeEvents.has(event.type)) {
     const thin = event.data.object as Stripe.Dispute;
     const dispute = await stripeMoneyPort().retrieveDispute(thin.id);
-    if ((dispute as { livemode?: boolean }).livemode)
-      throw new DomainError('LIVE_EVENT_BLOCKED', 400);
+    assertLiveCommerceAllowed(Boolean((dispute as { livemode?: boolean }).livemode));
     // CLI fixtures often use USD; MVP is EUR-only — ack without retry spam.
     if (dispute.currency !== 'eur') {
       await markEventDone(event, {
@@ -383,8 +382,7 @@ export async function ingestMoneyMovementEvent(event: Stripe.Event) {
     const thin = event.data.object as Stripe.Payout;
     const account = typeof event.account === 'string' ? event.account : undefined;
     const payout = await stripeMoneyPort().retrievePayout(thin.id, account);
-    if ((payout as { livemode?: boolean }).livemode)
-      throw new DomainError('LIVE_EVENT_BLOCKED', 400);
+    assertLiveCommerceAllowed(Boolean((payout as { livemode?: boolean }).livemode));
     await upsertPayout(payout, account ?? null);
     await markEventDone(event, {
       type: event.type,

@@ -1,6 +1,28 @@
 import Stripe from 'stripe';
 import { DomainError } from '../../../../packages/domain/src/index.js';
-import { assertConfiguration } from '../common/config.js';
+import { assertConfiguration, config } from '../common/config.js';
+
+/**
+ * Livemode Stripe payment/Connect objects require LIVE_COMMERCE_ENABLED.
+ * Does not unlock APP_ENV=production.
+ */
+export function assertLiveCommerceAllowed(livemode: boolean) {
+  if (!livemode) return;
+  if (!config.liveCommerceEnabled) {
+    throw new DomainError(
+      'LIVE_EVENT_BLOCKED',
+      400,
+      'Live commerce requiere LIVE_COMMERCE_ENABLED=true (producción APP_ENV sigue bloqueada).',
+    );
+  }
+  if (config.payments !== 'stripe') {
+    throw new DomainError(
+      'LIVE_EVENT_BLOCKED',
+      400,
+      'Live commerce requiere PAYMENTS_PROVIDER=stripe.',
+    );
+  }
+}
 
 export type StripeCheckoutPort = {
   createSession: (
@@ -198,7 +220,8 @@ export async function requireStripeRecipient(client: Stripe, accountId: string) 
   const account = await client.v2.core.accounts.retrieve(accountId, {
     include: ['configuration.recipient'],
   });
-  if (account.livemode || account.id !== accountId)
+  if (account.livemode) assertLiveCommerceAllowed(true);
+  if (account.id !== accountId)
     throw new DomainError('CONNECT_ACCOUNT_MISMATCH', 409);
   if (
     account.configuration?.recipient?.capabilities?.stripe_balance?.stripe_transfers?.status !==

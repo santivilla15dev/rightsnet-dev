@@ -1,8 +1,12 @@
 # Gates para pasar de sandbox a piloto (AT / DE)
 
 Ninguna casilla se marca por existir una interfaz o un adaptador. Se exige evidencia operativa.
-Producción y comercio real están bloqueados por `assertConfiguration()`.
-**No activar `LIVE_COMMERCE_ENABLED`.**
+Producción (`APP_ENV=production`) sigue bloqueada por `assertConfiguration()`.
+
+**Gate técnico live commerce L1:** **PASS** (`docs/LIVE_COMMERCE_V0_1.md`) —
+código admite livemode solo con `LIVE_COMMERCE_ENABLED=true` + `PAYMENTS_PROVIDER=stripe`.
+**No activar el flag** en CI ni en uso diario hasta cerrar gates legales/ops abajo.
+No implica clearance legal AT–DE.
 
 Piloto comercial propuesto: **Austria + Alemania** (constitución §5). No implica clearance legal.
 
@@ -11,14 +15,16 @@ Piloto comercial propuesto: **Austria + Alemania** (constitución §5). No impli
 | Loop económico sandbox | Implementado | Tests DB/navegador; `docs/VERIFICATION.md` |
 | Rights Core motor + dual-path | PASS | `docs/RIGHTS_CORE_V0_1.md`, integración 012 |
 | Marketplace UX + home | PASS | `docs/MARKETPLACE_UX_V0_1.md` |
-| Auth login/refresh (sin MFA) | PASS parcial | Supabase v0.1; MFA admin **fuera** del MVP actual (`AGENTS.md`) |
+| Auth login/refresh + MFA opt-in | PASS | Supabase; `MFA_ENABLED` (CI off) |
 | KYC Identity v0.1.1 (port + checks + selfie) | Implementado test/sandbox | `docs/IDENTITY_KYC_V0_1.md`; documento + `require_matching_selfie` en Stripe test; ops adult/age policy pendiente |
+| Identity KYC live (técnico) | PASS | `IDENTITY_LIVE_ENABLED`; `docs/IDENTITY_KYC_LIVE_V0_1.md` |
 | Editor publish Rights Core AT/DE | Implementado | `docs/CREATOR_PUBLISH_RIGHTS_CORE_V0_1.md`; flag `RIGHTS_CORE_PURCHASES` |
+| Live commerce L1 (gate técnico) | PASS | `LIVE_COMMERCE_ENABLED` gated; `docs/LIVE_COMMERCE_V0_1.md`; CI off |
 | Entidad, países admitidos y jurisdicción | Pendiente fundador/asesoría | Decidir operador y modelo contractual AT/DE |
 | Contrato y consentimiento jurídicos | Pendiente | Sustituir DEMO por plantilla aprobada/versionada |
 | IVA/fiscalidad/facturas | Pendiente | Diseñar e implementar según entidad y países |
 | Relación con activo (review humana) | Sandbox | Evidencia local; validación operativa pendiente |
-| Stripe Connect (cobros creador) | Implementado test | Live bloqueado; país Connect aún sesgado a test ES |
+| Stripe Connect (cobros creador) | Implementado test | Live gated por flag; país Connect aún sesgado a test ES |
 | Orgs buyer AT | Hueco | CHECK org country legacy ES\|DE — alinear antes de piloto AT buyers |
 | Storage y malware scan | Sandbox local | Disco privado; integrar storage/scanner real |
 | Roles DB y RLS | Pendiente | Migrator separado; ensayar tenancy |
@@ -28,16 +34,16 @@ Piloto comercial propuesto: **Austria + Alemania** (constitución §5). No impli
 | Rate limiting distribuido | Pendiente | Límite local de una instancia |
 | Backups/PITR/restore | Pendiente | Ensayar restore DB + ficheros + claves |
 | Despliegue staging y seguridad | Pendiente | Región, secretos, HTTPS, CI remoto |
-| Prueba Stripe test end-to-end | Ensayo previo PASS; reensayo abierto | Ver `docs/VERIFICATION.md`. Live no habilitado |
+| Prueba Stripe test end-to-end | Ensayo previo PASS; reensayo abierto | Ver `docs/VERIFICATION.md`. Flag live off por defecto |
 | Primera licencia/payout **real** | No iniciado | Solo después de cerrar gates legales + KYC ops + Connect live readiness |
 
-## Checklist piloto AT–DE (sin live)
+## Checklist piloto AT–DE (sin activar live en producción)
 
 1. Legal: contratos/consentimiento AT+DE revisados por asesoría.
 2. KYC: Identity en test (documento + selfie matching) verificado; política de adultez confirmada.
 3. Publish: al menos un creador AT o DE con Rights Core publicado en test.
 4. Buyer path: org y territorios AT/DE coherentes (cerrar hueco orgs AT).
 5. Stripe test: Checkout + Connect + Identity webhooks documentados.
-6. `LIVE_COMMERCE_ENABLED` permanece `false` hasta gate de readiness dedicado.
+6. Gate técnico `LIVE_COMMERCE_ENABLED` **implementado**; permanece `false` hasta readiness legal/ops del founder.
 
-El guard de código debe sustituirse por una política de readiness verificada en una entrega específica — **no** por activar el flag a mano.
+Activar el flag es decisión operativa del founder tras checklist — **no** sustituye clearance legal.

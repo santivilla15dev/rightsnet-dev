@@ -18,6 +18,11 @@ export const config = {
    * Does not enable live commerce.
    */
   mfaEnabled: process.env.MFA_ENABLED === 'true',
+  /**
+   * Allow Stripe payment/Connect livemode. Off by default (CI).
+   * Does not enable APP_ENV=production or claim legal pilot clearance.
+   */
+  liveCommerceEnabled: process.env.LIVE_COMMERCE_ENABLED === 'true',
   /** When true, new creator policies must use rightsnet.rights-policy/0.1. Dual-path evaluation always keys off payload schema_version. */
   rightsCorePurchases: process.env.RIGHTS_CORE_PURCHASES === 'true',
   /**
@@ -57,19 +62,19 @@ export const config = {
   port: Number(process.env.API_PORT ?? 4000),
 };
 export function assertConfiguration() {
-  if (process.env.LIVE_COMMERCE_ENABLED === 'true')
-    throw new Error('Live commerce is not enabled: launch gates are incomplete.');
   if (config.env === 'production')
     throw new Error('Production is blocked until launch gates are complete.');
+  if (config.liveCommerceEnabled && config.payments !== 'stripe')
+    throw new Error('LIVE_COMMERCE_ENABLED requires PAYMENTS_PROVIDER=stripe.');
   const key = process.env.STRIPE_SECRET_KEY;
   if (key && !/^(sk|rk)_test_/.test(key)) {
     if (!/^(sk|rk)_live_/.test(key))
       throw new Error('Only Stripe test or live credentials are accepted.');
-    if (!config.identityLiveEnabled)
+    if (!config.liveCommerceEnabled && !config.identityLiveEnabled)
       throw new Error(
-        'Stripe live credentials require IDENTITY_LIVE_ENABLED=true (Identity only; commerce still gated).',
+        'Stripe live credentials require LIVE_COMMERCE_ENABLED=true and/or IDENTITY_LIVE_ENABLED=true.',
       );
-    if (config.identity !== 'stripe')
-      throw new Error('Stripe live credentials require IDENTITY_PROVIDER=stripe.');
+    if (config.identityLiveEnabled && config.identity !== 'stripe')
+      throw new Error('IDENTITY_LIVE_ENABLED requires IDENTITY_PROVIDER=stripe.');
   }
 }

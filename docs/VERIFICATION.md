@@ -24,9 +24,10 @@ Historia: una marca elige un creador, configura el uso, obtiene una decisión de
 | Marketplace UX v0.1 | PASS | Home producto + pasos licencia; `docs/MARKETPLACE_UX_V0_1.md` |
 | Identity KYC v0.1.1 | PASS | Port sandbox/stripe + selfie matching; `docs/IDENTITY_KYC_V0_1.md`; tests `identity-kyc.test.ts` |
 | Identity KYC live v0.1 | PASS | `IDENTITY_LIVE_ENABLED`; `docs/IDENTITY_KYC_LIVE_V0_1.md`; livemode gated |
+| Live commerce L1 (técnico) | PASS | `LIVE_COMMERCE_ENABLED`; `docs/LIVE_COMMERCE_V0_1.md`; CI flag off |
 | Creator publish Rights Core v0.1 | PASS | Editor AT/DE en `/dashboard`; `docs/CREATOR_PUBLISH_RIGHTS_CORE_V0_1.md` |
-| Launch gates AT–DE (sin live) | Documentado | `docs/launch-gates.md` — `LIVE_COMMERCE_ENABLED` sigue false |
-| Piloto live | NO HABILITADO | Gates pendientes, guard de arranque explícito |
+| Launch gates AT–DE | Documentado | `docs/launch-gates.md` — gate técnico commerce PASS; legales pendientes |
+| Piloto live / APP_ENV=production | NO HABILITADO | Gates legales/ops pendientes; production sigue bloqueada |
 
 ## Identity KYC v0.1 (7 sep 2026)
 
@@ -58,6 +59,20 @@ Historia: una marca elige un creador, configura el uso, obtiene una decisión de
 | Flag off blocks livemode | PASS | `tests/identity-kyc.test.ts` |
 | MFA / live commerce | NO | Roadmap after STOP |
 
+## Live commerce L1 (gate técnico)
+
+| Entrega | Resultado | Evidencia |
+|---|---|---|
+| Spec `LIVE_COMMERCE_V0_1` | PASS | `docs/LIVE_COMMERCE_V0_1.md` |
+| `assertLiveCommerceAllowed` | PASS | checkout/Connect/refunds/money/recon |
+| Flag off blocks livemode | PASS | `tests/live-commerce.test.ts`, `tests/stripe-events.test.ts` |
+| Flag on accepts livemode mock | PASS | sin red Stripe |
+| `GET /v1/config` → `live_commerce` | PASS | `controllers.ts` |
+| `APP_ENV=production` | Aún bloqueado | `assertConfiguration` |
+| Clearance legal AT–DE | NO | `docs/launch-gates.md` |
+
+**STOP.** CI mantiene `LIVE_COMMERCE_ENABLED=false`. Sin voz/agents/API pública. Sin afirmar piloto legal listo.
+
 ## Creator publish Rights Core v0.1 (7 sep 2026)
 
 | Entrega | Resultado | Evidencia |
@@ -67,7 +82,7 @@ Historia: una marca elige un creador, configura el uso, obtiene una decisión de
 | Legacy ES editor intacto | PASS | perfiles `rightsnet.policy/0.1` |
 | Live / remap ES→AT | NO | STOP |
 
-**STOP.** `LIVE_COMMERCE_ENABLED` permanece false. Siguiente gate solo tras checklist `launch-gates.md`.
+**STOP (publish).** Remap ES→AT fuera de alcance. Live commerce: ver gate L1 en esta misma verificación.
 
 ## Rights Core v0.1 — motor puro (7 sep 2026)
 

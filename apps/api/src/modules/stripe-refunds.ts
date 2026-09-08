@@ -4,7 +4,11 @@ import { audit, pool, transaction, type DB } from '../../../../packages/db/index
 import { DomainError } from '../../../../packages/domain/src/index.js';
 import type { Actor } from '../common/auth.js';
 import { config } from '../common/config.js';
-import { stripeRefundPort, type StripeRefund } from '../integrations/stripe.js';
+import {
+  assertLiveCommerceAllowed,
+  stripeRefundPort,
+  type StripeRefund,
+} from '../integrations/stripe.js';
 import { journal, refundSandbox } from './payments.js';
 
 function objectId(value: string | { id: string } | null | undefined) {
@@ -95,7 +99,7 @@ function mapStripeStatus(status: string | null): 'pending' | 'succeeded' | 'fail
 }
 
 async function applyRefundOutcome(refundId: string, stripeRefund: StripeRefund) {
-  if (stripeRefund.livemode) throw new DomainError('LIVE_EVENT_BLOCKED', 400);
+  assertLiveCommerceAllowed(Boolean(stripeRefund.livemode));
   await transaction(async (db) => {
     const refund = (await db.query('SELECT * FROM refunds WHERE id=$1 FOR UPDATE', [refundId]))
       .rows[0];
@@ -221,7 +225,7 @@ export function isRefundEvent(event: Stripe.Event): boolean {
 }
 
 export async function ingestStripeRefundEvent(event: Stripe.Event) {
-  if (event.livemode) throw new DomainError('LIVE_EVENT_BLOCKED', 400);
+  assertLiveCommerceAllowed(Boolean(event.livemode));
   if (!isRefundEvent(event)) return;
   if (event.account) throw new DomainError('STRIPE_EVENT_SCOPE_MISMATCH', 400);
   if (
