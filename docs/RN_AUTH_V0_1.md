@@ -138,8 +138,8 @@ No separate mint route. Optional `verify-auth` HTTP route = later.
 
 ### Next milestones (one at a time)
 
-1. Existing Deal OCR / org-member Ops / HF Nest L2  
-   (live L1 already PASS — `docs/HIGGSFIELD_LIVE_V0_1.md`)
+1. IMPLEMENT Existing Deal OCR L1 / org-member Ops / HF Nest L2  
+   (OCR SPECIFY PASS — `docs/EXISTING_DEAL_OCR_V0_1.md`)
 
 ---
 

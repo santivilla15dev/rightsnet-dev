@@ -33,7 +33,9 @@ IMPLEMENT **PASS** (`/ops/rights`, `/ops/rights/campaign`).
 Do not collapse preview vs executable authority.
 RightsGrant: `docs/RIGHTS_GRANT_V0_1.md` — SPECIFY **PASS**; marketplace License→Grant
 IMPLEMENT v0.1 **PASS**; Existing Deal structured ingest v0.1 **PASS**
-(`external_agreements` → confirm → `EXISTING_AGREEMENT` grant). File/OCR upload **not started**.
+(`external_agreements` → confirm → `EXISTING_AGREEMENT` grant).
+Existing Deal files/OCR: `docs/EXISTING_DEAL_OCR_V0_1.md` — SPECIFY **PASS**;
+IMPLEMENT **not started** (upload + sandbox extract L1 deferred).
 Marketplace and Existing Deal converge on RightsGrant; do not mutate public `RightsPolicy`
 for bilateral deals. Do not confuse RightsGrant with Stripe Connect or Connect routes.
 Rights Operations B2B: `docs/RIGHTS_OPERATIONS_V0_1.md` — SPECIFY **PASS**; read-model API

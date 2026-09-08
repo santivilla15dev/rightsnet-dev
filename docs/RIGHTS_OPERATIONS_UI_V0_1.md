@@ -23,4 +23,5 @@ Code: `apps/web/src/components/rights-operations.tsx`,
 
 ## STOP
 
-Do **not** open org-member RBAC, OCR upload UI, or Higgsfield inside Ops without a new decision.
+Do **not** open org-member RBAC, OCR upload UI (OCR SPECIFY only:
+`docs/EXISTING_DEAL_OCR_V0_1.md`), or Higgsfield inside Ops without a new decision.

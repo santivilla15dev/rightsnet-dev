@@ -64,10 +64,11 @@ Pipeline (Existing Deal):
 draft / pending_confirm → human confirm → grant_active (EXISTING_AGREEMENT)
 ```
 
-**Structured ingest v0.1 is implemented** (admin APIs; no OCR/PDF). See
+**Structured ingest v0.1 is implemented** (admin APIs). See
 `docs/RIGHTS_GRANT_V0_1.md` §5 and `POST /v1/admin/external-agreements`.
 
-Human confirm is mandatory before `grant_active`. Bulk CSV / file storage remain later.
+**Files / OCR:** SPECIFY **PASS** (`docs/EXISTING_DEAL_OCR_V0_1.md`); IMPLEMENT **not started**.
+Human confirm is mandatory before `grant_active`. Bulk CSV remains a later decision.
 
 Each confirmed agreement projects one or more **RightsGrant** rows with
 `source.type = EXISTING_AGREEMENT` and `grantee_organization_id` = the agency (or brand org).
@@ -165,10 +166,9 @@ cleared counts.
 
 ## Non-goals (this IMPLEMENT)
 
-- Building the Overview or query **UI**  
-- Contract upload / OCR / extract jobs (structured ingest already exists)  
+- Building the Overview or query **UI** (UI shipped separately — see UI doc)  
+- **IMPLEMENT** of contract upload / OCR (SPECIFY only: `docs/EXISTING_DEAL_OCR_V0_1.md`)  
 - Changing Connect `check` semantics  
-- Public generation verify / partner generation list  
 - Live commerce / non-admin org-member access  
 
 ---
@@ -177,11 +177,11 @@ cleared counts.
 
 **IMPLEMENT read-model API PASS** when overview + campaign-query work, tests pass, AGENTS updated.
 
-**Do not start in the same breath:** HF Nest L2/webhooks, OCR UI, org-self-serve RBAC.
+**Do not start in the same breath:** HF Nest L2/webhooks, OCR IMPLEMENT UI, org-self-serve RBAC.
 
 ### Next milestones (one at a time, explicit decision)
 
-1. Existing Deal files / OCR / bulk import  
+1. IMPLEMENT Existing Deal OCR L1 (`docs/EXISTING_DEAL_OCR_V0_1.md`)  
 2. Org-member (non-admin) access to Operations  
 3. HF Nest L2 (`docs/HIGGSFIELD_LIVE_V0_1.md`)
 
@@ -190,6 +190,7 @@ cleared counts.
 ## Related docs
 
 - `docs/RIGHTS_GRANT_V0_1.md`  
+- `docs/EXISTING_DEAL_OCR_V0_1.md`  
 - `docs/RIGHTSNET_CONNECT_V0_1.md`  
 - `docs/RIGHTSNET_MVP_CONSTITUTION.md`  
 - `docs/RIGHTSNET_OFFICIAL_FLOW.md`  
