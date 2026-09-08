@@ -5,7 +5,9 @@ It is the governing MVP scope supplied by the founder. It supersedes conflicting
 product assumptions in the earlier master development brief, not historical evidence.
 
 Rights Core engine + dual-path purchase integration are **PASS**.
-Auth Supabase v0.2 (email + Google/Apple, cuenta dual sin rol exclusivo, **no MFA**) is **PASS**.
+Auth Supabase v0.2 (email + Google/Apple, cuenta dual sin rol exclusivo) is **PASS**.
+Auth MFA v0.1 (Supabase TOTP, `MFA_ENABLED`): `docs/AUTH_MFA_V0_1.md` — SPECIFY **PASS**;
+IMPLEMENT **PASS** (CI flag off; no live commerce).
 Home pública + E2E §28 is **PASS**.
 Marketplace UX v0.1 (product home + buyer path feel) is **PASS** —
 see `docs/MARKETPLACE_UX_V0_1.md`.
@@ -64,9 +66,9 @@ Default identity remains `IDENTITY_PROVIDER=sandbox`.
 Identity live requires `IDENTITY_LIVE_ENABLED=true` + `IDENTITY_PROVIDER=stripe`
 (see `docs/IDENTITY_KYC_LIVE_V0_1.md`). Does **not** enable live commerce.
 
-Do **not** open MFA, voice, music, agents, public API platform, or live commerce in parallel
-without an explicit next-milestone decision. Roadmap after Identity live STOP:
-**MFA → live commerce** (one at a time). RightsNet Connect v0.1 is partner-gated only
+Do **not** open voice, music, agents, public API platform, or live commerce in parallel
+without an explicit next-milestone decision. Roadmap after MFA STOP: **live commerce**
+(one at a time). RightsNet Connect v0.1 is partner-gated only
 (`PLATFORM_API_ENABLED`); do not treat it as a public developer platform.
 
 Follow SPECIFY → IMPLEMENT → MIGRATE → TEST → RUN → VERIFY → DOCUMENT → STOP.

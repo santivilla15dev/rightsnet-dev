@@ -11,6 +11,12 @@ export type AuthSession = {
   user: SupabaseUser;
 };
 
+export type MfaFactorSummary = {
+  id: string;
+  friendly_name?: string;
+  status: string;
+};
+
 export type SignUpResult =
   | { kind: 'session'; session: AuthSession }
   | { kind: 'check_email'; user: SupabaseUser };
@@ -29,6 +35,34 @@ export type SupabaseAuthPort = {
   getUser(accessToken: string): Promise<SupabaseUser>;
   resetPasswordForEmail(email: string, redirectTo: string): Promise<void>;
   signOut(accessToken: string): Promise<void>;
+  /** Optional MFA — mocks may omit; live port always implements. */
+  getAuthenticatorAssuranceLevel?(accessToken: string): Promise<{
+    currentLevel: string | null;
+    nextLevel: string | null;
+  }>;
+  listTotpFactors?(accessToken: string, refreshToken: string): Promise<MfaFactorSummary[]>;
+  mfaChallenge?(
+    accessToken: string,
+    refreshToken: string,
+    factorId: string,
+  ): Promise<{ challenge_id: string }>;
+  mfaVerify?(input: {
+    accessToken: string;
+    refreshToken: string;
+    factorId: string;
+    challengeId: string;
+    code: string;
+  }): Promise<AuthSession>;
+  mfaEnroll?(
+    accessToken: string,
+    refreshToken: string,
+  ): Promise<{ factor_id: string; qr_code: string; secret: string }>;
+  mfaChallengeVerifyEnroll?(input: {
+    accessToken: string;
+    refreshToken: string;
+    factorId: string;
+    code: string;
+  }): Promise<AuthSession>;
 };
 
 let injected: SupabaseAuthPort | null = null;
@@ -115,7 +149,89 @@ function defaultPort(): SupabaseAuthPort {
     async signOut(_accessToken: string) {
       // v0.1: JWT is client-held; anon key cannot revoke server-side. Cookie clear is enough.
     },
+    async getAuthenticatorAssuranceLevel(accessToken: string) {
+      const client = liveClient();
+      const { data, error } = await client.auth.mfa.getAuthenticatorAssuranceLevel(accessToken);
+      if (error)
+        throw new DomainError('AUTH_FAILED', 401, error.message ?? 'No se pudo leer AAL.');
+      return {
+        currentLevel: data.currentLevel ?? null,
+        nextLevel: data.nextLevel ?? null,
+      };
+    },
+    async listTotpFactors(accessToken: string, refreshToken: string) {
+      const client = await clientWithSession(accessToken, refreshToken);
+      const { data, error } = await client.auth.mfa.listFactors();
+      if (error)
+        throw new DomainError('AUTH_FAILED', 401, error.message ?? 'No se pudieron listar factores.');
+      return (data.totp ?? []).map((f) => ({
+        id: f.id,
+        friendly_name: f.friendly_name ?? undefined,
+        status: f.status,
+      }));
+    },
+    async mfaChallenge(accessToken: string, refreshToken: string, factorId: string) {
+      const client = await clientWithSession(accessToken, refreshToken);
+      const { data, error } = await client.auth.mfa.challenge({ factorId });
+      if (error || !data?.id)
+        throw new DomainError('MFA_FAILED', 401, error?.message ?? 'No se pudo crear el desafío MFA.');
+      return { challenge_id: data.id };
+    },
+    async mfaVerify(input) {
+      const client = await clientWithSession(input.accessToken, input.refreshToken);
+      const { data, error } = await client.auth.mfa.challengeAndVerify({
+        factorId: input.factorId,
+        code: input.code,
+      });
+      if (error || !data?.access_token || !data.user)
+        throw new DomainError('MFA_FAILED', 401, error?.message ?? 'Código MFA inválido.');
+      return {
+        access_token: data.access_token,
+        refresh_token: data.refresh_token,
+        expires_in: data.expires_in ?? 3600,
+        user: data.user,
+      };
+    },
+    async mfaEnroll(accessToken: string, refreshToken: string) {
+      const client = await clientWithSession(accessToken, refreshToken);
+      const { data, error } = await client.auth.mfa.enroll({
+        factorType: 'totp',
+        friendlyName: 'RightsNet',
+      });
+      if (error || !data?.id || !data.totp)
+        throw new DomainError('MFA_FAILED', 400, error?.message ?? 'No se pudo iniciar enroll MFA.');
+      return {
+        factor_id: data.id,
+        qr_code: data.totp.qr_code,
+        secret: data.totp.secret,
+      };
+    },
+    async mfaChallengeVerifyEnroll(input) {
+      const client = await clientWithSession(input.accessToken, input.refreshToken);
+      const { data, error } = await client.auth.mfa.challengeAndVerify({
+        factorId: input.factorId,
+        code: input.code,
+      });
+      if (error || !data?.access_token || !data.user)
+        throw new DomainError('MFA_FAILED', 401, error?.message ?? 'Código MFA inválido.');
+      return {
+        access_token: data.access_token,
+        refresh_token: data.refresh_token,
+        expires_in: data.expires_in ?? 3600,
+        user: data.user,
+      };
+    },
   };
+}
+
+async function clientWithSession(accessToken: string, refreshToken: string) {
+  const client = liveClient();
+  const { error } = await client.auth.setSession({
+    access_token: accessToken,
+    refresh_token: refreshToken,
+  });
+  if (error) throw new DomainError('UNAUTHENTICATED', 401, error.message);
+  return client;
 }
 
 export function supabaseAuth(): SupabaseAuthPort {
@@ -275,11 +391,104 @@ export async function supabaseLogin(email: string, password: string) {
     throw new DomainError('SUPABASE_AUTH_DISABLED', 404, 'Auth Supabase no está activo.');
   const session = await supabaseAuth().signInWithPassword({ email, password });
   const user = await provisionRightsNetUser(session.user);
+
+  if (config.mfaEnabled) {
+    const port = supabaseAuth();
+    if (port.getAuthenticatorAssuranceLevel && port.listTotpFactors) {
+      const aal = await port.getAuthenticatorAssuranceLevel(session.access_token);
+      if (aal.currentLevel === 'aal1' && aal.nextLevel === 'aal2') {
+        const factors = await port.listTotpFactors(session.access_token, session.refresh_token);
+        const totp = factors.find((f) => f.status === 'verified') ?? factors[0];
+        if (totp) {
+          return {
+            status: 'mfa_required' as const,
+            factor_id: totp.id,
+            mfa_access_token: session.access_token,
+            mfa_refresh_token: session.refresh_token,
+            expires_in: session.expires_in,
+            user: null,
+          };
+        }
+      }
+    }
+  }
+
   return {
+    status: 'session' as const,
     token: session.access_token,
     refresh_token: session.refresh_token,
     expires_in: session.expires_in,
     user,
+  };
+}
+
+export async function supabaseMfaVerify(input: {
+  access_token: string;
+  refresh_token: string;
+  factor_id: string;
+  code: string;
+}) {
+  if (config.auth !== 'supabase')
+    throw new DomainError('SUPABASE_AUTH_DISABLED', 404, 'Auth Supabase no está activo.');
+  if (!config.mfaEnabled)
+    throw new DomainError('MFA_DISABLED', 404, 'MFA no está habilitado en este entorno.');
+  const port = supabaseAuth();
+  if (!port.mfaVerify) throw new DomainError('MFA_UNSUPPORTED', 503, 'Puerto MFA no disponible.');
+  const session = await port.mfaVerify({
+    accessToken: input.access_token,
+    refreshToken: input.refresh_token,
+    factorId: input.factor_id,
+    challengeId: '',
+    code: input.code.trim(),
+  });
+  const user = await provisionRightsNetUser(session.user);
+  return {
+    status: 'session' as const,
+    token: session.access_token,
+    refresh_token: session.refresh_token,
+    expires_in: session.expires_in,
+    user,
+  };
+}
+
+export async function supabaseMfaEnroll(accessToken: string, refreshToken: string) {
+  if (config.auth !== 'supabase')
+    throw new DomainError('SUPABASE_AUTH_DISABLED', 404, 'Auth Supabase no está activo.');
+  if (!config.mfaEnabled)
+    throw new DomainError('MFA_DISABLED', 404, 'MFA no está habilitado en este entorno.');
+  const port = supabaseAuth();
+  if (!port.mfaEnroll) throw new DomainError('MFA_UNSUPPORTED', 503, 'Puerto MFA no disponible.');
+  await port.getUser(accessToken);
+  return port.mfaEnroll(accessToken, refreshToken);
+}
+
+export async function supabaseMfaEnrollConfirm(input: {
+  access_token: string;
+  refresh_token: string;
+  factor_id: string;
+  code: string;
+}) {
+  if (config.auth !== 'supabase')
+    throw new DomainError('SUPABASE_AUTH_DISABLED', 404, 'Auth Supabase no está activo.');
+  if (!config.mfaEnabled)
+    throw new DomainError('MFA_DISABLED', 404, 'MFA no está habilitado en este entorno.');
+  const port = supabaseAuth();
+  if (!port.mfaChallengeVerifyEnroll)
+    throw new DomainError('MFA_UNSUPPORTED', 503, 'Puerto MFA no disponible.');
+  const session = await port.mfaChallengeVerifyEnroll({
+    accessToken: input.access_token,
+    refreshToken: input.refresh_token,
+    factorId: input.factor_id,
+    code: input.code.trim(),
+  });
+  const user = await provisionRightsNetUser(session.user);
+  return {
+    status: 'session' as const,
+    token: session.access_token,
+    refresh_token: session.refresh_token,
+    expires_in: session.expires_in,
+    user,
+    enrolled: true as const,
   };
 }
 

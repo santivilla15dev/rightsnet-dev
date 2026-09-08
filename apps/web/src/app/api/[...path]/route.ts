@@ -69,6 +69,23 @@ async function proxy(req: NextRequest, { params }: { params: Promise<{ path: str
         bodyText = JSON.stringify({ refresh_token: refresh });
       }
     }
+    if (joined === 'auth/supabase/mfa/enroll' || joined === 'auth/supabase/mfa/enroll/confirm') {
+      let parsed: Record<string, unknown> = {};
+      try {
+        parsed = bodyText ? (JSON.parse(bodyText) as Record<string, unknown>) : {};
+      } catch {
+        parsed = {};
+      }
+      const access =
+        (typeof parsed.access_token === 'string' && parsed.access_token) ||
+        jar.get('rightsnet_session')?.value;
+      const refresh =
+        (typeof parsed.refresh_token === 'string' && parsed.refresh_token) ||
+        jar.get('rightsnet_refresh')?.value;
+      if (access && refresh) {
+        bodyText = JSON.stringify({ ...parsed, access_token: access, refresh_token: refresh });
+      }
+    }
   }
 
   try {
@@ -88,7 +105,9 @@ async function proxy(req: NextRequest, { params }: { params: Promise<{ path: str
         joined === 'auth/supabase/login' ||
         joined === 'auth/supabase/signup' ||
         joined === 'auth/supabase/session' ||
-        joined === 'auth/supabase/refresh') &&
+        joined === 'auth/supabase/refresh' ||
+        joined === 'auth/supabase/mfa/verify' ||
+        joined === 'auth/supabase/mfa/enroll/confirm') &&
       upstream.ok
     ) {
       const data = (await upstream.json()) as {
@@ -98,6 +117,10 @@ async function proxy(req: NextRequest, { params }: { params: Promise<{ path: str
         user: unknown;
         status?: string;
         message?: string;
+        factor_id?: string;
+        mfa_access_token?: string;
+        mfa_refresh_token?: string;
+        enrolled?: boolean;
       };
       if (!data.token) {
         return NextResponse.json(data);
@@ -105,6 +128,7 @@ async function proxy(req: NextRequest, { params }: { params: Promise<{ path: str
       const response = NextResponse.json({
         user: data.user,
         status: data.status ?? 'session',
+        enrolled: data.enrolled,
       });
       applyAuthCookies(response, req, {
         token: data.token,

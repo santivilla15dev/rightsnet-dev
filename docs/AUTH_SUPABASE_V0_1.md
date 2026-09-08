@@ -1,7 +1,7 @@
 # Auth Supabase v0.2 (email + Google/Apple)
 
 Status: **PASS target** for this milestone.  
-Governing: MVP Constitution §26. MFA = **out**.
+Governing: MVP Constitution §26. MFA = **PASS** gated (`docs/AUTH_MFA_V0_1.md`, `MFA_ENABLED`).
 
 ## Goal
 
@@ -23,11 +23,12 @@ Product auth screens with:
 - `POST /v1/organizations/bootstrap` remains for minimal/legacy bootstrap.
 - `POST /v1/auth/supabase/session` provisions after OAuth tokens.
 - Browser needs `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
-- No GitHub/Facebook/Microsoft. No MFA.
+- No GitHub/Facebook/Microsoft.
+- MFA TOTP optional when `MFA_ENABLED=true` — `docs/AUTH_MFA_V0_1.md`.
 
 ## Acceptance
 
 1. Unit tests: login, signup, session provision, forgot-password mock.
 2. E2E sandbox: login sin personas; OAuth no requerido en sandbox.
 3. Runbook documents Google/Apple + redirect URLs.
-4. STOP — MFA / live commerce later.
+4. STOP — live commerce later (MFA = separate milestone PASS).

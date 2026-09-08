@@ -39,7 +39,7 @@ Code: `assertIdentityLivemodeAllowed` in
 ## Roadmap (after STOP — do not open here)
 
 1. ~~Identity live~~ (this milestone)  
-2. **MFA** — explicit next decision  
+2. **~~MFA~~** — **PASS** (`docs/AUTH_MFA_V0_1.md`)  
 3. **Live commerce** — explicit decision after MFA STOP  
 
 No voice / music / agents / public API in this sequence.

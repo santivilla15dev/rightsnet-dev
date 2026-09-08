@@ -19,6 +19,7 @@ Historia: una marca elige un creador, configura el uso, obtiene una decisión de
 | Rights Core v0.1 motor puro | PASS | `tests/rights-core-acceptance.test.ts` (matriz); `packages/domain/src/rights-core/` |
 | Rights Core integración dual-path | PASS | `tests/rights-core-integration.test.ts` (8); migración `012`; seed Greta DE rights-policy |
 | Auth Supabase v0.1 (sin MFA) | PASS | `tests/supabase-auth.test.ts`; `docs/AUTH_SUPABASE_V0_1.md`; runbook `docs/runbooks/auth-supabase.md` |
+| Auth MFA v0.1 (TOTP) | PASS | `MFA_ENABLED`; `docs/AUTH_MFA_V0_1.md`; `tests/supabase-mfa.test.ts` |
 | Home pública + E2E §28 | PASS | `/` bare shell; `pnpm test:e2e` **9 PASS**; `docs/HOME_AND_E2E_V0_1.md` |
 | Marketplace UX v0.1 | PASS | Home producto + pasos licencia; `docs/MARKETPLACE_UX_V0_1.md` |
 | Identity KYC v0.1.1 | PASS | Port sandbox/stripe + selfie matching; `docs/IDENTITY_KYC_V0_1.md`; tests `identity-kyc.test.ts` |

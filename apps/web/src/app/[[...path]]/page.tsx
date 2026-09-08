@@ -15,6 +15,7 @@ import { Verify } from '@/components/verify';
 import { GenerationVerify } from '@/components/generation-verify';
 import { Login } from '@/components/login';
 import { Signup } from '@/components/signup';
+import { AccountSecurity } from '@/components/account-security';
 import { Welcome } from '@/components/welcome';
 import { CompanySetup } from '@/components/company-setup';
 import { CompanyReady } from '@/components/company-ready';
@@ -34,6 +35,7 @@ export default async function Page({ params }: { params: Promise<{ path?: string
   if (route === 'discover') return <Discover />;
   if (route === 'saved') return <Discover savedOnly />;
   if (route === 'login') return <Login />;
+  if (route === 'account/security') return <AccountSecurity />;
   if (route === 'signup')
     return (
       <Suspense fallback={<Loading />}>

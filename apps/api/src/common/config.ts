@@ -13,6 +13,11 @@ export const config = {
    * Does not enable LIVE_COMMERCE_ENABLED or production APP_ENV.
    */
   identityLiveEnabled: process.env.IDENTITY_LIVE_ENABLED === 'true',
+  /**
+   * Supabase TOTP MFA. Off by default (CI/E2E). Requires AUTH_PROVIDER=supabase.
+   * Does not enable live commerce.
+   */
+  mfaEnabled: process.env.MFA_ENABLED === 'true',
   /** When true, new creator policies must use rightsnet.rights-policy/0.1. Dual-path evaluation always keys off payload schema_version. */
   rightsCorePurchases: process.env.RIGHTS_CORE_PURCHASES === 'true',
   /**

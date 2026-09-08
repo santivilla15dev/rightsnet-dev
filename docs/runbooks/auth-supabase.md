@@ -7,7 +7,8 @@ Agents/E2E: `AUTH_PROVIDER=sandbox` (Playwright fuerza sandbox).
 
 1. Proyecto Supabase.
 2. **Authentication → Providers**
-   - Email (password) ON. MFA off.
+   - Email (password) ON.
+   - MFA (TOTP): enable in Supabase Auth when using `MFA_ENABLED=true` (see `docs/AUTH_MFA_V0_1.md`).
    - Google ON (Client ID/Secret de Google Cloud).
    - Apple ON (requiere Apple Developer; Services ID + key).
 3. **URL configuration** (Authentication → URL Configuration):
@@ -19,6 +20,7 @@ Agents/E2E: `AUTH_PROVIDER=sandbox` (Playwright fuerza sandbox).
 
 ```bash
 AUTH_PROVIDER=supabase
+MFA_ENABLED=true
 SUPABASE_URL=https://YOUR_PROJECT.supabase.co
 SUPABASE_ANON_KEY=eyJ...
 NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
@@ -50,6 +52,8 @@ pnpm test -- tests/supabase-auth.test.ts
 
 ## Out of scope (STOP)
 
-- MFA, magic link como login primario
+- Magic link como login primario
 - GitHub / Facebook / Microsoft
 - Live commerce
+
+MFA TOTP: `docs/AUTH_MFA_V0_1.md` (`MFA_ENABLED`).

@@ -31,6 +31,9 @@ import {
   supabaseSignup,
   supabaseEstablishSession,
   supabaseForgotPassword,
+  supabaseMfaVerify,
+  supabaseMfaEnroll,
+  supabaseMfaEnrollConfirm,
   bootstrapOrganization,
   setupOrganization,
   supabaseAuth,
@@ -153,6 +156,7 @@ export class PublicController {
       payments: config.payments,
       identity: config.identity,
       identity_live_enabled: config.identityLiveEnabled,
+      mfa_enabled: config.mfaEnabled,
       rights_core_purchases: config.rightsCorePurchases,
       platform_api_enabled: config.platformApiEnabled,
       live_commerce: false,
@@ -225,6 +229,50 @@ export class AccountsController {
       .strict()
       .parse(body);
     return supabaseLogin(data.email, data.password);
+  }
+  @Post('auth/supabase/mfa/verify') @HttpCode(200) async supabaseMfaVerifyRoute(
+    @Body() body: unknown,
+  ) {
+    const data = z
+      .object({
+        access_token: z.string().min(20).max(8000),
+        refresh_token: z.string().min(10).max(8000),
+        factor_id: z.string().trim().min(8).max(80),
+        code: z.string().trim().min(6).max(12),
+      })
+      .strict()
+      .parse(body);
+    return supabaseMfaVerify(data);
+  }
+  @Post('auth/supabase/mfa/enroll') @HttpCode(200) async supabaseMfaEnrollRoute(
+    @Req() req: Request,
+    @Body() body: unknown,
+  ) {
+    await actor(req);
+    const data = z
+      .object({
+        access_token: z.string().min(20).max(8000),
+        refresh_token: z.string().min(10).max(8000),
+      })
+      .strict()
+      .parse(body);
+    return supabaseMfaEnroll(data.access_token, data.refresh_token);
+  }
+  @Post('auth/supabase/mfa/enroll/confirm') @HttpCode(200) async supabaseMfaEnrollConfirmRoute(
+    @Req() req: Request,
+    @Body() body: unknown,
+  ) {
+    await actor(req);
+    const data = z
+      .object({
+        access_token: z.string().min(20).max(8000),
+        refresh_token: z.string().min(10).max(8000),
+        factor_id: z.string().trim().min(8).max(80),
+        code: z.string().trim().min(6).max(12),
+      })
+      .strict()
+      .parse(body);
+    return supabaseMfaEnrollConfirm(data);
   }
   @Post('auth/supabase/signup') @HttpCode(200) async supabaseRegister(@Body() body: unknown) {
     const data = z
