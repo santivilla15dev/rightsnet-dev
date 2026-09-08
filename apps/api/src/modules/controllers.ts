@@ -40,6 +40,7 @@ import {
   platformSearch,
   platformCheck,
   platformAuthorizeGeneration,
+  platformVerifyAuth,
 } from './platform.js';
 import { platformReportOutput } from './report-output.js';
 import { listPlatformGenerations, getPlatformGeneration } from './generations.js';
@@ -1173,6 +1174,11 @@ export class PlatformController {
   ) {
     assertPlatformApiAccess(await actor(req));
     return platformAuthorizeGeneration(body);
+  }
+  /** Read-only RN-AUTH check — does not consume. */
+  @Post('verify-auth') @HttpCode(200) async verifyAuth(@Req() req: Request, @Body() body: unknown) {
+    assertPlatformApiAccess(await actor(req));
+    return platformVerifyAuth(body);
   }
   @Post('report-output') @HttpCode(200) async reportOutput(@Req() req: Request, @Body() body: unknown) {
     assertPlatformApiAccess(await actor(req));

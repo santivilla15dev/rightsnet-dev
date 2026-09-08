@@ -9,7 +9,7 @@ import { config } from '../common/config.js';
 import { admin, type Actor } from '../common/auth.js';
 import { search } from './marketplace.js';
 import { previewRightsCheck } from './licensing.js';
-import { mintRnAuthToken } from './generation-auth.js';
+import { mintRnAuthToken, verifyRnAuthToken } from './generation-auth.js';
 
 export function assertPlatformApiAccess(user: Actor) {
   if (!config.platformApiEnabled) {
@@ -208,5 +208,35 @@ export async function platformAuthorizeGeneration(body: unknown) {
     grant_id: matched.id,
     auth_token,
     preview: false,
+  };
+}
+
+const VerifyAuthBodySchema = z
+  .object({
+    auth_token: z.unknown(),
+  })
+  .strict();
+
+/**
+ * Partner read-only RN-AUTH check. Does not consume (report_output does).
+ */
+export async function platformVerifyAuth(body: unknown, now: Date = new Date()) {
+  const data = VerifyAuthBodySchema.parse(body);
+  const result = await verifyRnAuthToken(data.auth_token, pool, now);
+  if (result.ok) {
+    return {
+      surface: 'platform' as const,
+      valid: true as const,
+      reason: null,
+      status: result.status,
+      payload: result.payload,
+    };
+  }
+  return {
+    surface: 'platform' as const,
+    valid: false as const,
+    reason: result.reason,
+    status: null,
+    payload: null,
   };
 }

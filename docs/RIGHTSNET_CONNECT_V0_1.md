@@ -71,6 +71,7 @@ RightsNet Connect **must call** existing domain logic:
 | `GET` | `/v1/platform/search` | Same filters/results as `GET /v1/search` |
 | `POST` | `/v1/platform/check` | Same decision as `POST /v1/public/rights-check` (preview, non-binding) |
 | `POST` | `/v1/platform/authorize-generation` | ACTIVE RightsGrant → `AUTHORIZED` (+ RN-AUTH) / `REQUIRES_APPROVAL` / `DENIED` |
+| `POST` | `/v1/platform/verify-auth` | Read-only RN-AUTH check (no consume) — `docs/RN_AUTH_VERIFY_V0_1.md` |
 | `POST` | `/v1/platform/report-output` | GenerationRecord + consume RN-AUTH + `RN-GEN` token |
 | `GET` | `/v1/platform/generations` | Partner list (org-scoped) |
 | `GET` | `/v1/platform/generations/:id` | Partner GET |

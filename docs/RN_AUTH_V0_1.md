@@ -117,7 +117,8 @@ Code: `apps/api/src/modules/generation-auth.ts`, Zod in
 }
 ```
 
-No separate mint route. Optional `verify-auth` HTTP route = later.
+No separate mint route. Partner `POST /v1/platform/verify-auth` = **PASS**
+(`docs/RN_AUTH_VERIFY_V0_1.md`; read-only, no consume).
 
 ---
 
@@ -145,6 +146,7 @@ No separate mint route. Optional `verify-auth` HTTP route = later.
 
 ## Related docs
 
+- `docs/RN_AUTH_VERIFY_V0_1.md`  
 - `docs/REPORT_OUTPUT_V0_1.md`  
 - `docs/RIGHTSNET_CONNECT_V0_1.md`  
 - `docs/RIGHTS_GRANT_V0_1.md`  
