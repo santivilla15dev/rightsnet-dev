@@ -3,7 +3,7 @@
 **Status:** SPECIFY **PASS** · IMPLEMENT marketplace projection **PASS** · Existing Deal structured ingest **PASS**  
 **Date:** September 2026  
 **Existing Deal file/OCR upload:** not started  
-**Post-Grant generation trunk:** `authorize_generation` decision **PASS**; signed RN-AUTH / `report_output` **not started**
+**Post-Grant generation trunk:** `authorize_generation` decision **PASS**; RN-AUTH SPECIFY **PASS** (`docs/RN_AUTH_V0_1.md`); RN-AUTH IMPLEMENT / `report_output` **not started**
 
 
 Governing scope: `docs/RIGHTSNET_MVP_CONSTITUTION.md`.  
@@ -48,7 +48,7 @@ RIGHTS GRANT
       ↓
 authorize_generation()     ← decision PASS (no RN-AUTH token yet)
       ↓
-RN-AUTH token              ← future
+RN-AUTH token              ← SPECIFY PASS · IMPLEMENT later
       ↓
 Higgsfield / Runway / …    ← future
       ↓
@@ -233,7 +233,7 @@ See `docs/RIGHTS_OPERATIONS_V0_1.md` (SPECIFY PASS; UI/import **not started**).
 - Zero RN-AUTH / `report_output` / contract-upload code in this Grant projection milestone.
 
 **Next decision (one at a time):** Operations UI · Existing Deal files/OCR ·
-Signed RN-AUTH / `report_output` trunk.
+RN-AUTH IMPLEMENT (`docs/RN_AUTH_V0_1.md`) · `report_output` trunk.
 Keep `check` as policy preview. `authorize_generation` decision is shipped in Connect.
 
 ---
@@ -242,6 +242,7 @@ Keep `check` as policy preview. `authorize_generation` decision is shipped in Co
 
 - `docs/RIGHTSNET_MVP_CONSTITUTION.md`  
 - `docs/RIGHTSNET_CONNECT_V0_1.md`  
+- `docs/RN_AUTH_V0_1.md`  
 - `docs/RIGHTS_OPERATIONS_V0_1.md`  
 - `docs/RIGHTSNET_OFFICIAL_FLOW.md`  
 - `docs/CREATOR_PUBLISH_RIGHTS_CORE_V0_1.md`  

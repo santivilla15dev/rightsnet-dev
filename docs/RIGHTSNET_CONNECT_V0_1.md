@@ -103,12 +103,14 @@ Decision path:
 
 - API keys / client credentials
 - `license()` purchase over API
-- Signed RN-AUTH token + `report_output()` (GenerationRecord)
+- Signed RN-AUTH token — SPECIFY in `docs/RN_AUTH_V0_1.md` (IMPLEMENT not started)
+- `report_output()` (GenerationRecord) — after RN-AUTH
 - Outgoing webhooks, MCP, C2PA, provider-specific adapters
 - Changing `check` to be grant-aware (it stays policy preview)
 
 ## STOP
 
 Connect decision trunk PASS = search + check + authorize-generation (decision only) + tests.  
-Do **not** ship RN-AUTH signing, `report_output`, or grant-aware `check` without a new milestone decision.  
+RN-AUTH: SPECIFY **PASS** (`docs/RN_AUTH_V0_1.md`); do **not** mint tokens without IMPLEMENT decision.  
+Do **not** ship `report_output` or grant-aware `check` without a new milestone decision.  
 Do not expand to license purchase over API without a separate decision.
