@@ -4,10 +4,15 @@ export const config = {
   webUrl: process.env.WEB_URL ?? 'http://localhost:3000',
   auth: process.env.AUTH_PROVIDER ?? 'sandbox',
   payments: process.env.PAYMENTS_PROVIDER ?? 'sandbox',
-  /** sandbox = simulate; stripe = Stripe Identity Verification Sessions (test keys only). */
+  /** sandbox = simulate; stripe = Stripe Identity Verification Sessions. */
   identity: (process.env.IDENTITY_PROVIDER === 'stripe' ? 'stripe' : 'sandbox') as
     | 'sandbox'
     | 'stripe',
+  /**
+   * Allow Stripe Identity livemode (create + webhook). Off by default.
+   * Does not enable LIVE_COMMERCE_ENABLED or production APP_ENV.
+   */
+  identityLiveEnabled: process.env.IDENTITY_LIVE_ENABLED === 'true',
   /** When true, new creator policies must use rightsnet.rights-policy/0.1. Dual-path evaluation always keys off payload schema_version. */
   rightsCorePurchases: process.env.RIGHTS_CORE_PURCHASES === 'true',
   /**
@@ -51,6 +56,15 @@ export function assertConfiguration() {
     throw new Error('Live commerce is not enabled: launch gates are incomplete.');
   if (config.env === 'production')
     throw new Error('Production is blocked until launch gates are complete.');
-  if (process.env.STRIPE_SECRET_KEY && !/^(sk|rk)_test_/.test(process.env.STRIPE_SECRET_KEY))
-    throw new Error('Only Stripe test credentials are accepted.');
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (key && !/^(sk|rk)_test_/.test(key)) {
+    if (!/^(sk|rk)_live_/.test(key))
+      throw new Error('Only Stripe test or live credentials are accepted.');
+    if (!config.identityLiveEnabled)
+      throw new Error(
+        'Stripe live credentials require IDENTITY_LIVE_ENABLED=true (Identity only; commerce still gated).',
+      );
+    if (config.identity !== 'stripe')
+      throw new Error('Stripe live credentials require IDENTITY_PROVIDER=stripe.');
+  }
 }

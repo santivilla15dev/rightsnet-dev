@@ -4,7 +4,7 @@ import { pool, audit, type DB } from '../../../../packages/db/index.js';
 import { DomainError } from '../../../../packages/domain/src/index.js';
 import type { Actor } from '../common/auth.js';
 import { config } from '../common/config.js';
-import { identityKyc, identityProvider } from '../integrations/identity-kyc.js';
+import { identityKyc, identityProvider, assertIdentityLivemodeAllowed } from '../integrations/identity-kyc.js';
 import { ownedAsset } from './marketplace.js';
 
 function mapStripeStatus(
@@ -108,8 +108,7 @@ export function isIdentityEvent(event: Stripe.Event) {
 export async function ingestIdentityEvent(event: Stripe.Event) {
   if (!isIdentityEvent(event)) return { handled: false };
   const session = event.data.object as Stripe.Identity.VerificationSession;
-  if (session.livemode)
-    throw new DomainError('LIVE_IDENTITY_BLOCKED', 503, 'Evento Identity live rechazado.');
+  assertIdentityLivemodeAllowed(Boolean(session.livemode));
 
   const providerRef = session.id;
   const status = mapStripeStatus(session.status);

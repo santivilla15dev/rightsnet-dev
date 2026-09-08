@@ -31,6 +31,28 @@ export function setIdentityKycPort(port: IdentityKycPort | null) {
   injected = port;
 }
 
+/**
+ * Livemode Identity sessions/events require IDENTITY_LIVE_ENABLED.
+ * Does not unlock live commerce.
+ */
+export function assertIdentityLivemodeAllowed(livemode: boolean) {
+  if (!livemode) return;
+  if (!config.identityLiveEnabled) {
+    throw new DomainError(
+      'LIVE_IDENTITY_BLOCKED',
+      503,
+      'Identity live requiere IDENTITY_LIVE_ENABLED=true (no habilita live commerce).',
+    );
+  }
+  if (config.identity !== 'stripe') {
+    throw new DomainError(
+      'LIVE_IDENTITY_BLOCKED',
+      503,
+      'Identity live requiere IDENTITY_PROVIDER=stripe.',
+    );
+  }
+}
+
 /** Params for Stripe Identity document + matching selfie (hosted UI; no biometrics stored in RightsNet). */
 export function stripeIdentityCreateParams(input: {
   creatorId: string;
@@ -80,12 +102,7 @@ function stripePort(): IdentityKycPort {
       const session = await client.identity.verificationSessions.create(
         stripeIdentityCreateParams({ creatorId, userId, assetId, returnUrl }),
       );
-      if (session.livemode)
-        throw new DomainError(
-          'LIVE_IDENTITY_BLOCKED',
-          503,
-          'Solo se admiten sesiones Identity en modo test.',
-        );
+      assertIdentityLivemodeAllowed(Boolean(session.livemode));
       return {
         provider: 'stripe',
         provider_ref: session.id,

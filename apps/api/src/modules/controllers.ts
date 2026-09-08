@@ -152,6 +152,7 @@ export class PublicController {
       auth: config.auth,
       payments: config.payments,
       identity: config.identity,
+      identity_live_enabled: config.identityLiveEnabled,
       rights_core_purchases: config.rightsCorePurchases,
       platform_api_enabled: config.platformApiEnabled,
       live_commerce: false,

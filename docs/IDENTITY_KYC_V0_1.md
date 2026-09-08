@@ -8,7 +8,8 @@ Governing: MVP Constitution §11 (external KYC; no in-house biometrics).
 Replace “Simular verificación” as the only path with a real **provider port**:
 
 - `IDENTITY_PROVIDER=sandbox` (default): keep simulated verify for local/E2E.
-- `IDENTITY_PROVIDER=stripe`: Stripe Identity Verification Sessions (test mode only).
+- `IDENTITY_PROVIDER=stripe`: Stripe Identity Verification Sessions (test by default).
+- Live Identity: `IDENTITY_LIVE_ENABLED=true` — `docs/IDENTITY_KYC_LIVE_V0_1.md` (**PASS**).
 
 Identity ≠ Stripe Connect (payouts). Publish still needs Connect separately.
 
@@ -36,3 +37,5 @@ Identity ≠ Stripe Connect (payouts). Publish still needs Connect separately.
 ## STOP
 
 No MFA. No `LIVE_COMMERCE_ENABLED`. No storing identity document or selfie binaries. No in-app facial recognition models.
+
+Live Identity gated separately: `docs/IDENTITY_KYC_LIVE_V0_1.md`.

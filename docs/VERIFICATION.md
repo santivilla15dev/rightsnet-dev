@@ -22,6 +22,7 @@ Historia: una marca elige un creador, configura el uso, obtiene una decisión de
 | Home pública + E2E §28 | PASS | `/` bare shell; `pnpm test:e2e` **9 PASS**; `docs/HOME_AND_E2E_V0_1.md` |
 | Marketplace UX v0.1 | PASS | Home producto + pasos licencia; `docs/MARKETPLACE_UX_V0_1.md` |
 | Identity KYC v0.1.1 | PASS | Port sandbox/stripe + selfie matching; `docs/IDENTITY_KYC_V0_1.md`; tests `identity-kyc.test.ts` |
+| Identity KYC live v0.1 | PASS | `IDENTITY_LIVE_ENABLED`; `docs/IDENTITY_KYC_LIVE_V0_1.md`; livemode gated |
 | Creator publish Rights Core v0.1 | PASS | Editor AT/DE en `/dashboard`; `docs/CREATOR_PUBLISH_RIGHTS_CORE_V0_1.md` |
 | Launch gates AT–DE (sin live) | Documentado | `docs/launch-gates.md` — `LIVE_COMMERCE_ENABLED` sigue false |
 | Piloto live | NO HABILITADO | Gates pendientes, guard de arranque explícito |
@@ -43,8 +44,18 @@ Historia: una marca elige un creador, configura el uso, obtiene una decisión de
 |---|---|---|
 | `require_matching_selfie` en create session | PASS | `stripeIdentityCreateParams` |
 | Copy UI documento + selfie | PASS | `creator-dashboard.tsx` |
-| Sin blobs biométricos / live false | PASS | STOP docs + `assertConfiguration` |
+| Sin blobs biométricos / live gated | PASS | STOP docs + `IDENTITY_LIVE_ENABLED` + `assertConfiguration` |
 | MFA / live commerce | NO | STOP |
+| Identity live flag | PASS | `docs/IDENTITY_KYC_LIVE_V0_1.md` |
+
+## Identity KYC live v0.1
+
+| Entrega | Resultado | Evidencia |
+|---|---|---|
+| Spec `IDENTITY_KYC_LIVE_V0_1` | PASS | `docs/IDENTITY_KYC_LIVE_V0_1.md` |
+| `assertIdentityLivemodeAllowed` | PASS | create + webhook |
+| Flag off blocks livemode | PASS | `tests/identity-kyc.test.ts` |
+| MFA / live commerce | NO | Roadmap after STOP |
 
 ## Creator publish Rights Core v0.1 (7 sep 2026)
 
