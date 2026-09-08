@@ -20,6 +20,8 @@ const messages: Record<string, string> = {
   INVALID_STATE: 'Este paso no está disponible en el estado actual. Recarga o crea una nueva campaña.',
   UNAUTHENTICATED: 'Inicia sesión para continuar.',
   AUTH_FAILED: 'Correo o contraseña incorrectos.',
+  MFA_FAILED: 'Código MFA inválido o expirado.',
+  MFA_DISABLED: 'MFA no está habilitado en este entorno.',
   SUPABASE_NOT_CONFIGURED: 'Supabase no está configurado: revisa SUPABASE_URL y SUPABASE_ANON_KEY.',
   SUPABASE_AUTH_DISABLED: 'Auth Supabase no está activo en este entorno.',
   ACCOUNT_NOT_PROVISIONED: 'Tu cuenta de Auth aún no está vinculada a RightsNet.',
