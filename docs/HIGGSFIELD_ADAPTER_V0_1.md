@@ -32,3 +32,6 @@ Requires a **cleared** ACTIVE RightsGrant (empty `approval`) for AUTHORIZED.
 
 Do **not** implement live HF keys, MCP, Nest `/adapters/higgsfield/run`, or other providers
 without an explicit next-milestone decision.
+
+Live path SPECIFY: `docs/HIGGSFIELD_LIVE_V0_1.md`.  
+Operations UI SPECIFY: `docs/RIGHTS_OPERATIONS_UI_V0_1.md`.

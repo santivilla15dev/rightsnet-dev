@@ -138,8 +138,8 @@ No separate mint route. Optional `verify-auth` HTTP route = later.
 
 ### Next milestones (one at a time)
 
-1. Live Higgsfield / Nest route (optional) — `docs/HIGGSFIELD_ADAPTER_V0_1.md`  
-2. Operations UI  
+1. Operations UI (`docs/RIGHTS_OPERATIONS_UI_V0_1.md`)  
+2. Live Higgsfield L1 (`docs/HIGGSFIELD_LIVE_V0_1.md`)  
 
 ---
 
