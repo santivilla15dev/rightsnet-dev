@@ -2,6 +2,7 @@
  * RightsNet Connect (product) — thin wrappers over existing marketplace + rights engine.
  * Named `platform` to avoid collision with Stripe Connect (creator payouts).
  */
+import { z } from 'zod';
 import { pool } from '../../../../packages/db/index.js';
 import { DomainError } from '../../../../packages/domain/src/index.js';
 import { config } from '../common/config.js';
@@ -38,5 +39,159 @@ export async function platformCheck(body: unknown) {
   return {
     ...result,
     surface: 'platform' as const,
+  };
+}
+
+const AuthorizeGenerationSchema = z
+  .object({
+    organization_id: z.string().uuid(),
+    asset_id: z.string().uuid(),
+    provider: z.string().trim().min(1).max(64).default('rightsnet'),
+    use: z
+      .object({
+        content_type: z.string().trim().min(1).max(64),
+        purpose: z.string().trim().min(1).max(64).default('commercial_advertising'),
+        territory: z.string().trim().min(1).max(16),
+        industry: z.string().trim().min(1).max(64).optional(),
+        at: z.string().datetime().optional(),
+      })
+      .strict(),
+  })
+  .strict();
+
+type GrantRow = {
+  id: string;
+  status: string;
+  valid_from: Date | string;
+  valid_until: Date | string;
+  payload: {
+    rights?: Record<string, string>;
+    industry?: string[];
+    territories?: string[];
+    approval?: Record<string, string>;
+  };
+};
+
+/**
+ * Executable authority via ACTIVE RightsGrant (not policy preview).
+ * v0.1: decision only — no RN-AUTH signed token yet.
+ */
+export async function platformAuthorizeGeneration(body: unknown) {
+  const data = AuthorizeGenerationSchema.parse(body);
+  const at = data.use.at ? new Date(data.use.at).getTime() : Date.now();
+
+  const grants = (
+    await pool.query(
+      `SELECT id, status, valid_from, valid_until, payload
+       FROM rights_grants
+       WHERE grantee_organization_id=$1 AND asset_id=$2 AND status='ACTIVE'`,
+      [data.organization_id, data.asset_id],
+    )
+  ).rows as GrantRow[];
+
+  const covering = grants.filter((g) => {
+    const from = new Date(g.valid_from).getTime();
+    const until = new Date(g.valid_until).getTime();
+    return from <= at && until > at;
+  });
+
+  if (covering.length === 0) {
+    return {
+      surface: 'platform' as const,
+      decision: 'DENIED' as const,
+      reason_codes: ['NO_ACTIVE_RIGHTS_GRANT'],
+      organization_id: data.organization_id,
+      asset_id: data.asset_id,
+      provider: data.provider,
+      grant_id: null,
+      auth_token: null,
+      preview: false,
+    };
+  }
+
+  const industry = data.use.industry;
+  let matched: GrantRow | null = null;
+  let needsApproval = false;
+  const reasons: string[] = [];
+
+  for (const g of covering) {
+    const rights = g.payload?.rights ?? {};
+    const industries = g.payload?.industry ?? [];
+    const territories = g.payload?.territories ?? [];
+    const approval = g.payload?.approval ?? {};
+
+    if (industry && industries.length > 0 && !industries.includes(industry)) {
+      reasons.push('INDUSTRY_OUT_OF_SCOPE');
+      continue;
+    }
+    if (
+      territories.length > 0 &&
+      !territories.includes(data.use.territory) &&
+      !territories.includes('WORLDWIDE')
+    ) {
+      reasons.push('TERRITORY_OUT_OF_SCOPE');
+      continue;
+    }
+
+    const content = rights[data.use.content_type];
+    const purpose = rights[data.use.purpose];
+    if (content === 'DENY' || purpose === 'DENY') {
+      reasons.push('RIGHT_DENIED_BY_GRANT');
+      continue;
+    }
+
+    const allowContent = content === 'ALLOW';
+    const allowPurpose = purpose === 'ALLOW';
+    const reqContent = content === 'REQUIRES_APPROVAL';
+    const reqPurpose = purpose === 'REQUIRES_APPROVAL';
+
+    if (!allowContent && !allowPurpose && !reqContent && !reqPurpose) {
+      reasons.push('RIGHT_NOT_ALLOW');
+      continue;
+    }
+
+    matched = g;
+    needsApproval = Object.keys(approval).length > 0 || reqContent || reqPurpose;
+    break;
+  }
+
+  if (!matched) {
+    return {
+      surface: 'platform' as const,
+      decision: 'DENIED' as const,
+      reason_codes: reasons.length ? [...new Set(reasons)] : ['NO_MATCHING_RIGHTS_GRANT'],
+      organization_id: data.organization_id,
+      asset_id: data.asset_id,
+      provider: data.provider,
+      grant_id: null,
+      auth_token: null,
+      preview: false,
+    };
+  }
+
+  if (needsApproval) {
+    return {
+      surface: 'platform' as const,
+      decision: 'REQUIRES_APPROVAL' as const,
+      reason_codes: ['GRANT_APPROVAL_REQUIRED'],
+      organization_id: data.organization_id,
+      asset_id: data.asset_id,
+      provider: data.provider,
+      grant_id: matched.id,
+      auth_token: null,
+      preview: false,
+    };
+  }
+
+  return {
+    surface: 'platform' as const,
+    decision: 'AUTHORIZED' as const,
+    reason_codes: ['ACTIVE_RIGHTS_GRANT'],
+    organization_id: data.organization_id,
+    asset_id: data.asset_id,
+    provider: data.provider,
+    grant_id: matched.id,
+    auth_token: null,
+    preview: false,
   };
 }

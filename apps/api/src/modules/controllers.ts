@@ -39,6 +39,7 @@ import {
   assertPlatformApiAccess,
   platformSearch,
   platformCheck,
+  platformAuthorizeGeneration,
 } from './platform.js';
 import { getRightsGrant, listRightsGrants, syncRightsGrantStatusForLicense } from './rights-grants.js';
 import {
@@ -1013,6 +1014,13 @@ export class PlatformController {
   @Post('check') @HttpCode(200) async check(@Req() req: Request, @Body() body: unknown) {
     assertPlatformApiAccess(await actor(req));
     return platformCheck(body);
+  }
+  @Post('authorize-generation') @HttpCode(200) async authorizeGeneration(
+    @Req() req: Request,
+    @Body() body: unknown,
+  ) {
+    assertPlatformApiAccess(await actor(req));
+    return platformAuthorizeGeneration(body);
   }
 }
 @Controller('v1/webhooks')

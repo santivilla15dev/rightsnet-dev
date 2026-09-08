@@ -9,7 +9,7 @@
 | Term | Meaning in this repo |
 |------|----------------------|
 | **Stripe Connect** | Creator payouts / destination charges (`apps/api/src/modules/stripe-connect.ts`) |
-| **RightsNet Connect** | Partner API for AI platforms (`search` / `check` / future `authorize_generation` / …) |
+| **RightsNet Connect** | Partner API for AI platforms (`search` / `check` / `authorize_generation` decision / …) |
 
 In code, RightsNet Connect surfaces live under the **`platform`** module and `/v1/platform/*` routes so they never collide with Stripe Connect.
 
@@ -30,7 +30,7 @@ Marketplace purchase and Existing Deal both converge on a **RightsGrant** (see
 | Operation | Question | Looks at | Binding? |
 |-----------|----------|----------|----------|
 | **`check`** (shipped) | Would this *use* be **compatible** with the creator’s general willingness / marketplace policy? | `RightsPolicy` via `previewRightsCheck` | **No** — preview only (`preview: true`) |
-| **`authorize_generation`** (future) | Does this **organization** currently hold **executable** authority to run **this generation**? | Active **RightsGrant** (grantee + asset + use + approvals) | **Yes** — later returns `AUTHORIZED` + signed RN-AUTH token |
+| **`authorize_generation`** (decision v0.1 **PASS**) | Does this **organization** currently hold **executable** authority to run **this generation**? | Active **RightsGrant** (grantee + asset + use + approvals) | **Decision binding** (`preview: false`); signed RN-AUTH token = later milestone (`auth_token: null` today) |
 
 ```text
 check()
@@ -60,7 +60,7 @@ RightsNet Connect **must call** existing domain logic:
 |-----------|--------|
 | `search` | `marketplace.search` |
 | `check` | `previewRightsCheck` → Rights Core `evaluateRightsDecision` / legacy `evaluateLicense` |
-| `authorize_generation` (future) | Lookup / match **ACTIVE** `rights_grants` (marketplace or existing-deal sourced); **not** a second pricing engine; **not** a rewrite of policy evaluation |
+| `authorize_generation` | Lookup / match **ACTIVE** `rights_grants` (marketplace or existing-deal sourced); **not** a second pricing engine; **not** a rewrite of policy evaluation |
 
 **Do not** implement a second rights engine, second pricing path, or parallel license issuance.
 
@@ -70,14 +70,13 @@ RightsNet Connect **must call** existing domain logic:
 |--------|------|----------|
 | `GET` | `/v1/platform/search` | Same filters/results as `GET /v1/search` |
 | `POST` | `/v1/platform/check` | Same decision as `POST /v1/public/rights-check` (preview, non-binding) |
+| `POST` | `/v1/platform/authorize-generation` | ACTIVE RightsGrant match → `AUTHORIZED` / `REQUIRES_APPROVAL` / `DENIED`; `auth_token: null` |
 
-Responses add `surface: "platform"` for traceability. `check` remains **preview** (`preview: true`): not a paid license, not a RightsGrant, and not generation authority.
+Responses add `surface: "platform"` for traceability. `check` remains **preview** (`preview: true`): not a paid license, not a RightsGrant, and not generation authority. `authorize-generation` is **not** preview (`preview: false`) but does **not** yet mint a signed RN-AUTH token.
 
-## Future route (SPECIFY only — not implemented)
+## `authorize-generation` (decision-only PASS)
 
-`POST /v1/platform/authorize-generation`
-
-Illustrative body:
+Body:
 
 ```json
 {
@@ -87,30 +86,29 @@ Illustrative body:
   "use": {
     "content_type": "synthetic_video",
     "purpose": "commercial_advertising",
-    "territory": "DE"
+    "territory": "DE",
+    "industry": "beauty"
   }
 }
 ```
 
-Decision path (product):
+Decision path:
 
 1. Active RightsGrant for `(organization_id, asset_id)` in validity window?  
 2. Requested `use` within grant dimensions (`rights` / industry / territories / …)?  
-3. Grant `approval` constraints satisfied (e.g. creative approval)?  
-4. → `AUTHORIZED` (signed RN-AUTH token and `report_output` / GenerationRecord = later milestones)
-
-Until an explicit IMPLEMENT milestone: **no** route, **no** token, **no** Higgsfield wiring.
+3. Grant `approval` constraints empty / satisfied?  
+4. → `AUTHORIZED` | `REQUIRES_APPROVAL` | `DENIED` (`auth_token` always `null` in this milestone)
 
 ## Out of scope (later milestones)
 
 - API keys / client credentials
 - `license()` purchase over API
-- `authorize_generation()` IMPLEMENT + RN-AUTH token + `report_output()` (GenerationRecord)
+- Signed RN-AUTH token + `report_output()` (GenerationRecord)
 - Outgoing webhooks, MCP, C2PA, provider-specific adapters
 - Changing `check` to be grant-aware (it stays policy preview)
 
 ## STOP
 
-v0.1 PASS = search + check wrappers + tests.  
-Do **not** ship `authorize-generation`, RN-AUTH, or grant-aware `check` without a new milestone decision.  
+Connect decision trunk PASS = search + check + authorize-generation (decision only) + tests.  
+Do **not** ship RN-AUTH signing, `report_output`, or grant-aware `check` without a new milestone decision.  
 Do not expand to license purchase over API without a separate decision.

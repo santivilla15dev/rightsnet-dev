@@ -11,6 +11,7 @@ import {
   assertPlatformApiAccess,
   platformSearch,
   platformCheck,
+  platformAuthorizeGeneration,
 } from '../apps/api/src/modules/platform.js';
 
 describe('RightsNet Connect platform wrappers', () => {
@@ -99,5 +100,100 @@ describe('RightsNet Connect platform wrappers', () => {
     expect(platform.reason_codes).toEqual(publicPreview.reason_codes);
     // request_id is minted per preview call → hashes differ; decision path must match.
     expect(['ALLOW', 'DENY', 'REQUIRES_APPROVAL', 'INCOMPLETE']).toContain(platform.decision);
+  });
+
+  it('authorizeGeneration: seed Existing Deal → REQUIRES_APPROVAL; otherOrg → DENIED', async () => {
+    config.platformApiEnabled = true;
+    assertPlatformApiAccess(admin);
+    const agreement = (
+      await pool.query('SELECT asset_id FROM external_agreements WHERE id=$1', [
+        demoIds.externalAgreement,
+      ])
+    ).rows[0];
+    expect(agreement?.asset_id).toBeTruthy();
+
+    const blocked = await platformAuthorizeGeneration({
+      organization_id: demoIds.org,
+      asset_id: agreement.asset_id,
+      provider: 'higgsfield',
+      use: {
+        content_type: 'synthetic_video',
+        purpose: 'commercial_advertising',
+        territory: 'DE',
+        industry: 'beauty',
+        at: '2026-06-15T12:00:00.000Z',
+      },
+    });
+    expect(blocked.surface).toBe('platform');
+    expect(blocked.preview).toBe(false);
+    expect(blocked.decision).toBe('REQUIRES_APPROVAL');
+    expect(blocked.reason_codes).toContain('GRANT_APPROVAL_REQUIRED');
+    expect(blocked.grant_id).toBeTruthy();
+    expect(blocked.auth_token).toBeNull();
+
+    const adidas = await platformAuthorizeGeneration({
+      organization_id: demoIds.otherOrg,
+      asset_id: agreement.asset_id,
+      provider: 'higgsfield',
+      use: {
+        content_type: 'synthetic_video',
+        purpose: 'commercial_advertising',
+        territory: 'DE',
+        industry: 'beauty',
+        at: '2026-06-15T12:00:00.000Z',
+      },
+    });
+    expect(adidas.decision).toBe('DENIED');
+    expect(adidas.reason_codes).toContain('NO_ACTIVE_RIGHTS_GRANT');
+    expect(adidas.grant_id).toBeNull();
+    expect(adidas.auth_token).toBeNull();
+  });
+
+  it('authorizeGeneration: cleared grant → AUTHORIZED (decision only, no RN-AUTH)', async () => {
+    config.platformApiEnabled = true;
+    assertPlatformApiAccess(admin);
+    const grantId = '60000000-0000-4000-8000-000000000099';
+    await pool.query(
+      `INSERT INTO rights_grants(
+         id, source_type, source_id, grantee_organization_id, asset_id, grantor_user_id,
+         status, payload, valid_from, valid_until
+       ) VALUES (
+         $1, 'EXISTING_AGREEMENT', $2, $3, $4, $5, 'ACTIVE', $6::jsonb, $7, $8
+       )
+       ON CONFLICT (id) DO UPDATE SET payload=EXCLUDED.payload, status='ACTIVE'`,
+      [
+        grantId,
+        '60000000-0000-4000-8000-000000000098',
+        demoIds.org,
+        demoIds.rightsCoreAsset,
+        demoIds.rightsCoreCreatorUser,
+        JSON.stringify({
+          rights: { synthetic_video: 'ALLOW', commercial_advertising: 'ALLOW' },
+          industry: ['beauty'],
+          territories: ['DE', 'AT'],
+          approval: {},
+        }),
+        '2026-01-01T00:00:00.000Z',
+        '2027-12-31T23:59:59.000Z',
+      ],
+    );
+
+    const ok = await platformAuthorizeGeneration({
+      organization_id: demoIds.org,
+      asset_id: demoIds.rightsCoreAsset,
+      provider: 'higgsfield',
+      use: {
+        content_type: 'synthetic_video',
+        purpose: 'commercial_advertising',
+        territory: 'DE',
+        industry: 'beauty',
+        at: '2026-06-15T12:00:00.000Z',
+      },
+    });
+    expect(ok.decision).toBe('AUTHORIZED');
+    expect(ok.reason_codes).toContain('ACTIVE_RIGHTS_GRANT');
+    expect(ok.grant_id).toBe(grantId);
+    expect(ok.auth_token).toBeNull();
+    expect(ok.preview).toBe(false);
   });
 });

@@ -177,13 +177,13 @@ describe('RightsGrant marketplace projection', () => {
     expect(bf.created).toBe(0);
   });
 
-  it('does not ship authorize_generation or report_output routes in this milestone', async () => {
+  it('does not ship report_output or RN-AUTH token issuance in this milestone', async () => {
     const { readFile } = await import('node:fs/promises');
     const controllers = await readFile(
       new URL('../apps/api/src/modules/controllers.ts', import.meta.url),
       'utf8',
     );
-    expect(controllers).not.toMatch(/authorize_generation/);
+    expect(controllers).toMatch(/authorize-generation/);
     expect(controllers).not.toMatch(/report_output/);
     expect(controllers).not.toMatch(/RN-AUTH/);
   });

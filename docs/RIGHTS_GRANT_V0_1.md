@@ -3,11 +3,11 @@
 **Status:** SPECIFY **PASS** · IMPLEMENT marketplace projection **PASS** · Existing Deal structured ingest **PASS**  
 **Date:** September 2026  
 **Existing Deal file/OCR upload:** not started  
-**Post-Grant generation trunk** (`authorize_generation` / RN-AUTH / `report_output`): **not started**
+**Post-Grant generation trunk:** `authorize_generation` decision **PASS**; signed RN-AUTH / `report_output` **not started**
 
 
 Governing scope: `docs/RIGHTSNET_MVP_CONSTITUTION.md`.  
-Connect surface today: `docs/RIGHTSNET_CONNECT_V0_1.md` (policy-based `check` only — not grant-aware yet).
+Connect surface: `docs/RIGHTSNET_CONNECT_V0_1.md` (`check` policy preview; `authorize-generation` grant decision).
 
 ---
 
@@ -46,7 +46,7 @@ From this point the rest of RightsNet is identical:
 
 RIGHTS GRANT
       ↓
-authorize_generation()     ← future milestone
+authorize_generation()     ← decision PASS (no RN-AUTH token yet)
       ↓
 RN-AUTH token              ← future
       ↓
@@ -179,13 +179,14 @@ See also `docs/RIGHTS_OPERATIONS_V0_1.md` for B2B overview/query (SPECIFY only).
 
 ## 6. Connect: `check` vs `authorize_generation`
 
-**Shipped today (Connect v0.1):**  
+**Shipped (Connect):**  
 `POST /v1/platform/check` → policy **preview** (“would this use be compatible?”).  
 Not binding. Not a RightsGrant. See `docs/RIGHTSNET_CONNECT_V0_1.md`.
 
-**Specified for later (not implemented):**  
-`POST /v1/platform/authorize-generation` → **executable** authority  
-(“does this org currently have an ACTIVE RightsGrant covering this generation?”).
+**Shipped (Connect decision v0.1):**  
+`POST /v1/platform/authorize-generation` → **executable** authority decision  
+(“does this org currently have an ACTIVE RightsGrant covering this generation?”).  
+Returns `AUTHORIZED` / `REQUIRES_APPROVAL` / `DENIED` with `auth_token: null`.
 
 ```text
 Active RightsGrant? → use within grant? → approval satisfied? → AUTHORIZED
@@ -195,8 +196,7 @@ Active RightsGrant? → use within grant? → approval satisfied? → AUTHORIZED
 Marketplace and Existing Deal both feed the same Grant table; Connect’s generation path
 is identical after that. Do **not** answer authorize via mutating `RightsPolicy`.
 
-**This RightsGrant IMPLEMENT milestone does not change** `/v1/platform/search` or
-`/v1/platform/check`, and does **not** add `authorize-generation`.
+**RightsGrant projection milestones do not change** `check` semantics (still policy preview).
 
 ---
 
@@ -204,7 +204,7 @@ is identical after that. Do **not** answer authorize via mutating `RightsPolicy`
 
 Agencies can operate on **imported Existing Deal grants** without using Discover/checkout:
 portfolio **Rights Overview** + campaign “who is cleared?” queries. Same Grant object;
-same future `authorize_generation` trunk.
+same `authorize_generation` trunk (decision shipped; RN-AUTH later).
 
 See `docs/RIGHTS_OPERATIONS_V0_1.md` (SPECIFY PASS; UI/import **not started**).
 
@@ -230,11 +230,11 @@ See `docs/RIGHTS_OPERATIONS_V0_1.md` (SPECIFY PASS; UI/import **not started**).
 - `rights_grants` + Zod + License→Grant on issue + backfill + admin GET + tests.  
 - Docs/AGENTS state convergence and forbid generation trunk / Existing Deal ingest without a decision.  
 - Connect `check` unchanged (policy preview).  
-- Zero `authorize_generation` / RN-AUTH / `report_output` / contract-upload code.
+- Zero RN-AUTH / `report_output` / contract-upload code in this Grant projection milestone.
 
 **Next decision (one at a time):** Operations UI · Existing Deal files/OCR ·
-Connect `authorize_generation` IMPLEMENT · Generation/RN-AUTH/`report_output` trunk.
-Keep `check` as policy preview.
+Signed RN-AUTH / `report_output` trunk.
+Keep `check` as policy preview. `authorize_generation` decision is shipped in Connect.
 
 ---
 
