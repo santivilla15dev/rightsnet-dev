@@ -55,7 +55,12 @@ export function ExistingDealOcrIngest() {
   const [file, setFile] = useState<File | null>(null);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const [busy, setBusy] = useState('');
+  const [csvText, setCsvText] = useState('');
+  const [bulkResult, setBulkResult] = useState<{
+    created: { row: number; id: string; title: string }[];
+    errors: { row: number; message: string }[];
+    total_rows: number;
+  } | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -75,6 +80,32 @@ export function ExistingDealOcrIngest() {
     valid_from: '2026-01-01T00:00:00.000Z',
     valid_until: '2027-12-31T23:59:59.000Z',
   };
+
+  async function runBulkCsv(e: FormEvent) {
+    e.preventDefault();
+    setBusy('bulk');
+    setError('');
+    setMessage('');
+    setBulkResult(null);
+    try {
+      const result = await api<{
+        created: { row: number; id: string; title: string }[];
+        errors: { row: number; message: string }[];
+        total_rows: number;
+      }>('admin/external-agreements/bulk-csv', {
+        method: 'POST',
+        body: { csv: csvText, organization_id: organizationId },
+      });
+      setBulkResult(result);
+      setMessage(
+        `Bulk: ${result.created.length} creados (pending_confirm), ${result.errors.length} errores. Sin Grant automático.`,
+      );
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy('');
+    }
+  }
 
   async function createAgreement(e: FormEvent) {
     e.preventDefault();
@@ -259,6 +290,59 @@ export function ExistingDealOcrIngest() {
           </Button>
         </fieldset>
       </form>
+
+      <form className="intent-form" onSubmit={(e) => void runBulkCsv(e)}>
+        <fieldset>
+          <legend>Bulk CSV (máx. 100 filas → pending_confirm)</legend>
+          <p className="muted">
+            Cabeceras: organization_id,asset_id,title,territories,industry,rights,valid_from,valid_until[,external_ref,approval_json]
+            · territories/industry/rights con <code>|</code> · rights como{' '}
+            <code>synthetic_video:ALLOW</code>
+          </p>
+          <label>
+            CSV
+            <textarea
+              rows={8}
+              value={csvText}
+              onChange={(e) => setCsvText(e.target.value)}
+              spellCheck={false}
+              style={{ fontFamily: 'ui-monospace, monospace', width: '100%' }}
+              placeholder={`organization_id,asset_id,title,territories,industry,rights,valid_from,valid_until\n${organizationId},${assetId},Deal demo,DE|AT,beauty,synthetic_video:ALLOW,2026-01-01T00:00:00.000Z,2027-01-01T00:00:00.000Z`}
+            />
+          </label>
+          <Button type="submit" disabled={!!busy || !csvText.trim()}>
+            {busy === 'bulk' ? 'Importando…' : 'Importar CSV'}
+          </Button>
+        </fieldset>
+      </form>
+
+      {bulkResult ? (
+        <section>
+          <h2 className="section-title">Resultado bulk</h2>
+          <p>
+            Filas: {bulkResult.total_rows} · creados: {bulkResult.created.length} · errores:{' '}
+            {bulkResult.errors.length}
+          </p>
+          {bulkResult.created.length ? (
+            <ul>
+              {bulkResult.created.map((c) => (
+                <li key={c.id}>
+                  fila {c.row}: {c.title} · <code>{c.id}</code>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          {bulkResult.errors.length ? (
+            <ul>
+              {bulkResult.errors.map((err) => (
+                <li key={err.row + err.message}>
+                  fila {err.row}: {err.message}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </section>
+      ) : null}
 
       {agreement ? (
         <>

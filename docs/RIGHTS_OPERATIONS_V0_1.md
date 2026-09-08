@@ -7,7 +7,8 @@
 (`docs/RIGHTS_OPERATIONS_ORG_MEMBER_V0_1.md`; L3 writes **not started**)  
 **authorize_generation + RN-AUTH + report_output + generation read/verify:** PASS;
 Higgsfield sandbox + live L1 PASS (`docs/HIGGSFIELD_LIVE_V0_1.md`); L2/L3 **not started**
-Existing Deal OCR L1+L2 PASS (`docs/EXISTING_DEAL_OCR_V0_1.md`).
+Existing Deal OCR L1+L2+L3 PASS (`docs/EXISTING_DEAL_OCR_V0_1.md`);
+bulk CSV PASS (`docs/EXISTING_DEAL_BULK_CSV_V0_1.md`).
 
 Governing scope: `docs/RIGHTSNET_MVP_CONSTITUTION.md`.  
 Depends on: `docs/RIGHTS_GRANT_V0_1.md` (Policy vs Agreement vs Grant; Existing Deal path).  
@@ -70,9 +71,10 @@ draft / pending_confirm → human confirm → grant_active (EXISTING_AGREEMENT)
 **Structured ingest v0.1 is implemented** (admin APIs). See
 `docs/RIGHTS_GRANT_V0_1.md` §5 and `POST /v1/admin/external-agreements`.
 
-**Files / OCR:** SPECIFY **PASS** · IMPLEMENT **L1 PASS** (`docs/EXISTING_DEAL_OCR_V0_1.md`);
-L2 UI / L3 live OCR **not started**. Human confirm is mandatory before `grant_active`.
-Bulk CSV remains a later decision.
+**Files / OCR:** SPECIFY **PASS** · IMPLEMENT **L1+L2+L3 PASS** (`docs/EXISTING_DEAL_OCR_V0_1.md`).
+Human confirm is mandatory before `grant_active`.
+**Bulk CSV:** SPECIFY **PASS** · IMPLEMENT **PASS** (`docs/EXISTING_DEAL_BULK_CSV_V0_1.md`;
+pending_confirm only).
 
 Each confirmed agreement projects one or more **RightsGrant** rows with
 `source.type = EXISTING_AGREEMENT` and `grantee_organization_id` = the agency (or brand org).
@@ -197,6 +199,7 @@ cleared counts.
 
 - `docs/RIGHTS_GRANT_V0_1.md`  
 - `docs/EXISTING_DEAL_OCR_V0_1.md`  
+- `docs/EXISTING_DEAL_BULK_CSV_V0_1.md`  
 - `docs/RIGHTS_OPERATIONS_ORG_MEMBER_V0_1.md`  
 - `docs/RIGHTSNET_CONNECT_V0_1.md`  
 - `docs/RIGHTSNET_MVP_CONSTITUTION.md`  

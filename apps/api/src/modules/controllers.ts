@@ -57,6 +57,7 @@ import {
   listExternalAgreementFiles,
   uploadExternalAgreementFile,
 } from './external-agreement-ocr.js';
+import { bulkCreateExternalAgreementsFromCsv } from './external-agreement-bulk.js';
 import {
   assertHiggsfieldAdapterEnabled,
   runHiggsfieldAdapter,
@@ -820,6 +821,30 @@ export class AdminController {
     await assertOpsWriteAccess(user, organization_id);
     return mutate(user.id, 'external-agreements', idem(req), body, (db) =>
       createExternalAgreement(db, user, body),
+    );
+  }
+  @Post('external-agreements/bulk-csv') async bulkExternalCsv(
+    @Req() req: Request,
+    @Body() body: unknown,
+  ) {
+    const user = await actor(req);
+    const organization_id =
+      body && typeof body === 'object' && 'organization_id' in body
+        ? String((body as { organization_id: unknown }).organization_id ?? '')
+        : '';
+    if (!organization_id) {
+      throw new DomainError(
+        'BULK_CSV_ORG_REQUIRED',
+        422,
+        'organization_id es obligatorio en bulk CSV (alcance de escritura).',
+      );
+    }
+    uuid(organization_id);
+    await assertOpsWriteAccess(user, organization_id);
+    return mutate(user.id, 'external-agreements-bulk/' + organization_id, idem(req), body, (db) =>
+      bulkCreateExternalAgreementsFromCsv(db, user, body, {
+        requireOrganizationId: organization_id,
+      }),
     );
   }
   @Get('external-agreements') async listExternal(
