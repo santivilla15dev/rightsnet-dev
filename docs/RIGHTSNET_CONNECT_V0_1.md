@@ -104,13 +104,13 @@ Decision path:
 
 - API keys / client credentials
 - `license()` purchase over API
-- Public generation verify / partner generation list UI
+- Partner generation list/GET — SPECIFY `docs/GENERATION_READ_V0_1.md` (IMPLEMENT not started)
+- Public generation verify — SPECIFY `docs/GENERATION_VERIFY_V0_1.md` (IMPLEMENT not started)
 - Outgoing webhooks, MCP, C2PA, provider-specific adapters
 - Changing `check` to be grant-aware (it stays policy preview)
 
 ## STOP
 
-Connect trunk PASS = search + check + authorize-generation + RN-AUTH + report-output + tests.  
-Do **not** ship public generation verify or grant-aware `check` without a new milestone decision.  
-`report_output`: `docs/REPORT_OUTPUT_V0_1.md`.  
+Connect write trunk PASS = search + check + authorize-generation + RN-AUTH + report-output + tests.  
+Generation **read** / **public verify**: SPECIFY PASS; do **not** IMPLEMENT without a new decision.  
 Do not expand to license purchase over API without a separate decision.

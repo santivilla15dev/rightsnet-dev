@@ -21,8 +21,10 @@ RightsNet Connect (partner API foundation): `docs/RIGHTSNET_CONNECT_V0_1.md` —
 RN-AUTH mint on AUTHORIZED: `docs/RN_AUTH_V0_1.md` — SPECIFY **PASS**; IMPLEMENT **PASS**
 (`auth_token` signed + `generation_auths`; `auth_token: null` on deny/approval).
 `report_output` / GenerationRecord: `docs/REPORT_OUTPUT_V0_1.md` — SPECIFY **PASS**;
-IMPLEMENT **PASS** (`POST .../report-output` → record + consume auth). Public generation
-verify / partner list **not started**. Do not collapse preview vs executable authority.
+IMPLEMENT **PASS** (`POST .../report-output` → record + consume auth).
+Generation partner **list/GET**: `docs/GENERATION_READ_V0_1.md` — SPECIFY **PASS**;
+IMPLEMENT **not started**. Public generation **verify**: `docs/GENERATION_VERIFY_V0_1.md` —
+SPECIFY **PASS**; IMPLEMENT **not started**. Do not collapse preview vs executable authority.
 RightsGrant: `docs/RIGHTS_GRANT_V0_1.md` — SPECIFY **PASS**; marketplace License→Grant
 IMPLEMENT v0.1 **PASS**; Existing Deal structured ingest v0.1 **PASS**
 (`external_agreements` → confirm → `EXISTING_AGREEMENT` grant). File/OCR upload **not started**.
