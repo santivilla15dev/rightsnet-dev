@@ -38,6 +38,8 @@ Existing Deal files/OCR: `docs/EXISTING_DEAL_OCR_V0_1.md` — SPECIFY **PASS**;
 IMPLEMENT **L1+L2+L3 PASS** (upload, sandbox+live extract, admin/owner ingest UI).
 Existing Deal bulk CSV: `docs/EXISTING_DEAL_BULK_CSV_V0_1.md` — SPECIFY **PASS**;
 IMPLEMENT **PASS** (`POST .../bulk-csv` → pending_confirm only; no auto-grant).
+Existing Deal bulk confirm: `docs/EXISTING_DEAL_BULK_CONFIRM_V0_1.md` — SPECIFY **PASS**;
+IMPLEMENT **PASS** (`POST .../bulk-confirm` → RightsGrant solo con IDs explícitos).
 Marketplace and Existing Deal converge on RightsGrant; do not mutate public `RightsPolicy`
 for bilateral deals. Do not confuse RightsGrant with Stripe Connect or Connect routes.
 Rights Operations B2B: `docs/RIGHTS_OPERATIONS_V0_1.md` — SPECIFY **PASS**; read-model API

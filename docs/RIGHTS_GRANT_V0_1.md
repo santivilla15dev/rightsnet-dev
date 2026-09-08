@@ -6,6 +6,8 @@
 (`docs/EXISTING_DEAL_OCR_V0_1.md`)  
 **Existing Deal bulk CSV:** SPECIFY **PASS** · IMPLEMENT **PASS**
 (`docs/EXISTING_DEAL_BULK_CSV_V0_1.md`; pending_confirm only)  
+**Existing Deal bulk confirm:** SPECIFY **PASS** · IMPLEMENT **PASS**
+(`docs/EXISTING_DEAL_BULK_CONFIRM_V0_1.md`; explicit IDs only)  
 **Post-Grant generation trunk:** write + partner read + public verify IMPLEMENT **PASS**
 (`docs/GENERATION_READ_V0_1.md`, `docs/GENERATION_VERIFY_V0_1.md`);
 Higgsfield adapter sandbox + live L1 + Nest L2 + webhook L3 PASS
@@ -180,6 +182,7 @@ Human confirm is mandatory before Grant. Does **not** mutate creator `RightsPoli
 **Files / OCR path:** IMPLEMENT **L1+L2+L3 PASS** — upload → sandbox/live extract → same confirm → Grant.  
 Doc: `docs/EXISTING_DEAL_OCR_V0_1.md`.  
 **Bulk CSV:** IMPLEMENT **PASS** — `docs/EXISTING_DEAL_BULK_CSV_V0_1.md` (pending_confirm only; no auto-grant).  
+**Bulk confirm:** IMPLEMENT **PASS** — `docs/EXISTING_DEAL_BULK_CONFIRM_V0_1.md` (explicit IDs → RightsGrant).  
 See also `docs/RIGHTS_OPERATIONS_V0_1.md` for B2B overview/query.
 
 ---
@@ -258,6 +261,7 @@ Keep `check` as policy preview.
 - `docs/RIGHTS_OPERATIONS_V0_1.md`  
 - `docs/EXISTING_DEAL_OCR_V0_1.md`  
 - `docs/EXISTING_DEAL_BULK_CSV_V0_1.md`  
+- `docs/EXISTING_DEAL_BULK_CONFIRM_V0_1.md`  
 - `docs/RIGHTS_OPERATIONS_ORG_MEMBER_V0_1.md`  
 - `docs/RIGHTSNET_OFFICIAL_FLOW.md`  
 - `docs/CREATOR_PUBLISH_RIGHTS_CORE_V0_1.md`  

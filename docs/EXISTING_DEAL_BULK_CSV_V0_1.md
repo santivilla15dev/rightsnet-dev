@@ -12,7 +12,8 @@ Depends on: structured Existing Deal ingest **PASS**.
 Import many contract **drafts** as CSV → each row becomes `external_agreements` with
 `pending_confirm`. **Never** auto-confirms or creates RightsGrant.
 
-Human confirm (single or later batch UI) remains mandatory.
+Human confirm (single or bulk with **explicit IDs**) remains mandatory —
+see `docs/EXISTING_DEAL_BULK_CONFIRM_V0_1.md`.
 
 ---
 
@@ -54,4 +55,5 @@ Code: `apps/api/src/modules/external-agreement-bulk.ts` · UI on `/ops/rights/in
 
 ## STOP
 
-No auto-confirm bulk. No OCR-from-CSV. No live commerce.
+No auto-confirm after CSV. Bulk confirm is a separate human step
+(`docs/EXISTING_DEAL_BULK_CONFIRM_V0_1.md`). No OCR-from-CSV. No live commerce.

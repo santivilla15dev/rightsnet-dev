@@ -55,11 +55,25 @@ export function ExistingDealOcrIngest() {
   const [file, setFile] = useState<File | null>(null);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [busy, setBusy] = useState('');
   const [csvText, setCsvText] = useState('');
   const [bulkResult, setBulkResult] = useState<{
     created: { row: number; id: string; title: string }[];
     errors: { row: number; message: string }[];
     total_rows: number;
+  } | null>(null);
+  const [pendingList, setPendingList] = useState<AgreementRow[]>([]);
+  const [selectedIds, setSelectedIds] = useState<Record<string, boolean>>({});
+  const [bulkConfirmResult, setBulkConfirmResult] = useState<{
+    confirmed: {
+      id: string;
+      title: string;
+      grant_id: string;
+      grant_status: string;
+      idempotent: boolean;
+    }[];
+    errors: { id: string; message: string }[];
+    total: number;
   } | null>(null);
 
   useEffect(() => {
@@ -100,6 +114,65 @@ export function ExistingDealOcrIngest() {
       setMessage(
         `Bulk: ${result.created.length} creados (pending_confirm), ${result.errors.length} errores. Sin Grant automático.`,
       );
+      await loadPending();
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy('');
+    }
+  }
+
+  async function loadPending() {
+    setBusy('list');
+    setError('');
+    try {
+      const result = await api<{ items: AgreementRow[] }>(
+        'admin/external-agreements?organization_id=' + encodeURIComponent(organizationId) + '&limit=100',
+      );
+      const pending = (result.items ?? []).filter(
+        (r) => r.status === 'pending_confirm' || r.status === 'draft',
+      );
+      setPendingList(pending);
+      setSelectedIds({});
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy('');
+    }
+  }
+
+  async function runBulkConfirm() {
+    const agreement_ids = Object.entries(selectedIds)
+      .filter(([, on]) => on)
+      .map(([id]) => id);
+    if (!agreement_ids.length) {
+      setError('Selecciona al menos un acuerdo pendiente.');
+      return;
+    }
+    setBusy('bulk-confirm');
+    setError('');
+    setMessage('');
+    setBulkConfirmResult(null);
+    try {
+      const result = await api<{
+        confirmed: {
+          id: string;
+          title: string;
+          grant_id: string;
+          grant_status: string;
+          idempotent: boolean;
+        }[];
+        errors: { id: string; message: string }[];
+        total: number;
+      }>('admin/external-agreements/bulk-confirm', {
+        method: 'POST',
+        body: { organization_id: organizationId, agreement_ids },
+      });
+      setBulkConfirmResult(result);
+      setMessage(
+        `Bulk confirm: ${result.confirmed.length} Grants, ${result.errors.length} errores (solo IDs marcados).`,
+      );
+      await loadPending();
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -337,6 +410,81 @@ export function ExistingDealOcrIngest() {
               {bulkResult.errors.map((err) => (
                 <li key={err.row + err.message}>
                   fila {err.row}: {err.message}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </section>
+      ) : null}
+
+      <section className="intent-form">
+        <fieldset>
+          <legend>Bulk confirm (IDs marcados → RightsGrant)</legend>
+          <p className="muted">
+            Solo confirma los acuerdos que marques. No hay “confirmar todos” sin selección.
+          </p>
+          <p>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={!!busy}
+              onClick={() => void loadPending()}
+            >
+              {busy === 'list' ? 'Cargando…' : 'Listar pending / draft de la org'}
+            </Button>{' '}
+            <Button
+              type="button"
+              disabled={!!busy || !Object.values(selectedIds).some(Boolean)}
+              onClick={() => void runBulkConfirm()}
+            >
+              {busy === 'bulk-confirm' ? 'Confirmando…' : 'Confirmar seleccionados → RightsGrant'}
+            </Button>
+          </p>
+          {pendingList.length ? (
+            <ul>
+              {pendingList.map((row) => (
+                <li key={row.id}>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={!!selectedIds[row.id]}
+                      onChange={(e) =>
+                        setSelectedIds((prev) => ({ ...prev, [row.id]: e.target.checked }))
+                      }
+                    />{' '}
+                    <b>{row.title}</b> · {row.status} · <code>{row.id}</code>
+                  </label>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="muted">Sin lista cargada (o sin pendientes).</p>
+          )}
+        </fieldset>
+      </section>
+
+      {bulkConfirmResult ? (
+        <section>
+          <h2 className="section-title">Resultado bulk confirm</h2>
+          <p>
+            Total IDs: {bulkConfirmResult.total} · OK: {bulkConfirmResult.confirmed.length} ·
+            errores: {bulkConfirmResult.errors.length}
+          </p>
+          {bulkConfirmResult.confirmed.length ? (
+            <ul>
+              {bulkConfirmResult.confirmed.map((c) => (
+                <li key={c.id}>
+                  {c.title} → Grant <code>{c.grant_id}</code> ({c.grant_status})
+                  {c.idempotent ? ' · idempotente' : ''}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          {bulkConfirmResult.errors.length ? (
+            <ul>
+              {bulkConfirmResult.errors.map((err) => (
+                <li key={err.id + err.message}>
+                  <code>{err.id}</code>: {err.message}
                 </li>
               ))}
             </ul>
