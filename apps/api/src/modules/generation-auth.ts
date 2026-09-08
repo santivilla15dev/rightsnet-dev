@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { z } from 'zod';
 import {
   DomainError,
   RnAuthPayloadSchema,
@@ -158,4 +159,96 @@ export async function revokeRnAuthToken(
     [row.id],
   );
   return { auth_id: row.id, status: 'REVOKED', idempotent: false };
+}
+
+const ListAuthsSchema = z
+  .object({
+    organization_id: z.string().uuid(),
+    asset_id: z.string().uuid().optional(),
+    status: z.enum(['ISSUED', 'REVOKED', 'CONSUMED']).optional(),
+    limit: z.coerce.number().int().min(1).max(50).default(20),
+    cursor: z.string().trim().min(1).max(200).optional(),
+  })
+  .strict();
+
+function encodeAuthCursor(issuedAt: Date | string, id: string) {
+  return Buffer.from(`${new Date(issuedAt).toISOString()}|${id}`, 'utf8').toString('base64url');
+}
+
+function decodeAuthCursor(cursor: string): { issuedAt: string; id: string } {
+  try {
+    const raw = Buffer.from(cursor, 'base64url').toString('utf8');
+    const [issuedAt, id] = raw.split('|');
+    if (!issuedAt || !id) throw new Error('bad');
+    z.string().datetime().parse(issuedAt);
+    z.string().uuid().parse(id);
+    return { issuedAt, id };
+  } catch {
+    throw new DomainError('INVALID_CURSOR', 400);
+  }
+}
+
+/**
+ * Partner list of RN-AUTH rows. Never returns signature.
+ */
+export async function listPlatformGenerationAuths(query: Record<string, unknown>) {
+  const f = ListAuthsSchema.parse(query);
+  const params: unknown[] = [f.organization_id];
+  const where = ['organization_id=$1'];
+  if (f.asset_id) {
+    params.push(f.asset_id);
+    where.push(`asset_id=$${params.length}`);
+  }
+  if (f.status) {
+    params.push(f.status);
+    where.push(`status=$${params.length}`);
+  }
+  if (f.cursor) {
+    const c = decodeAuthCursor(f.cursor);
+    params.push(c.issuedAt, c.id);
+    where.push(
+      `(issued_at, id) < ($${params.length - 1}::timestamptz, $${params.length}::uuid)`,
+    );
+  }
+  params.push(f.limit + 1);
+  const rows = (
+    await pool.query(
+      `SELECT id, grant_id, organization_id, asset_id, provider, use_snapshot,
+              status, issued_at, expires_at
+       FROM generation_auths
+       WHERE ${where.join(' AND ')}
+       ORDER BY issued_at DESC, id DESC
+       LIMIT $${params.length}`,
+      params,
+    )
+  ).rows as {
+    id: string;
+    grant_id: string;
+    organization_id: string;
+    asset_id: string;
+    provider: string;
+    use_snapshot: unknown;
+    status: string;
+    issued_at: Date | string;
+    expires_at: Date | string;
+  }[];
+
+  const page = rows.slice(0, f.limit);
+  const last = page[page.length - 1];
+  return {
+    surface: 'platform' as const,
+    items: page.map((row) => ({
+      auth_id: row.id,
+      grant_id: row.grant_id,
+      organization_id: row.organization_id,
+      asset_id: row.asset_id,
+      provider: row.provider,
+      status: row.status,
+      use: row.use_snapshot ?? {},
+      issued_at: new Date(row.issued_at).toISOString(),
+      expires_at: new Date(row.expires_at).toISOString(),
+    })),
+    next_cursor:
+      rows.length > f.limit && last ? encodeAuthCursor(last.issued_at, last.id) : null,
+  };
 }

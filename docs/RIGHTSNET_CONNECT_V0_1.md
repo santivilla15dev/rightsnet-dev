@@ -73,6 +73,7 @@ RightsNet Connect **must call** existing domain logic:
 | `POST` | `/v1/platform/authorize-generation` | ACTIVE RightsGrant → `AUTHORIZED` (+ RN-AUTH) / `REQUIRES_APPROVAL` / `DENIED` |
 | `POST` | `/v1/platform/verify-auth` | Read-only RN-AUTH check (no consume) — `docs/RN_AUTH_VERIFY_V0_1.md` |
 | `POST` | `/v1/platform/revoke-auth` | ISSUED→REVOKED — `docs/RN_AUTH_REVOKE_V0_1.md` |
+| `GET` | `/v1/platform/generation-auths` | List RN-AUTH ledger (no signature) — `docs/RN_AUTH_LIST_V0_1.md` |
 | `POST` | `/v1/platform/report-output` | GenerationRecord + consume RN-AUTH + `RN-GEN` token |
 | `GET` | `/v1/platform/generations` | Partner list (org-scoped) |
 | `GET` | `/v1/platform/generations/:id` | Partner GET |

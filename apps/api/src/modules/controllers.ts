@@ -45,6 +45,7 @@ import {
 } from './platform.js';
 import { platformReportOutput } from './report-output.js';
 import { listPlatformGenerations, getPlatformGeneration } from './generations.js';
+import { listPlatformGenerationAuths } from './generation-auth.js';
 import { publicVerifyGeneration } from './generation-verify.js';
 import { getRightsGrant, listRightsGrants, syncRightsGrantStatusForLicense } from './rights-grants.js';
 import {
@@ -1185,6 +1186,13 @@ export class PlatformController {
   @Post('revoke-auth') @HttpCode(200) async revokeAuth(@Req() req: Request, @Body() body: unknown) {
     assertPlatformApiAccess(await actor(req));
     return platformRevokeAuth(body);
+  }
+  @Get('generation-auths') async generationAuths(
+    @Req() req: Request,
+    @Query() q: Record<string, unknown>,
+  ) {
+    assertPlatformApiAccess(await actor(req));
+    return listPlatformGenerationAuths(q);
   }
   @Post('report-output') @HttpCode(200) async reportOutput(@Req() req: Request, @Body() body: unknown) {
     assertPlatformApiAccess(await actor(req));

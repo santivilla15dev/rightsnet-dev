@@ -24,6 +24,8 @@ RN-AUTH partner verify: `docs/RN_AUTH_VERIFY_V0_1.md` — SPECIFY **PASS**; IMPL
 (`POST /v1/platform/verify-auth` read-only; no consume).
 RN-AUTH partner revoke: `docs/RN_AUTH_REVOKE_V0_1.md` — SPECIFY **PASS**; IMPLEMENT **PASS**
 (`POST /v1/platform/revoke-auth` ISSUED→REVOKED; no consume).
+RN-AUTH partner list: `docs/RN_AUTH_LIST_V0_1.md` — SPECIFY **PASS**; IMPLEMENT **PASS**
+(`GET /v1/platform/generation-auths`; sin signature).
 `report_output` / GenerationRecord: `docs/REPORT_OUTPUT_V0_1.md` — SPECIFY **PASS**;
 IMPLEMENT **PASS** (`POST .../report-output` → record + consume auth).
 Generation partner **list/GET**: `docs/GENERATION_READ_V0_1.md` — SPECIFY **PASS**;
