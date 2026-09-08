@@ -22,7 +22,7 @@ import {
   defaultPolicy,
   beautyDePolicy,
 } from '../../../../packages/domain/src/index.js';
-import { actor, admin, demoLogin, assertOpsReadAccess } from '../common/auth.js';
+import { actor, admin, demoLogin, assertOpsReadAccess, assertOpsWriteAccess } from '../common/auth.js';
 import { mutate } from '../common/idempotency.js';
 import { config } from '../common/config.js';
 import {
@@ -61,6 +61,11 @@ import {
   assertHiggsfieldAdapterEnabled,
   runHiggsfieldAdapter,
 } from './adapters/higgsfield.js';
+import {
+  assertHiggsfieldWebhookSecret,
+  handleHiggsfieldWebhook,
+  startHiggsfieldAsyncAdapter,
+} from './adapters/higgsfield-async.js';
 import {
   rightsOperationsCampaignQuery,
   rightsOperationsOverview,
@@ -807,7 +812,12 @@ export class AdminController {
     @Body() body: unknown,
   ) {
     const user = await actor(req);
-    admin(user);
+    const organization_id =
+      body && typeof body === 'object' && 'organization_id' in body
+        ? String((body as { organization_id: unknown }).organization_id ?? '')
+        : '';
+    uuid(organization_id);
+    await assertOpsWriteAccess(user, organization_id);
     return mutate(user.id, 'external-agreements', idem(req), body, (db) =>
       createExternalAgreement(db, user, body),
     );
@@ -816,27 +826,39 @@ export class AdminController {
     @Req() req: Request,
     @Query() q: Record<string, unknown>,
   ) {
-    admin(await actor(req));
+    const user = await actor(req);
     const organization_id =
       typeof q.organization_id === 'string' && q.organization_id ? q.organization_id : undefined;
     const asset_id = typeof q.asset_id === 'string' && q.asset_id ? q.asset_id : undefined;
-    if (organization_id) uuid(organization_id);
+    if (organization_id) {
+      uuid(organization_id);
+      await assertOpsReadAccess(user, organization_id);
+    } else if (user.role !== 'admin') {
+      throw new DomainError(
+        'FORBIDDEN',
+        403,
+        'Indica organization_id de tu organización.',
+      );
+    }
     if (asset_id) uuid(asset_id);
     const limit = q.limit != null ? Number(q.limit) : undefined;
     return listExternalAgreements({ organization_id, asset_id, limit });
   }
   @Get('external-agreements/:id') async getExternal(@Req() req: Request, @Param('id') id: string) {
-    admin(await actor(req));
+    const user = await actor(req);
     uuid(id);
-    return getExternalAgreement(id);
+    const row = await getExternalAgreement(id);
+    await assertOpsReadAccess(user, row.organization_id);
+    return row;
   }
   @Post('external-agreements/:id/confirm') async confirmExternal(
     @Req() req: Request,
     @Param('id') id: string,
   ) {
     const user = await actor(req);
-    admin(user);
     uuid(id);
+    const row = await getExternalAgreement(id);
+    await assertOpsWriteAccess(user, row.organization_id);
     return mutate(user.id, 'external-agreements-confirm/' + id, idem(req), {}, (db) =>
       confirmExternalAgreement(db, user, id),
     );
@@ -847,8 +869,9 @@ export class AdminController {
     @Body() body: unknown,
   ) {
     const user = await actor(req);
-    admin(user);
     uuid(id);
+    const row = await getExternalAgreement(id);
+    await assertOpsWriteAccess(user, row.organization_id);
     return mutate(user.id, 'external-agreements-proposed/' + id, idem(req), body, (db) =>
       updateExternalAgreementProposedRights(db, user, id, body),
     );
@@ -859,8 +882,9 @@ export class AdminController {
     @Body() body: unknown,
   ) {
     const user = await actor(req);
-    admin(user);
     uuid(id);
+    const row = await getExternalAgreement(id);
+    await assertOpsWriteAccess(user, row.organization_id);
     return mutate(user.id, 'external-agreements-file/' + id, idem(req), body, (db) =>
       uploadExternalAgreementFile(db, user, id, body),
     );
@@ -869,8 +893,10 @@ export class AdminController {
     @Req() req: Request,
     @Param('id') id: string,
   ) {
-    admin(await actor(req));
+    const user = await actor(req);
     uuid(id);
+    const row = await getExternalAgreement(id);
+    await assertOpsReadAccess(user, row.organization_id);
     return listExternalAgreementFiles(id);
   }
   @Post('external-agreements/:id/extract') async extractExternal(
@@ -879,8 +905,9 @@ export class AdminController {
     @Body() body: unknown,
   ) {
     const user = await actor(req);
-    admin(user);
     uuid(id);
+    const row = await getExternalAgreement(id);
+    await assertOpsWriteAccess(user, row.organization_id);
     return mutate(user.id, 'external-agreements-extract/' + id, idem(req), body ?? {}, (db) =>
       extractExternalAgreement(db, user, id, body ?? {}),
     );
@@ -1124,9 +1151,30 @@ export class PlatformController {
     assertHiggsfieldAdapterEnabled();
     return runHiggsfieldAdapter(body, { requireFlag: true });
   }
+  /** L3 async: authorize + submit, await webhook for report_output. */
+  @Post('adapters/higgsfield/run-async')
+  @HttpCode(200)
+  async higgsfieldRunAsync(@Req() req: Request, @Body() body: unknown) {
+    assertPlatformApiAccess(await actor(req));
+    assertHiggsfieldAdapterEnabled();
+    return startHiggsfieldAsyncAdapter(body, { requireFlag: true });
+  }
 }
 @Controller('v1/webhooks')
 export class WebhooksController {
+  @Post('higgsfield') @HttpCode(200) async higgsfield(
+    @Req() req: Request,
+    @Body() body: unknown,
+  ) {
+    assertHiggsfieldAdapterEnabled();
+    const secretHeader =
+      (typeof req.headers['x-rightsnet-webhook-secret'] === 'string'
+        ? req.headers['x-rightsnet-webhook-secret']
+        : undefined) ??
+      (typeof req.headers.authorization === 'string' ? req.headers.authorization : undefined);
+    assertHiggsfieldWebhookSecret(secretHeader);
+    return handleHiggsfieldWebhook(body);
+  }
   @Post('stripe') @HttpCode(200) async stripe(@Req() req: Request & { rawBody?: Buffer }) {
     if (config.payments !== 'stripe' || !process.env.STRIPE_WEBHOOK_SECRET)
       throw new DomainError('STRIPE_NOT_CONFIGURED', 503);

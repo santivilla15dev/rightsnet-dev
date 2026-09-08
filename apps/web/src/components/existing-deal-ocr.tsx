@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { DEMO_ORGANIZATIONS } from '@/lib/rights-operations-ui';
@@ -34,8 +34,19 @@ function fileToBase64(file: File): Promise<string> {
   });
 }
 
+function canWriteIngest(user: { role: string; organizations?: { id: string; role: string }[] } | null) {
+  if (!user) return false;
+  if (user.role === 'admin') return true;
+  return (user.organizations ?? []).some((o) => o.role === 'owner');
+}
+
 export function ExistingDealOcrIngest() {
   const { user, loading: sessionLoading } = useSession();
+  const isAdmin = user?.role === 'admin';
+  const ownerOrgs = useMemo(
+    () => (user?.organizations ?? []).filter((o) => o.role === 'owner'),
+    [user],
+  );
   const [organizationId, setOrganizationId] = useState(DEMO_ORGANIZATIONS[0].id);
   const [assetId, setAssetId] = useState(DEMO_ASSET_ID);
   const [title, setTitle] = useState('Contrato Existing Deal');
@@ -45,6 +56,12 @@ export function ExistingDealOcrIngest() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState('');
+
+  useEffect(() => {
+    if (!user) return;
+    if (isAdmin) setOrganizationId(DEMO_ORGANIZATIONS[0].id);
+    else if (ownerOrgs[0]) setOrganizationId(ownerOrgs[0].id);
+  }, [user, isAdmin, ownerOrgs]);
 
   const defaultProposed = {
     rights: {
@@ -189,20 +206,26 @@ export function ExistingDealOcrIngest() {
 
   if (sessionLoading) return <Loading />;
   if (!user) return <AuthRequired />;
-  if (user.role !== 'admin')
-    return <ErrorPanel message="Existing Deal / OCR ingest es solo para admin en v0.1." />;
+  if (!canWriteIngest(user))
+    return (
+      <ErrorPanel message="Existing Deal / OCR requiere admin o owner de la organización." />
+    );
+
+  const orgOptions = isAdmin
+    ? DEMO_ORGANIZATIONS.map((o) => ({ id: o.id, label: o.legal_name }))
+    : ownerOrgs.map((o) => ({ id: o.id, label: o.legal_name }));
 
   return (
     <>
       <Title
         eyebrow="EXISTING DEAL"
-        title="Ingest de contrato (OCR L2)."
-        description="Crear acuerdo → adjuntar PDF/imagen → extract sandbox → revisar → confirmar Grant. El extract nunca crea el Grant solo."
+        title="Ingest de contrato (OCR)."
+        description="Crear acuerdo → adjuntar PDF/imagen → extract → revisar → confirmar Grant. El extract nunca crea el Grant solo."
       />
       <p className="muted">
         <Link href="/ops/rights">← Rights Overview</Link>
         {' · '}
-        <Link href="/ops">Ops</Link>
+        {isAdmin ? <Link href="/ops">Ops</Link> : <Link href="/company">Campañas</Link>}
       </p>
 
       <form className="intent-form" onSubmit={(e) => void createAgreement(e)}>
@@ -215,9 +238,9 @@ export function ExistingDealOcrIngest() {
                 value={organizationId}
                 onChange={(e) => setOrganizationId(e.target.value)}
               >
-                {DEMO_ORGANIZATIONS.map((o) => (
+                {orgOptions.map((o) => (
                   <option key={o.id} value={o.id}>
-                    {o.legal_name}
+                    {o.label}
                   </option>
                 ))}
               </select>
@@ -261,23 +284,24 @@ export function ExistingDealOcrIngest() {
             </fieldset>
           </form>
 
-              <Button
-                type="button"
-                variant="outline"
-                disabled={!!busy}
-                onClick={() => void runExtract('sandbox')}
-              >
-                {busy === 'extract' ? 'Extrayendo…' : '3. Extract sandbox'}
-              </Button>{' '}
-              <Button
-                type="button"
-                variant="outline"
-                disabled={!!busy}
-                onClick={() => void runExtract('live')}
-              >
-                Extract live (L3)
-              </Button>
-            </p>
+          <p>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={!!busy}
+              onClick={() => void runExtract('sandbox')}
+            >
+              {busy === 'extract' ? 'Extrayendo…' : '3. Extract sandbox'}
+            </Button>{' '}
+            <Button
+              type="button"
+              variant="outline"
+              disabled={!!busy}
+              onClick={() => void runExtract('live')}
+            >
+              Extract live (L3)
+            </Button>
+          </p>
 
           <form className="intent-form" onSubmit={(e) => void saveProposed(e)}>
             <fieldset>

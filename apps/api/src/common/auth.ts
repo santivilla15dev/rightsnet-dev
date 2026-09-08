@@ -80,6 +80,32 @@ export async function assertOpsReadAccess(user: Actor, organizationId: string) {
   throw new DomainError('NOT_FOUND', 404);
 }
 
+/** Existing Deal writes (L3): admin or org owner only. Employee stays read-only. */
+export async function assertOpsWriteAccess(user: Actor, organizationId: string) {
+  if (user.role === 'admin') return { access: 'admin' as const };
+
+  const m = (
+    await pool.query(
+      'SELECT role FROM organization_members WHERE user_id=$1 AND organization_id=$2',
+      [user.id, organizationId],
+    )
+  ).rows[0] as { role: string } | undefined;
+
+  if (m?.role === 'owner') {
+    return { access: 'owner' as const };
+  }
+
+  if (m?.role === 'employee') {
+    throw new DomainError(
+      'FORBIDDEN',
+      403,
+      'Solo el owner de la organización puede confirmar o subir contratos.',
+    );
+  }
+
+  throw new DomainError('NOT_FOUND', 404);
+}
+
 export function admin(user: Actor) {
   if (user.role !== 'admin') throw new DomainError('FORBIDDEN', 403);
 }

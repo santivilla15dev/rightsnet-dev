@@ -38,6 +38,10 @@ export function RightsOperationsOverview() {
   const router = useRouter();
   const isAdmin = user?.role === 'admin';
   const memberOrgs = useMemo(() => opsReadableOrganizations(user), [user]);
+  const ownerOrgs = useMemo(
+    () => (user?.organizations ?? []).filter((o) => o.role === 'owner'),
+    [user],
+  );
   const [organizationId, setOrganizationId] = useState('');
   const [data, setData] = useState<RightsOverviewResponse | null>(null);
   const [error, setError] = useState('');
@@ -96,7 +100,7 @@ export function RightsOperationsOverview() {
 
       <p className="muted">
         {isAdmin ? <Link href="/ops">← Volver a Ops</Link> : <Link href="/company">← Campañas</Link>}
-        {isAdmin ? (
+        {isAdmin || ownerOrgs.length ? (
           <>
             {' · '}
             <Link href="/ops/rights/ingest">Existing Deal / OCR</Link>

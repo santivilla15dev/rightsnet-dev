@@ -1,6 +1,6 @@
-# Higgsfield live adapter v0.1 — L1 + Nest L2
+# Higgsfield adapter — L1–L3
 
-**Status:** SPECIFY **PASS** · IMPLEMENT **L1 PASS** · **L2 Nest PASS** · L3 webhooks **not started**  
+**Status:** SPECIFY **PASS** · IMPLEMENT **L1+L2+L3 PASS**  
 **Date:** September 2026  
 
 ---
@@ -9,27 +9,22 @@
 
 | Slice | Status |
 |-------|--------|
-| **L1** Live client when `HIGGSFIELD_MODE=live` | **PASS** |
+| **L1** Live client + sync poll | **PASS** |
 | **L2** `POST /v1/platform/adapters/higgsfield/run` | **PASS** |
-| **L3** Webhooks / async report | not started |
+| **L3** Async + webhook → `report_output` | **PASS** |
 
-### Nest L2
+### L3
 
-Gate: `PLATFORM_API_ENABLED` + admin Bearer + `HIGGSFIELD_ADAPTER_ENABLED`.  
-404/disabled if either flag off. Body = same as CLI adapter input.
+- `POST /v1/platform/adapters/higgsfield/run-async` — authorize + submit, store pending  
+- `POST /v1/webhooks/higgsfield` — HF envelope → report_output (idempotent)  
+- Table: `higgsfield_pending_jobs`  
+- Env: `HIGGSFIELD_WEBHOOK_SECRET` (Bearer / `X-RightsNet-Webhook-Secret`),  
+  `HIGGSFIELD_WEBHOOK_PUBLIC_URL` (passed as `hf_webhook` on live submit)
 
-```bash
-# PLATFORM_API_ENABLED=true HIGGSFIELD_ADAPTER_ENABLED=true
-curl -X POST "$API/v1/platform/adapters/higgsfield/run" \
-  -H "Authorization: Bearer $ADMIN_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"organization_id":"…","asset_id":"…","use":{"content_type":"synthetic_video","purpose":"commercial_advertising","territory":"DE","industry":"beauty"},"brief":"…"}'
-```
-
-CI: sandbox / mocked live only (no network HF).
+CI: sandbox async + synthetic webhook (no network HF).
 
 ---
 
 ## STOP
 
-Do **not** open L3 webhooks without an explicit decision.
+No further HF slices in this breath. Bulk CSV / studio UI remain separate decisions.

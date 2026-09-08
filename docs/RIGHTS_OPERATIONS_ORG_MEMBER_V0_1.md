@@ -1,6 +1,6 @@
-# Rights Operations org-member access v0.1 — L1 API + L2 UI
+# Rights Operations org-member access — L1–L3
 
-**Status:** SPECIFY **PASS** · IMPLEMENT **L1 PASS** · **L2 UI PASS** · L3 member writes **not started**  
+**Status:** SPECIFY **PASS** · IMPLEMENT **L1+L2+L3 PASS**  
 **Date:** September 2026  
 
 ---
@@ -9,18 +9,15 @@
 
 | Slice | Status |
 |-------|--------|
-| **L1** API `assertOpsReadAccess` | **PASS** |
-| **L2** UI `/ops/rights` + campaign for owner/employee (own orgs only) | **PASS** |
-| **L3** Member writes (confirm / OCR) | not started |
+| **L1** Read API (`assertOpsReadAccess`) | **PASS** |
+| **L2** UI overview/campaign for owner/employee | **PASS** |
+| **L3** Writes: owner (or admin) create/upload/extract/confirm Existing Deal | **PASS** |
 
-UI: admin keeps demo/UUID picker; members only see their `owner`/`employee` orgs.
-Nav buyer: link **Derechos** → `/ops/rights`.
-
-Code: `apps/web/src/components/rights-operations.tsx`,
-`apps/web/src/lib/rights-operations-ui.ts` (`canAccessOpsRightsUi`, `opsReadableOrganizations`).
+Employee remains **read-only** on ingest/confirm (`assertOpsWriteAccess` → 403).  
+UI: `/ops/rights/ingest` for admin + org owner.
 
 ---
 
 ## STOP
 
-Do **not** open L3 member writes, OCR L3 live provider, or HF Nest L2 without a decision.
+Do not open public self-serve contract upload or agency hierarchy without a new decision.

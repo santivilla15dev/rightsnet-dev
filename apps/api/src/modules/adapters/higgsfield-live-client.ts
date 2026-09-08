@@ -38,6 +38,14 @@ export type HiggsfieldLiveClientDeps = {
   /** Max wall time for submit+poll (ms). */
   timeoutMs?: number;
   credentials?: HiggsfieldLiveCredentials | null;
+  /** When set, append ?hf_webhook= to submit URL (L3 async). */
+  webhookUrl?: string;
+};
+
+export type HiggsfieldSubmitResult = {
+  hf_job_id: string;
+  status: string;
+  status_url?: string;
 };
 
 function sleep(ms: number) {
@@ -92,13 +100,12 @@ async function readJson(res: Response): Promise<Record<string, unknown>> {
 }
 
 /**
- * Submit a generation to Higgsfield and poll until terminal.
- * Default model is text→image Soul v2 standard (no input media required).
+ * Submit only (no poll) — used by L3 async + webhook path.
  */
-export async function liveHiggsfieldJob(
+export async function submitHiggsfieldJob(
   input: HiggsfieldLiveJobInput,
   deps: HiggsfieldLiveClientDeps = {},
-): Promise<HiggsfieldLiveJobResult> {
+): Promise<HiggsfieldSubmitResult> {
   const creds = deps.credentials ?? resolveHiggsfieldCredentials();
   if (!creds) {
     throw new DomainError(
@@ -109,17 +116,18 @@ export async function liveHiggsfieldJob(
   }
 
   const fetchFn = deps.fetchFn ?? fetch;
-  const sleepFn = deps.sleepFn ?? sleep;
-  const nowFn = deps.nowFn ?? Date.now;
   const baseUrl = (deps.baseUrl ?? config.higgsfieldApiBase).replace(/\/$/, '');
   const modelPath = (input.model_path ?? deps.modelPath ?? config.higgsfieldModelPath).replace(
     /^\//,
     '',
   );
-  const timeoutMs = deps.timeoutMs ?? config.higgsfieldPollTimeoutMs;
-  const deadline = nowFn() + timeoutMs;
+  let submitUrl = `${baseUrl}/${modelPath}`;
+  if (deps.webhookUrl) {
+    const u = new URL(submitUrl);
+    u.searchParams.set('hf_webhook', deps.webhookUrl);
+    submitUrl = u.toString();
+  }
 
-  const submitUrl = `${baseUrl}/${modelPath}`;
   const submitRes = await fetchFn(submitUrl, {
     method: 'POST',
     headers: {
@@ -131,7 +139,6 @@ export async function liveHiggsfieldJob(
     },
     body: JSON.stringify({
       prompt: input.prompt,
-      // Soul / image models accept aspect_ratio; ignored by some endpoints.
       aspect_ratio: '16:9',
     }),
   });
@@ -158,10 +165,43 @@ export async function liveHiggsfieldJob(
     );
   }
 
+  return {
+    hf_job_id: requestId,
+    status: String(submitBody.status ?? 'queued'),
+    status_url:
+      typeof submitBody.status_url === 'string' ? submitBody.status_url : undefined,
+  };
+}
+
+/**
+ * Submit a generation to Higgsfield and poll until terminal.
+ * Default model is text→image Soul v2 standard (no input media required).
+ */
+export async function liveHiggsfieldJob(
+  input: HiggsfieldLiveJobInput,
+  deps: HiggsfieldLiveClientDeps = {},
+): Promise<HiggsfieldLiveJobResult> {
+  const submitted = await submitHiggsfieldJob(input, deps);
+  const requestId = submitted.hf_job_id;
+
+  const creds = deps.credentials ?? resolveHiggsfieldCredentials();
+  if (!creds) {
+    throw new DomainError(
+      'HIGGSFIELD_API_KEY_MISSING',
+      503,
+      'Modo live requiere HIGGSFIELD_API_KEY_ID+SECRET (o HIGGSFIELD_API_KEY=id:secret).',
+    );
+  }
+
+  const fetchFn = deps.fetchFn ?? fetch;
+  const sleepFn = deps.sleepFn ?? sleep;
+  const nowFn = deps.nowFn ?? Date.now;
+  const baseUrl = (deps.baseUrl ?? config.higgsfieldApiBase).replace(/\/$/, '');
+  const timeoutMs = deps.timeoutMs ?? config.higgsfieldPollTimeoutMs;
+  const deadline = nowFn() + timeoutMs;
+
   const statusUrl =
-    typeof submitBody.status_url === 'string'
-      ? submitBody.status_url
-      : `${baseUrl}/requests/${requestId}/status`;
+    submitted.status_url ?? `${baseUrl}/requests/${requestId}/status`;
 
   let delay = 2000;
   while (true) {
@@ -233,7 +273,6 @@ export async function liveHiggsfieldJob(
       );
     }
 
-    // Fingerprint without downloading bytes (L1). URI + request_id is stable for verify.
     const sha256 = createHash('sha256').update(`${requestId}:${uri}`).digest('hex');
 
     return {

@@ -33,6 +33,10 @@ export const config = {
     process.env.HIGGSFIELD_MODEL_PATH ?? 'higgsfield-ai/soul/v2/standard',
   /** Wall-clock budget for submit+poll in live L1 (ms). */
   higgsfieldPollTimeoutMs: Number(process.env.HIGGSFIELD_POLL_TIMEOUT_MS ?? 300_000),
+  /** Shared secret for POST /v1/webhooks/higgsfield (Bearer). Empty = no check (local/tests). */
+  higgsfieldWebhookSecret: process.env.HIGGSFIELD_WEBHOOK_SECRET ?? '',
+  /** Public HTTPS URL passed as hf_webhook on live submit (L3). */
+  higgsfieldWebhookPublicUrl: process.env.HIGGSFIELD_WEBHOOK_PUBLIC_URL ?? '',
   /**
    * Existing Deal OCR live extract (L3). Off by default; CI stays sandbox.
    * Requires OCR_API_BASE + OCR_API_KEY when mode=live.

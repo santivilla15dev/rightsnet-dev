@@ -26,8 +26,7 @@ Generation partner **list/GET**: `docs/GENERATION_READ_V0_1.md` — SPECIFY **PA
 IMPLEMENT **PASS**. Public generation **verify**: `docs/GENERATION_VERIFY_V0_1.md` —
 SPECIFY **PASS**; IMPLEMENT **PASS** (`RN-GEN-…` + `/verify/generation/…`).
 Higgsfield adapter: `docs/HIGGSFIELD_ADAPTER_V0_1.md` — sandbox IMPLEMENT **PASS**;
-live L1 + Nest L2 IMPLEMENT **PASS** (`docs/HIGGSFIELD_LIVE_V0_1.md`;
-webhooks L3 **not started**).
+live L1 + Nest L2 + webhook L3 IMPLEMENT **PASS** (`docs/HIGGSFIELD_LIVE_V0_1.md`).
 CI stays sandbox / mocked live (no network HF). Live keys only in env.
 Rights Operations **UI**: `docs/RIGHTS_OPERATIONS_UI_V0_1.md` — SPECIFY **PASS**;
 IMPLEMENT **PASS** (`/ops/rights`, `/ops/rights/campaign`).
@@ -36,17 +35,17 @@ RightsGrant: `docs/RIGHTS_GRANT_V0_1.md` — SPECIFY **PASS**; marketplace Licen
 IMPLEMENT v0.1 **PASS**; Existing Deal structured ingest v0.1 **PASS**
 (`external_agreements` → confirm → `EXISTING_AGREEMENT` grant).
 Existing Deal files/OCR: `docs/EXISTING_DEAL_OCR_V0_1.md` — SPECIFY **PASS**;
-IMPLEMENT **L1+L2+L3 PASS** (upload, sandbox+live extract, admin ingest UI;
+IMPLEMENT **L1+L2+L3 PASS** (upload, sandbox+live extract, admin/owner ingest UI;
 bulk CSV **not started**).
 Marketplace and Existing Deal converge on RightsGrant; do not mutate public `RightsPolicy`
 for bilateral deals. Do not confuse RightsGrant with Stripe Connect or Connect routes.
 Rights Operations B2B: `docs/RIGHTS_OPERATIONS_V0_1.md` — SPECIFY **PASS**; read-model API
-IMPLEMENT v0.1 **PASS** (`GET .../overview`, `POST .../campaign-query`, admin-only).
+IMPLEMENT v0.1 **PASS** (`GET .../overview`, `POST .../campaign-query`).
 Overview/campaign **UI**: IMPLEMENT PASS (`docs/RIGHTS_OPERATIONS_UI_V0_1.md`).
 Org-member access: `docs/RIGHTS_OPERATIONS_ORG_MEMBER_V0_1.md` — SPECIFY **PASS**;
-IMPLEMENT **L1+L2 PASS** (API + UI own-org; L3 member writes **not started**).
+IMPLEMENT **L1+L2+L3 PASS** (read owner/employee; write owner for Existing Deal ingest).
 Rights Operations overview/campaign remain under `/v1/admin/rights-operations/*` with
-`assertOpsReadAccess` (admin or org owner/employee).
+`assertOpsReadAccess` / `assertOpsWriteAccess`.
 Default local auth remains `AUTH_PROVIDER=sandbox` for agents/E2E; e2e forces sandbox on :3010/:4010.
 **Uso de producto del founder** = `AUTH_PROVIDER=supabase` + keys + `NEXT_PUBLIC_SUPABASE_*` (ver `docs/runbooks/auth-supabase.md`).
 Default identity remains `IDENTITY_PROVIDER=sandbox`.
