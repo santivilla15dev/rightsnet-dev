@@ -7,7 +7,7 @@ Governing scope: `docs/RIGHTSNET_MVP_CONSTITUTION.md`.
 Depends on: `docs/RIGHTS_GRANT_V0_1.md`, `docs/RIGHTSNET_CONNECT_V0_1.md`
 (`authorize_generation` decision **PASS**; AUTHORIZED now mints `auth_token`).
 
-**`report_output` / GenerationRecord: not started.** Do not open that trunk without a new decision.
+**`report_output` / GenerationRecord:** SPECIFY **PASS** (`docs/REPORT_OUTPUT_V0_1.md`); IMPLEMENT **not started**.
 
 ---
 
@@ -31,7 +31,7 @@ RN-AUTH **no** es el registro de que ya se generó un output (`GenerationRecord`
 | **RN-LIC** | Humans / verify page | License window | Marketplace (or future) license issued |
 | **RightsGrant** | RightsNet + Connect | Grant window | Bilateral machine authority |
 | **RN-AUTH** | Generation partner | Minutes–hours (short) | *This* AUTHORIZED call for *this* use |
-| **GenerationRecord** (later) | Audit / verify output | Permanent | Output was reported under an auth |
+| **GenerationRecord** | Audit / verify output | Permanent | Output was reported under an auth (`docs/REPORT_OUTPUT_V0_1.md` SPECIFY) |
 
 ---
 
@@ -138,14 +138,15 @@ No separate mint route. Optional `verify-auth` HTTP route = later.
 
 ### Next milestones (one at a time)
 
-1. **`report_output` SPECIFY → IMPLEMENT** (GenerationRecord bound to `auth_id`)  
+1. **`report_output` IMPLEMENT** (`docs/REPORT_OUTPUT_V0_1.md`)  
 2. Partner adapter (Higgsfield, etc.)  
-3. Optional `POST /v1/platform/verify-auth`  
+3. Optional `POST /v1/platform/verify-auth` / public generation verify  
 
 ---
 
 ## Related docs
 
+- `docs/REPORT_OUTPUT_V0_1.md`  
 - `docs/RIGHTSNET_CONNECT_V0_1.md`  
 - `docs/RIGHTS_GRANT_V0_1.md`  
 - `docs/RIGHTS_OPERATIONS_V0_1.md`  

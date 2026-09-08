@@ -3,7 +3,7 @@
 **Status:** SPECIFY **PASS** · IMPLEMENT marketplace projection **PASS** · Existing Deal structured ingest **PASS**  
 **Date:** September 2026  
 **Existing Deal file/OCR upload:** not started  
-**Post-Grant generation trunk:** `authorize_generation` + RN-AUTH IMPLEMENT **PASS** (`docs/RN_AUTH_V0_1.md`); `report_output` **not started**
+**Post-Grant generation trunk:** `authorize_generation` + RN-AUTH IMPLEMENT **PASS**; `report_output` SPECIFY **PASS** (`docs/REPORT_OUTPUT_V0_1.md`); IMPLEMENT **not started**
 
 
 Governing scope: `docs/RIGHTSNET_MVP_CONSTITUTION.md`.  
@@ -54,7 +54,7 @@ Higgsfield / Runway / …    ← future
       ↓
 output
       ↓
-report_output()            ← future (GenerationRecord)
+report_output()            ← SPECIFY PASS · IMPLEMENT later (GenerationRecord)
 ```
 
 This convergence is why Grant must not be collapsed into Policy, and why Existing Deal must not mutate the creator’s public policy.
@@ -233,7 +233,7 @@ See `docs/RIGHTS_OPERATIONS_V0_1.md` (SPECIFY PASS; UI/import **not started**).
 - Zero RN-AUTH / `report_output` / contract-upload code in this Grant projection milestone.
 
 **Next decision (one at a time):** Operations UI · Existing Deal files/OCR ·
-`report_output` trunk.
+`report_output` IMPLEMENT (`docs/REPORT_OUTPUT_V0_1.md`).
 Keep `check` as policy preview. `authorize_generation` + RN-AUTH mint are shipped in Connect.
 
 ---
@@ -243,6 +243,7 @@ Keep `check` as policy preview. `authorize_generation` + RN-AUTH mint are shippe
 - `docs/RIGHTSNET_MVP_CONSTITUTION.md`  
 - `docs/RIGHTSNET_CONNECT_V0_1.md`  
 - `docs/RN_AUTH_V0_1.md`  
+- `docs/REPORT_OUTPUT_V0_1.md`  
 - `docs/RIGHTS_OPERATIONS_V0_1.md`  
 - `docs/RIGHTSNET_OFFICIAL_FLOW.md`  
 - `docs/CREATOR_PUBLISH_RIGHTS_CORE_V0_1.md`  

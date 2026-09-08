@@ -3,7 +3,7 @@
 **Status:** SPECIFY **PASS** · IMPLEMENT read-model API **PASS** (overview + campaign-query)  
 **Date:** September 2026  
 **UI Overview / campaign UI:** not started  
-**authorize_generation + RN-AUTH:** PASS (`docs/RN_AUTH_V0_1.md`); **`report_output`:** not started
+**authorize_generation + RN-AUTH:** PASS (`docs/RN_AUTH_V0_1.md`); **`report_output`:** SPECIFY PASS (`docs/REPORT_OUTPUT_V0_1.md`); IMPLEMENT **not started**
 
 Governing scope: `docs/RIGHTSNET_MVP_CONSTITUTION.md`.  
 Depends on: `docs/RIGHTS_GRANT_V0_1.md` (Policy vs Agreement vs Grant; Existing Deal path).  
@@ -182,7 +182,7 @@ cleared counts.
 
 1. Operations UI (Overview + query)  
 2. Existing Deal files / OCR / bulk import  
-3. `report_output` / GenerationRecord
+3. `report_output` IMPLEMENT (`docs/REPORT_OUTPUT_V0_1.md`)
 4. Org-member (non-admin) access to Operations  
 
 ---
