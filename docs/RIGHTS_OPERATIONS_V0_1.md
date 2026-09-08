@@ -3,7 +3,7 @@
 **Status:** SPECIFY **PASS** · IMPLEMENT read-model API **PASS** (overview + campaign-query)  
 **Date:** September 2026  
 **UI Overview / campaign UI:** not started  
-**authorize_generation + RN-AUTH:** PASS (`docs/RN_AUTH_V0_1.md`); **`report_output`:** SPECIFY PASS (`docs/REPORT_OUTPUT_V0_1.md`); IMPLEMENT **not started**
+**authorize_generation + RN-AUTH + report_output:** PASS (`docs/RN_AUTH_V0_1.md`, `docs/REPORT_OUTPUT_V0_1.md`); public generation verify **not started**
 
 Governing scope: `docs/RIGHTSNET_MVP_CONSTITUTION.md`.  
 Depends on: `docs/RIGHTS_GRANT_V0_1.md` (Policy vs Agreement vs Grant; Existing Deal path).  
@@ -19,7 +19,7 @@ Value = turn the agency’s **own** talent agreements into **machine-readable Ri
 
 1. **Overview** — portfolio health of AI / likeness rights  
 2. **Campaign query** — who is cleared for a specific AI use  
-3. **Later** — same executable trunk as marketplace deals (`authorize_generation` + RN-AUTH shipped; `report_output` next)
+3. **Later** — same executable trunk as marketplace deals (authorize + RN-AUTH + report shipped)
 
 ```text
 Agency imports talents / contracts / brands / countries
@@ -28,7 +28,7 @@ Existing Deal → extract → human review → RightsGrant
         ↓
 Rights Operations (overview + query)
         ↓
-authorize_generation + RN-AUTH (PASS) → report_output (later) → generation partner
+authorize_generation + RN-AUTH + report_output (PASS) → partner / verify (later)
 ```
 
 Marketplace remains the **other** path into the same Grant object. Operations does **not**
@@ -167,7 +167,7 @@ cleared counts.
 - Building the Overview or query **UI**  
 - Contract upload / OCR / extract jobs (structured ingest already exists)  
 - Changing Connect `check` semantics  
-- `report_output` / GenerationRecord  
+- Public generation verify / partner generation list  
 - Live commerce / non-admin org-member access  
 
 ---
@@ -176,13 +176,13 @@ cleared counts.
 
 **IMPLEMENT read-model API PASS** when overview + campaign-query work, tests pass, AGENTS updated.
 
-**Do not start in the same breath:** Overview UI, `report_output`, org-self-serve RBAC.
+**Do not start in the same breath:** Overview UI, public generation verify, org-self-serve RBAC.
 
 ### Next milestones (one at a time, explicit decision)
 
 1. Operations UI (Overview + query)  
 2. Existing Deal files / OCR / bulk import  
-3. `report_output` IMPLEMENT (`docs/REPORT_OUTPUT_V0_1.md`)
+3. Public/partner generation verify or list
 4. Org-member (non-admin) access to Operations  
 
 ---

@@ -41,6 +41,7 @@ import {
   platformCheck,
   platformAuthorizeGeneration,
 } from './platform.js';
+import { platformReportOutput } from './report-output.js';
 import { getRightsGrant, listRightsGrants, syncRightsGrantStatusForLicense } from './rights-grants.js';
 import {
   confirmExternalAgreement,
@@ -1021,6 +1022,10 @@ export class PlatformController {
   ) {
     assertPlatformApiAccess(await actor(req));
     return platformAuthorizeGeneration(body);
+  }
+  @Post('report-output') @HttpCode(200) async reportOutput(@Req() req: Request, @Body() body: unknown) {
+    assertPlatformApiAccess(await actor(req));
+    return platformReportOutput(body);
   }
 }
 @Controller('v1/webhooks')

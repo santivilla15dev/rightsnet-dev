@@ -71,6 +71,7 @@ RightsNet Connect **must call** existing domain logic:
 | `GET` | `/v1/platform/search` | Same filters/results as `GET /v1/search` |
 | `POST` | `/v1/platform/check` | Same decision as `POST /v1/public/rights-check` (preview, non-binding) |
 | `POST` | `/v1/platform/authorize-generation` | ACTIVE RightsGrant → `AUTHORIZED` (+ RN-AUTH) / `REQUIRES_APPROVAL` / `DENIED` |
+| `POST` | `/v1/platform/report-output` | GenerationRecord + consume RN-AUTH (`docs/REPORT_OUTPUT_V0_1.md`) |
 
 Responses add `surface: "platform"` for traceability. `check` remains **preview** (`preview: true`): not a paid license, not a RightsGrant, and not generation authority. `authorize-generation` is **not** preview (`preview: false`); on `AUTHORIZED` returns a signed `auth_token` (see `docs/RN_AUTH_V0_1.md`).
 
@@ -103,13 +104,13 @@ Decision path:
 
 - API keys / client credentials
 - `license()` purchase over API
-- `report_output()` — SPECIFY in `docs/REPORT_OUTPUT_V0_1.md` (IMPLEMENT not started)
+- Public generation verify / partner generation list UI
 - Outgoing webhooks, MCP, C2PA, provider-specific adapters
 - Changing `check` to be grant-aware (it stays policy preview)
 
 ## STOP
 
-Connect trunk PASS = search + check + authorize-generation + RN-AUTH mint + tests.  
-Do **not** ship `report_output` IMPLEMENT or grant-aware `check` without a new milestone decision.  
-`report_output` SPECIFY: `docs/REPORT_OUTPUT_V0_1.md`.  
+Connect trunk PASS = search + check + authorize-generation + RN-AUTH + report-output + tests.  
+Do **not** ship public generation verify or grant-aware `check` without a new milestone decision.  
+`report_output`: `docs/REPORT_OUTPUT_V0_1.md`.  
 Do not expand to license purchase over API without a separate decision.

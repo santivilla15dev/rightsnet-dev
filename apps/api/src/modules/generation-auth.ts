@@ -88,7 +88,7 @@ export type VerifyRnAuthResult =
   | { ok: true; payload: RnAuthToken['payload']; status: string }
   | { ok: false; reason: string };
 
-/** Cryptographic + ledger check (expiry / revoked). No report_output consume yet. */
+/** Cryptographic + ledger check (expiry / revoked / consumed). */
 export async function verifyRnAuthToken(
   token: unknown,
   db: DB = pool,

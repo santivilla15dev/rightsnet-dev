@@ -21,13 +21,13 @@ RightsNet Connect (partner API foundation): `docs/RIGHTSNET_CONNECT_V0_1.md` —
 RN-AUTH mint on AUTHORIZED: `docs/RN_AUTH_V0_1.md` — SPECIFY **PASS**; IMPLEMENT **PASS**
 (`auth_token` signed + `generation_auths`; `auth_token: null` on deny/approval).
 `report_output` / GenerationRecord: `docs/REPORT_OUTPUT_V0_1.md` — SPECIFY **PASS**;
-IMPLEMENT **not started**. Do not collapse preview vs executable authority.
+IMPLEMENT **PASS** (`POST .../report-output` → record + consume auth). Public generation
+verify / partner list **not started**. Do not collapse preview vs executable authority.
 RightsGrant: `docs/RIGHTS_GRANT_V0_1.md` — SPECIFY **PASS**; marketplace License→Grant
 IMPLEMENT v0.1 **PASS**; Existing Deal structured ingest v0.1 **PASS**
 (`external_agreements` → confirm → `EXISTING_AGREEMENT` grant). File/OCR upload **not started**.
 Marketplace and Existing Deal converge on RightsGrant; do not mutate public `RightsPolicy`
-for bilateral deals. Do **not** open `report_output` IMPLEMENT without an explicit
-next-milestone decision. Do not confuse RightsGrant with Stripe Connect or Connect routes.
+for bilateral deals. Do not confuse RightsGrant with Stripe Connect or Connect routes.
 Rights Operations B2B: `docs/RIGHTS_OPERATIONS_V0_1.md` — SPECIFY **PASS**; read-model API
 IMPLEMENT v0.1 **PASS** (`GET .../overview`, `POST .../campaign-query`, admin-only).
 Overview/campaign **UI** and org-member access are **not started**.

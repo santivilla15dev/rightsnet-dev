@@ -7,7 +7,7 @@ Governing scope: `docs/RIGHTSNET_MVP_CONSTITUTION.md`.
 Depends on: `docs/RIGHTS_GRANT_V0_1.md`, `docs/RIGHTSNET_CONNECT_V0_1.md`
 (`authorize_generation` decision **PASS**; AUTHORIZED now mints `auth_token`).
 
-**`report_output` / GenerationRecord:** SPECIFY **PASS** (`docs/REPORT_OUTPUT_V0_1.md`); IMPLEMENT **not started**.
+**`report_output` / GenerationRecord:** SPECIFY **PASS** · IMPLEMENT **PASS** (`docs/REPORT_OUTPUT_V0_1.md`).
 
 ---
 
@@ -31,7 +31,7 @@ RN-AUTH **no** es el registro de que ya se generó un output (`GenerationRecord`
 | **RN-LIC** | Humans / verify page | License window | Marketplace (or future) license issued |
 | **RightsGrant** | RightsNet + Connect | Grant window | Bilateral machine authority |
 | **RN-AUTH** | Generation partner | Minutes–hours (short) | *This* AUTHORIZED call for *this* use |
-| **GenerationRecord** | Audit / verify output | Permanent | Output was reported under an auth (`docs/REPORT_OUTPUT_V0_1.md` SPECIFY) |
+| **GenerationRecord** | Audit / verify output | Permanent | Output was reported under an auth (`docs/REPORT_OUTPUT_V0_1.md` IMPLEMENT PASS) |
 
 ---
 
@@ -134,13 +134,13 @@ No separate mint route. Optional `verify-auth` HTTP route = later.
 ## 6. STOP
 
 **IMPLEMENT PASS** = mint on AUTHORIZED + ledger + verify helper + tests + docs.  
-**Do not** start `report_output` without an explicit next-milestone decision.
+**Do not** start public generation verify in the same breath as further RN-AUTH work.
 
 ### Next milestones (one at a time)
 
-1. **`report_output` IMPLEMENT** (`docs/REPORT_OUTPUT_V0_1.md`)  
-2. Partner adapter (Higgsfield, etc.)  
-3. Optional `POST /v1/platform/verify-auth` / public generation verify  
+1. Partner/admin GET or list generations  
+2. Optional public verify for generation ids  
+3. Provider adapters (Higgsfield, etc.)  
 
 ---
 
