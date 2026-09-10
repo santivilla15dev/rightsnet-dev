@@ -25,7 +25,7 @@ Piloto comercial propuesto: **Austria + Alemania** (constitución §5). No impli
 | IVA/fiscalidad/facturas | Pendiente | Diseñar e implementar según entidad y países |
 | Relación con activo (review humana) | Sandbox | Evidencia local; validación operativa pendiente |
 | Stripe Connect (cobros creador) | Implementado test | Live gated por flag; país Connect aún sesgado a test ES |
-| Orgs buyer AT | Hueco | CHECK org country legacy ES\|DE — alinear antes de piloto AT buyers |
+| Orgs buyer AT | PASS | Domicilio `AT\|DE\|ES`; `docs/ORG_BUYERS_AT_V0_1.md`. ES legacy permitido; sin remap |
 | Storage y malware scan | Sandbox local | Disco privado; integrar storage/scanner real |
 | Roles DB y RLS | Pendiente | Migrator separado; ensayar tenancy |
 | KMS/rotación | Parcial | Ed25519 local; gestión remota pendiente |

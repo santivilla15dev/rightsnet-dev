@@ -10,7 +10,6 @@ import {
   revokeCampaignPassport,
   publicVerifyCampaignPassport,
 } from '../apps/api/src/modules/campaign-passport.js';
-import { DomainError } from '../packages/domain/src/index.js';
 
 const org = randomUUID(),
   ownerId = randomUUID(),

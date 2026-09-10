@@ -44,6 +44,7 @@ Este documento lista lo que **aún falta**. No reabrir hitos ya **PASS**. Un hit
 | **Live commerce L1 técnico** (`LIVE_COMMERCE_ENABLED`, CI off) | `docs/LIVE_COMMERCE_V0_1.md` |
 | Doc truth-sync | `docs/DOC_TRUTH_SYNC_V0_1.md` |
 | **Campaigns H1–H6** (plan → passport) | docs `CAMPAIGNS_*` … `CAMPAIGN_PASSPORT_*` |
+| **Org buyers AT** (domicilio AT\|DE\|ES) | `docs/ORG_BUYERS_AT_V0_1.md` |
 
 Stripe Checkout / Connect / refunds / money / recon: mocks **PASS**; ensayo test externo previo **PASS** con reensayo abierto (ver §4).
 
@@ -72,7 +73,6 @@ El founder elige **uno**. Cada fila es un posible SPECIFY → STOP.
 
 | Prioridad sugerida | Ítem | Detalle |
 |--------------------|------|---------|
-| Alta (piloto AT) | **Org buyers AT** | CHECK org country legacy `ES\|DE` — alinear para buyers AT antes del piloto |
 | Alta (piloto AT) | Connect país sesgado a test **ES** | Alinear onboarding Connect con alcance AT/DE cuando toque |
 | Media | Review humana relación con activo | Sandbox hoy; validación operativa pendiente |
 | Media | Stripe test **reensayo** + gaps money/recon | Ver `docs/VERIFICATION.md`: thin v2 recovery, reversión parcial/paginada, asociación tardía transfers, fees/cuentas connected, límite 500 movimientos |

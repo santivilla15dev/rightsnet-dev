@@ -18,7 +18,7 @@ const bodySchemas: Record<string, unknown> = {
   }),
   organizations: obj({
     legal_name: { type: 'string', minLength: 3, maxLength: 100 },
-    country: { enum: ['ES', 'DE'], type: 'string' },
+    country: { enum: ['AT', 'DE', 'ES'], type: 'string' },
   }),
   creators: obj({ display_name: string, bio: string, location: string, policy: ref('Policy') }),
   'assets/:id/policies': ref('Policy'),

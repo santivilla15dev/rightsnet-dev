@@ -117,3 +117,7 @@ Campaign Passport H6: resumen técnico compartible con allowlist, caducidad y
 revocación (`RN-PAS-…`); migración 031; `docs/CAMPAIGN_PASSPORT_V0_1.md`. H6
 funcional PASS: 35 tests focalizados H1–H6 y 6 E2E PASS, typecheck/lint PASS.
 Sin autoridad ejecutable ni clearance legal. **STOP H6**.
+
+Org buyers AT: domicilio org `AT|DE|ES` (CHECK 014 + contratos OpenAPI + seed demo
+AT); `docs/ORG_BUYERS_AT_V0_1.md`. **PASS**; no remap ES→AT de grants; Connect
+country sesgado a ES sigue aparte.

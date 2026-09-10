@@ -296,3 +296,9 @@ Cierre funcional PASS y STOP H6: `docs/CAMPAIGN_PASSPORT_V0_1.md`. Migración 03
 aplicada. H1–H6: 35/35 tests focalizados y 6/6 E2E PASS; typecheck/lint PASS.
 Emitir → verify público → revocar → 404. Capturas `docs/screenshots/campaign-passport-*`.
 Serie Campaigns H1–H6 cerrada a nivel funcional documentado.
+
+## Org buyers AT — 2026-09-10
+
+Cierre PASS y STOP: `docs/ORG_BUYERS_AT_V0_1.md`. CHECK DB ya `AT|DE|ES` (014);
+OpenAPI/contratos regenerados; seed demo buyer en AT; tests `org-buyers-at` +
+supabase-auth AT PASS; typecheck/lint PASS. Sin remap de grants ni cambio Connect.

@@ -97,7 +97,7 @@ export async function seed() {
       ]);
     await db.query(
       'INSERT INTO organizations(id,legal_name,country,verified) VALUES($1,$2,$3,true),($4,$5,$3,true)',
-      [demoIds.org, 'Estudio Norte · Sandbox', 'ES', demoIds.otherOrg, 'Otra empresa · Sandbox'],
+      [demoIds.org, 'Estudio Norte · Sandbox', 'AT', demoIds.otherOrg, 'Otra empresa · Sandbox'],
     );
     for (const [org, user, role] of [
       [demoIds.org, demoIds.buyer, 'owner'],
