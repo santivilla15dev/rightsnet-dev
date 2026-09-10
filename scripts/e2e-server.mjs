@@ -30,6 +30,26 @@ const run = (cmd, args) =>
 if (!process.env.DATABASE_URL) {
   await run('node', ['scripts/local-db.mjs']);
 }
+
+/** Ensure the target DB exists (campaign e2e use `*_test`; CI may only provision `rightsnet`). */
+{
+  const { Client } = await import('pg');
+  const target = new URL(process.env.DATABASE_URL);
+  const dbName = decodeURIComponent(target.pathname.replace(/^\//, '') || 'rightsnet');
+  const admin = new URL(process.env.DATABASE_URL);
+  admin.pathname = '/postgres';
+  const client = new Client({ connectionString: admin.toString() });
+  await client.connect();
+  try {
+    const found = await client.query('SELECT 1 FROM pg_database WHERE datname = $1', [dbName]);
+    if (!found.rowCount) {
+      await client.query(`CREATE DATABASE "${dbName.replace(/"/g, '""')}"`);
+    }
+  } finally {
+    await client.end();
+  }
+}
+
 await run('pnpm', ['db:migrate']);
 await run('pnpm', ['db:seed']);
 await run('pnpm', ['--filter', '@rightsnet/web', 'build']);

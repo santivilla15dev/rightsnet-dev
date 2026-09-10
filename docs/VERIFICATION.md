@@ -550,3 +550,13 @@ Helpers `app_can_see_order` / `app_owns_connected_account`. Tests `db-rls` 9/9
 | Regresión `/ops` admin | PASS | `clarity-routing` exige título Ops + pestaña Pagos (no error boundary) |
 
 **STOP.** Stack producto (`:3000` Supabase + Stripe test + `stripe listen`) listo; ensayo humano founder OPEN.
+
+## E2E Playwright → DB `*_test` — 2026-09-10
+
+| Entrega | Resultado | Evidencia |
+| --- | --- | --- |
+| Causa | PASS | H3–H6 e2e fallaban con `.env` `rightsnet` («Test DB required») |
+| Fix | PASS | `playwright.config.ts` fuerza `TEST_DATABASE_URL` / `…_test`; `e2e-server` crea la DB si falta |
+| Suite completa | **27/27 PASS** | ~50 s, :3010/:4010 |
+
+**STOP.** No live commerce.
