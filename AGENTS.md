@@ -144,4 +144,5 @@ H2–H6 **PASS** `docs/DB_RLS_CAMPAIGN_H2_H6_WIRING_V0_1.md`; Rights Ops **PASS*
 `docs/DB_RLS_OPS_WIRING_V0_1.md`; grants/external **PASS**
 `docs/DB_RLS_GRANTS_EXTERNAL_V0_1.md`; licenses/generation **PASS**
 `docs/DB_RLS_LICENSES_GENERATION_V0_1.md`; campaign children **PASS**
-`docs/DB_RLS_CAMPAIGN_CHILDREN_V0_1.md`; orders/ledger/outbox OPEN).
+`docs/DB_RLS_CAMPAIGN_CHILDREN_V0_1.md`; orders chain **PASS**
+`docs/DB_RLS_ORDERS_V0_1.md`; ledger/outbox OPEN).

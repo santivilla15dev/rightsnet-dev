@@ -392,3 +392,9 @@ rn-auth/report-output PASS.
 Cierre PASS: `docs/DB_RLS_CAMPAIGN_CHILDREN_V0_1.md`. Migración 037 FORCE en
 `campaign_talent` / `campaign_evidence` / `campaign_deal_requests` /
 `campaign_passports`. Tests `db-rls` 4/4 + H1–H6 35/35 PASS.
+
+## DB RLS orders chain v0.1 — 2026-09-10
+
+Cierre PASS: `docs/DB_RLS_ORDERS_V0_1.md`. Migración 038 FORCE en
+`requests` / `quotes` / `orders` (org o creador del asset; alineado con
+licenses). Tests `db-rls` 5/5 + rights-core/checkout PASS.
