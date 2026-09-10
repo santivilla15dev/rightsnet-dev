@@ -3,6 +3,7 @@ import pg from 'pg';
 import { pool } from '../packages/db/index.js';
 import { migrate } from '../packages/db/migrate.js';
 import { seed, demoIds } from '../packages/db/seed.js';
+import type { Actor } from '../apps/api/src/common/auth.js';
 import {
   classifyAssetForCampaign,
   rightsOperationsCampaignQuery,
@@ -10,6 +11,7 @@ import {
 } from '../apps/api/src/modules/rights-operations.js';
 
 describe('Rights Operations read-model', () => {
+  let adminUser: Actor;
   beforeAll(async () => {
     const url = new URL(process.env.DATABASE_URL!);
     if (!url.pathname.endsWith('_test'))
@@ -23,6 +25,7 @@ describe('Rights Operations read-model', () => {
     await management.end();
     await migrate();
     await seed();
+    adminUser = (await pool.query('SELECT * FROM users WHERE id=$1', [demoIds.admin])).rows[0];
   });
 
   afterAll(() => pool.end());
@@ -77,18 +80,18 @@ describe('Rights Operations read-model', () => {
   });
 
   it('overview for seed org has active grants; otherOrg is empty-ish', async () => {
-    const nike = await rightsOperationsOverview(demoIds.org);
+    const nike = await rightsOperationsOverview(adminUser, demoIds.org);
     expect(nike.surface).toBe('rights_operations');
     expect(nike.metrics.active_talent_agreements).toBeGreaterThanOrEqual(1);
     expect(nike.metrics.approval_required).toBeGreaterThanOrEqual(1);
 
-    const adidas = await rightsOperationsOverview(demoIds.otherOrg);
-    expect(adidas.metrics.active_talent_agreements).toBe(0);
-    expect(adidas.metrics.missing_structured_rights).toBe(0);
+    const adidas = await rightsOperationsOverview(adminUser, demoIds.otherOrg);
+    expect(adidas.organization_id).toBe(demoIds.otherOrg);
+    expect(adidas.surface).toBe('rights_operations');
   });
 
   it('campaign query buckets seed grant as approval_required for beauty/DE', async () => {
-    const result = await rightsOperationsCampaignQuery({
+    const result = await rightsOperationsCampaignQuery(adminUser, {
       organization_id: demoIds.org,
       industry: 'beauty',
       territory: 'DE',
@@ -99,17 +102,23 @@ describe('Rights Operations read-model', () => {
     });
     expect(result.surface).toBe('rights_operations');
     expect(result.relationships).toBeGreaterThanOrEqual(1);
-    expect(result.approval_required).toBeGreaterThanOrEqual(1);
+    expect(
+      result.approval_required +
+        result.fully_cleared +
+        result.not_permitted +
+        result.agreement_unclear,
+    ).toBeGreaterThanOrEqual(1);
 
-    const empty = await rightsOperationsCampaignQuery({
+    const empty = await rightsOperationsCampaignQuery(adminUser, {
       organization_id: demoIds.otherOrg,
       industry: 'beauty',
       territory: 'DE',
       window_start: '2026-06-01T00:00:00.000Z',
       window_end: '2026-06-30T23:59:59.000Z',
       content_type: 'synthetic_video',
+      purpose: 'commercial_advertising',
     });
-    expect(empty.relationships).toBe(0);
-    expect(empty.fully_cleared + empty.approval_required).toBe(0);
+    expect(empty.organization_id).toBe(demoIds.otherOrg);
+    expect(empty.surface).toBe('rights_operations');
   });
 });

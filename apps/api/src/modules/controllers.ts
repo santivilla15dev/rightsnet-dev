@@ -39,7 +39,7 @@ import {
 } from '../../../../packages/domain/src/index.js';
 import { objectStorePort } from './adapters/object-store.js';
 import { malwareScannerPort } from './adapters/malware-scanner.js';
-import { actor, admin, demoLogin, assertOpsReadAccess, assertOpsWriteAccess } from '../common/auth.js';
+import { actor, admin, demoLogin, assertOpsReadAccess, assertOpsWriteAccess, opsRlsActor } from '../common/auth.js';
 import { mutate } from '../common/idempotency.js';
 import { config } from '../common/config.js';
 import {
@@ -989,8 +989,14 @@ export class AdminController {
         : '';
     uuid(organization_id);
     await assertOpsWriteAccess(user, organization_id);
-    return mutate(user.id, 'external-agreements', idem(req), body, (db) =>
-      createExternalAgreement(db, user, body),
+    const rls = opsRlsActor(user);
+    return mutate(
+      user.id,
+      'external-agreements',
+      idem(req),
+      body,
+      (db) => createExternalAgreement(db, user, body),
+      rls,
     );
   }
   @Post('external-agreements/bulk-csv') async bulkExternalCsv(
@@ -1011,10 +1017,17 @@ export class AdminController {
     }
     uuid(organization_id);
     await assertOpsWriteAccess(user, organization_id);
-    return mutate(user.id, 'external-agreements-bulk/' + organization_id, idem(req), body, (db) =>
-      bulkCreateExternalAgreementsFromCsv(db, user, body, {
-        requireOrganizationId: organization_id,
-      }),
+    const rls = opsRlsActor(user);
+    return mutate(
+      user.id,
+      'external-agreements-bulk/' + organization_id,
+      idem(req),
+      body,
+      (db) =>
+        bulkCreateExternalAgreementsFromCsv(db, user, body, {
+          requireOrganizationId: organization_id,
+        }),
+      rls,
     );
   }
   @Post('external-agreements/bulk-confirm') async bulkExternalConfirm(
@@ -1035,12 +1048,14 @@ export class AdminController {
     }
     uuid(organization_id);
     await assertOpsWriteAccess(user, organization_id);
+    const rls = opsRlsActor(user);
     return mutate(
       user.id,
       'external-agreements-bulk-confirm/' + organization_id,
       idem(req),
       body,
       (db) => bulkConfirmExternalAgreements(db, user, body),
+      rls,
     );
   }
   @Get('external-agreements') async listExternal(
@@ -1080,8 +1095,10 @@ export class AdminController {
     uuid(id);
     const row = await getExternalAgreement(id);
     await assertOpsWriteAccess(user, row.organization_id);
+    const rls = opsRlsActor(user);
     return mutate(user.id, 'external-agreements-confirm/' + id, idem(req), {}, (db) =>
       confirmExternalAgreement(db, user, id),
+      rls,
     );
   }
   @Post('external-agreements/:id/proposed-rights') async patchProposedRights(
@@ -1093,8 +1110,10 @@ export class AdminController {
     uuid(id);
     const row = await getExternalAgreement(id);
     await assertOpsWriteAccess(user, row.organization_id);
+    const rls = opsRlsActor(user);
     return mutate(user.id, 'external-agreements-proposed/' + id, idem(req), body, (db) =>
       updateExternalAgreementProposedRights(db, user, id, body),
+      rls,
     );
   }
   @Post('external-agreements/:id/files') async uploadExternalFile(
@@ -1106,8 +1125,10 @@ export class AdminController {
     uuid(id);
     const row = await getExternalAgreement(id);
     await assertOpsWriteAccess(user, row.organization_id);
+    const rls = opsRlsActor(user);
     return mutate(user.id, 'external-agreements-file/' + id, idem(req), body, (db) =>
       uploadExternalAgreementFile(db, user, id, body),
+      rls,
     );
   }
   @Get('external-agreements/:id/files') async listExternalFiles(
@@ -1129,8 +1150,10 @@ export class AdminController {
     uuid(id);
     const row = await getExternalAgreement(id);
     await assertOpsWriteAccess(user, row.organization_id);
+    const rls = opsRlsActor(user);
     return mutate(user.id, 'external-agreements-extract/' + id, idem(req), body ?? {}, (db) =>
       extractExternalAgreement(db, user, id, body ?? {}),
+      rls,
     );
   }
   @Get('rights-operations/overview') async opsOverview(
@@ -1141,7 +1164,7 @@ export class AdminController {
     const organization_id = typeof q.organization_id === 'string' ? q.organization_id : '';
     uuid(organization_id);
     await assertOpsReadAccess(user, organization_id);
-    return rightsOperationsOverview(organization_id);
+    return rightsOperationsOverview(user, organization_id);
   }
   @Post('rights-operations/campaign-query') async opsCampaign(
     @Req() req: Request,
@@ -1154,7 +1177,7 @@ export class AdminController {
         : '';
     uuid(organization_id);
     await assertOpsReadAccess(user, organization_id);
-    return rightsOperationsCampaignQuery(body);
+    return rightsOperationsCampaignQuery(user, body);
   }
   @Post('licenses/:id/status') async status(
     @Req() req: Request,

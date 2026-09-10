@@ -368,3 +368,9 @@ flight, deal builder y passport con `campaignRlsActor` + `withRlsActor` /
 `mutate(..., rls)`; lecturas snapshot con `{ readonly: true }`. Sin
 `findCampaign(pool, …)` en módulos campaign. Tests focalizados H1–H6 + `db-rls`:
 36/36 PASS.
+
+## DB RLS Rights Ops wiring v0.1 — 2026-09-10
+
+Cierre PASS: `docs/DB_RLS_OPS_WIRING_V0_1.md`. `assertOps*` + overview/campaign-query
++ Existing Deal mutates con `opsRlsActor`. Tests ops / org-member / writes / `db-rls`
+12/12 PASS.

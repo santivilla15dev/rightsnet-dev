@@ -1,11 +1,16 @@
 import type { Request } from 'express';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
-import { pool, type DB } from '../../../../packages/db/index.js';
+import { pool, withRlsActor, type DB, type RlsActor } from '../../../../packages/db/index.js';
 import { DomainError } from '../../../../packages/domain/src/index.js';
 import { config } from './config.js';
 import { resolveSupabaseActor } from '../integrations/supabase-auth.js';
 
 export type Actor = { id: string; email: string; display_name: string; role: string };
+
+/** Map product Actor → Postgres RLS GUCs (Rights Ops + shared). */
+export function opsRlsActor(user: Actor): RlsActor {
+  return { userId: user.id, isAdmin: user.role === 'admin' };
+}
 
 export async function actor(req: Request): Promise<Actor> {
   const token = req.headers.authorization?.replace(/^Bearer /, '');
@@ -66,44 +71,48 @@ export async function member(db: DB, user: Actor, orgId: string, write = false) 
 export async function assertOpsReadAccess(user: Actor, organizationId: string) {
   if (user.role === 'admin') return { access: 'admin' as const };
 
-  const m = (
-    await pool.query(
-      'SELECT role FROM organization_members WHERE user_id=$1 AND organization_id=$2',
-      [user.id, organizationId],
-    )
-  ).rows[0] as { role: string } | undefined;
+  return withRlsActor(opsRlsActor(user), async (db) => {
+    const m = (
+      await db.query(
+        'SELECT role FROM organization_members WHERE user_id=$1 AND organization_id=$2',
+        [user.id, organizationId],
+      )
+    ).rows[0] as { role: string } | undefined;
 
-  if (m && (m.role === 'owner' || m.role === 'employee')) {
-    return { access: 'member' as const, role: m.role as 'owner' | 'employee' };
-  }
+    if (m && (m.role === 'owner' || m.role === 'employee')) {
+      return { access: 'member' as const, role: m.role as 'owner' | 'employee' };
+    }
 
-  throw new DomainError('NOT_FOUND', 404);
+    throw new DomainError('NOT_FOUND', 404);
+  });
 }
 
 /** Existing Deal writes (L3): admin or org owner only. Employee stays read-only. */
 export async function assertOpsWriteAccess(user: Actor, organizationId: string) {
   if (user.role === 'admin') return { access: 'admin' as const };
 
-  const m = (
-    await pool.query(
-      'SELECT role FROM organization_members WHERE user_id=$1 AND organization_id=$2',
-      [user.id, organizationId],
-    )
-  ).rows[0] as { role: string } | undefined;
+  return withRlsActor(opsRlsActor(user), async (db) => {
+    const m = (
+      await db.query(
+        'SELECT role FROM organization_members WHERE user_id=$1 AND organization_id=$2',
+        [user.id, organizationId],
+      )
+    ).rows[0] as { role: string } | undefined;
 
-  if (m?.role === 'owner') {
-    return { access: 'owner' as const };
-  }
+    if (m?.role === 'owner') {
+      return { access: 'owner' as const };
+    }
 
-  if (m?.role === 'employee') {
-    throw new DomainError(
-      'FORBIDDEN',
-      403,
-      'Solo el owner de la organización puede confirmar o subir contratos.',
-    );
-  }
+    if (m?.role === 'employee') {
+      throw new DomainError(
+        'FORBIDDEN',
+        403,
+        'Solo el owner de la organización puede confirmar o subir contratos.',
+      );
+    }
 
-  throw new DomainError('NOT_FOUND', 404);
+    throw new DomainError('NOT_FOUND', 404);
+  });
 }
 
 export function admin(user: Actor) {

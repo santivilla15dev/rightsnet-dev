@@ -1,6 +1,7 @@
 import { z } from 'zod';
-import { pool } from '../../../../packages/db/index.js';
+import { pool, withRlsActor } from '../../../../packages/db/index.js';
 import { DomainError } from '../../../../packages/domain/src/index.js';
+import { opsRlsActor, type Actor } from '../common/auth.js';
 
 const AI_RIGHT_KEYS = [
   'synthetic_video',
@@ -58,11 +59,12 @@ function windowsOverlap(a: GrantRow, b: GrantRow) {
   return asTime(a.valid_from) < asTime(b.valid_until) && asTime(b.valid_from) < asTime(a.valid_until);
 }
 
-export async function rightsOperationsOverview(organizationId: string) {
-  const org = (
-    await pool.query('SELECT id FROM organizations WHERE id=$1', [organizationId])
-  ).rows[0];
-  if (!org) throw new DomainError('NOT_FOUND', 404, 'Organización no encontrada.');
+export async function rightsOperationsOverview(user: Actor, organizationId: string) {
+  await withRlsActor(opsRlsActor(user), async (db) => {
+    const org = (await db.query('SELECT id FROM organizations WHERE id=$1', [organizationId]))
+      .rows[0];
+    if (!org) throw new DomainError('NOT_FOUND', 404, 'Organización no encontrada.');
+  });
 
   const grants = (
     await pool.query(
@@ -222,12 +224,14 @@ export function classifyAssetForCampaign(
   return unclearOnly ? 'agreement_unclear' : 'not_permitted';
 }
 
-export async function rightsOperationsCampaignQuery(body: unknown) {
+export async function rightsOperationsCampaignQuery(user: Actor, body: unknown) {
   const query = CampaignQuerySchema.parse(body);
-  const org = (
-    await pool.query('SELECT id FROM organizations WHERE id=$1', [query.organization_id])
-  ).rows[0];
-  if (!org) throw new DomainError('NOT_FOUND', 404, 'Organización no encontrada.');
+  await withRlsActor(opsRlsActor(user), async (db) => {
+    const org = (
+      await db.query('SELECT id FROM organizations WHERE id=$1', [query.organization_id])
+    ).rows[0];
+    if (!org) throw new DomainError('NOT_FOUND', 404, 'Organización no encontrada.');
+  });
 
   const grants = (
     await pool.query(

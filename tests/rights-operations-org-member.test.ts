@@ -63,7 +63,7 @@ describe('Rights Operations org-member read access (L1)', () => {
     await expect(assertOpsReadAccess(adminUser, demoIds.otherOrg)).resolves.toMatchObject({
       access: 'admin',
     });
-    const overview = await rightsOperationsOverview(demoIds.org);
+    const overview = await rightsOperationsOverview(adminUser, demoIds.org);
     expect(overview.organization_id).toBe(demoIds.org);
   });
 
@@ -116,7 +116,7 @@ describe('Rights Operations org-member read access (L1)', () => {
 
   it('member-scoped campaign query still only returns that org', async () => {
     await assertOpsReadAccess(ownerUser, demoIds.org);
-    const result = await rightsOperationsCampaignQuery({
+    const result = await rightsOperationsCampaignQuery(ownerUser, {
       organization_id: demoIds.org,
       industry: 'beauty',
       territory: 'DE',
