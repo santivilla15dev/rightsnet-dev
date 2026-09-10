@@ -355,3 +355,9 @@ test niega DDL a `rightsnet_app`.
 Cierre PASS: `docs/DB_RLS_V0_1.md`. Migración 034 FORCE en organizations /
 organization_members / campaigns; helpers `withRlsActor`; bypass de pool por
 defecto; test `db-rls` aísla por membership. Cableado Nest progresivo OPEN.
+
+## DB RLS Campaigns H1 wiring v0.1 — 2026-09-10
+
+Cierre PASS: `docs/DB_RLS_CAMPAIGN_WIRING_V0_1.md`. `list`/`get`/`create`/`update`
+con GUCs RLS; `mutate(..., rls?)`. Tests campaigns + H2–H6 focalizados + `db-rls`
+PASS (27). H2–H6 siguen con bypass de pool.

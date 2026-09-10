@@ -139,4 +139,5 @@ Storage + scan v0.1: `docs/STORAGE_SCAN_V0_1.md`. **PASS** sandbox (local + EICA
 DB roles v0.1: `docs/DB_ROLES_TENANCY_V0_1.md`. **PASS** migrator≠`rightsnet_app`.
 DB RLS org pilot v0.1: `docs/DB_RLS_V0_1.md` — SPECIFY **PASS**; IMPLEMENT **PASS**
 (FORCE en organizations/members/campaigns; bypass runtime por defecto; cableado
-progresivo `withRlsActor` OPEN).
+progresivo `withRlsActor`: Campaigns H1 **PASS** `docs/DB_RLS_CAMPAIGN_WIRING_V0_1.md`;
+H2–H6 / más tablas OPEN).

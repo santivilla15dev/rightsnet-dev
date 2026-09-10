@@ -1,4 +1,4 @@
-import { transaction, type DB } from '../../../../packages/db/index.js';
+import { setRlsActor, setRlsBypass, transaction, type DB, type RlsActor } from '../../../../packages/db/index.js';
 import { hash, DomainError } from '../../../../packages/domain/src/index.js';
 export async function mutate<T>(
   actorId: string,
@@ -6,11 +6,14 @@ export async function mutate<T>(
   key: string | undefined,
   body: unknown,
   fn: (db: DB) => Promise<T>,
+  rls?: RlsActor | 'bypass',
 ): Promise<T> {
   if (!key || key.length < 8 || key.length > 128)
     throw new DomainError('IDEMPOTENCY_KEY_REQUIRED', 422);
   const requestHash = hash(body);
   return transaction(async (db) => {
+    if (rls === 'bypass') await setRlsBypass(db, true);
+    else if (rls) await setRlsActor(db, rls);
     await db.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [actorId + route + key]);
     const prior = (
       await db.query(

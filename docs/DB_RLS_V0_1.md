@@ -48,6 +48,7 @@ Nest **no** inyecta JWT de Supabase en Postgres: no hay `auth.uid()`.
 
 Policies + FORCE + helpers + tests PASS. Authz de negocio permanece en API.
 Cableado progresivo `withRlsActor` y más tablas = hitos futuros.
+Campaigns H1 cableado: `docs/DB_RLS_CAMPAIGN_WIRING_V0_1.md` (**PASS**).
 
 ## Cierre IMPLEMENT
 
