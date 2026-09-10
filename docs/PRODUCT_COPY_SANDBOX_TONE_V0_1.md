@@ -27,4 +27,5 @@ Copy de producto más serio; honestidad de prueba conservada.
 ## Cierre IMPLEMENT
 
 `SandboxNote` / `AuthRequired` / home / help / ops labels / checkout
-pago simulado. Sin lógica live.
+pago simulado. Banda final home sin «Entorno de prueba» playground.
+Sin lógica live.

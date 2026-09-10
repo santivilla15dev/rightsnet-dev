@@ -181,11 +181,11 @@ export function Home() {
       <section className="home-band home-band-deep" aria-labelledby="home-note-title">
         <div className="home-wrap home-note-row">
           <div>
-            <p className="home-kicker home-kicker-light">Entorno</p>
-            <h2 id="home-note-title">Prueba el flujo completo</h2>
+            <p className="home-kicker home-kicker-light">Cómo empezar</p>
+            <h2 id="home-note-title">Recorre el flujo completo</h2>
             <p>
-              Este entorno es de prueba: puedes recorrer el marketplace de punta a punta sin
-              comercio live. La guía explica cada paso con detalle.
+              Crea cuenta, descubre talento y configura una licencia. Los cobros siguen en modo
+              prueba hasta las condiciones de lanzamiento; la guía detalla cada paso.
             </p>
           </div>
           <Button variant="outline" className="home-cta-ghost" asChild>

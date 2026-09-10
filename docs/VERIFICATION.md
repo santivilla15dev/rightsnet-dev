@@ -428,6 +428,11 @@ Cierre PASS andamiaje: `docs/STAGING_HOST_SCAFFOLD_V0_1.md`.
 Cierre PASS: `docs/PRODUCT_SMOKE_MANUAL_V0_1.md`. `pnpm product:smoke` +
 checklist visual runbook.
 
+## Home copy product tone — 2026-09-10
+
+Banda final home: «Recorre el flujo completo» (cobros en modo prueba), sin
+copy de playground.
+
 ## DB roles / tenancy v0.1 — 2026-09-10
 
 Cierre PASS roles: `docs/DB_ROLES_TENANCY_V0_1.md`. Migración 033; `MIGRATE_DATABASE_URL`;
