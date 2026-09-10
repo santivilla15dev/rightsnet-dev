@@ -355,6 +355,11 @@ Cierre PASS opt-in: `docs/STORAGE_S3_CLAMAV_V0_1.md`. `s3Store` SigV4 +
 Cierre PASS: `docs/STORAGE_PRESIGNED_V0_1.md`. `presignGet` + redirect
 `GET files/:id` cuando S3; runbook MinIO/ClamAV local. Tests storage-scan 6/6.
 
+## Storage multipart v0.1 — 2026-09-10
+
+Cierre PASS: `docs/STORAGE_MULTIPART_V0_1.md`. S3 multipart auto en `put`
+sobre umbral; tests storage-scan 7/7.
+
 ## DB roles / tenancy v0.1 — 2026-09-10
 
 Cierre PASS roles: `docs/DB_ROLES_TENANCY_V0_1.md`. Migración 033; `MIGRATE_DATABASE_URL`;

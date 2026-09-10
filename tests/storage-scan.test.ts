@@ -142,4 +142,46 @@ describe('Storage S3 + ClamAV v0.1', () => {
     expect(url).toMatch(/X-Amz-Signature=[0-9a-f]{64}/);
     expect(objectStorePort().presignGet).toBeUndefined();
   });
+
+  it('s3Store.put usa multipart cuando supera el umbral', async () => {
+    const calls: { method: string; url: string }[] = [];
+    let uploadId = 'uid-1';
+    const store = s3Store({
+      bucket: 'rn-test',
+      region: 'eu-central-1',
+      accessKeyId: 'AKIA_TEST',
+      secretAccessKey: 'secret_test',
+      endpoint: 'https://s3.test.local',
+      forcePathStyle: true,
+      multipartThreshold: 100,
+      multipartPartSize: 60,
+      fetchImpl: (async (input, init) => {
+        const url = String(input);
+        const method = (init?.method ?? 'GET').toUpperCase();
+        calls.push({ method, url });
+        if (method === 'POST' && url.includes('uploads')) {
+          return new Response(
+            `<InitiateMultipartUploadResult><UploadId>${uploadId}</UploadId></InitiateMultipartUploadResult>`,
+            { status: 200 },
+          );
+        }
+        if (method === 'PUT' && url.includes('partNumber=')) {
+          const n = new URL(url).searchParams.get('partNumber');
+          return new Response(null, { status: 200, headers: { etag: `"etag-${n}"` } });
+        }
+        if (method === 'POST' && url.includes('uploadId=')) {
+          const body = Buffer.from(init?.body as Buffer).toString('utf8');
+          expect(body).toContain('<CompleteMultipartUpload>');
+          expect(body).toContain('<PartNumber>1</PartNumber>');
+          expect(body).toContain('<PartNumber>2</PartNumber>');
+          return new Response('<CompleteMultipartUploadResult/>', { status: 200 });
+        }
+        return new Response('unexpected', { status: 500 });
+      }) as typeof fetch,
+    });
+    await store.put('big/' + randomUUID(), Buffer.alloc(120, 7));
+    expect(calls.some((c) => c.method === 'POST' && c.url.includes('uploads'))).toBe(true);
+    expect(calls.filter((c) => c.method === 'PUT' && c.url.includes('partNumber=')).length).toBe(2);
+    expect(calls.some((c) => c.method === 'POST' && c.url.includes('uploadId='))).toBe(true);
+  });
 });

@@ -20,7 +20,8 @@ activarlos en CI.
 
 ## Fuera de alcance
 
-Multipart upload. Presigned GET: `docs/STORAGE_PRESIGNED_V0_1.md`.
+Presigned GET: `docs/STORAGE_PRESIGNED_V0_1.md`.
+Multipart: `docs/STORAGE_MULTIPART_V0_1.md`.
 ClamAV en CI, cambiar defaults del repo, live commerce.
 
 ## STOP
