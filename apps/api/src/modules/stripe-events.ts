@@ -4,6 +4,7 @@ import { audit, pool, transaction } from '../../../../packages/db/index.js';
 import { DomainError } from '../../../../packages/domain/src/index.js';
 import { stripeCheckoutPort, assertLiveCommerceAllowed } from '../integrations/stripe.js';
 import type { PaymentEvent } from './payments.js';
+import { relinkOrphanTransfersForCharge } from './stripe-money.js';
 
 const checkoutEvents = new Set([
   'checkout.session.completed',
@@ -113,6 +114,7 @@ export async function ingestStripeCheckoutEvent(event: Stripe.Event) {
     orderId = session.metadata?.order_id;
   if (!attemptId || !orderId || !uuid.test(attemptId) || !uuid.test(orderId))
     throw new DomainError('PAYMENT_MISMATCH', 409);
+  let chargeId: string | null = null;
   await transaction(async (db) => {
     const attempt = (
       await db.query(
@@ -149,9 +151,9 @@ export async function ingestStripeCheckoutEvent(event: Stripe.Event) {
     if (!normalized) return;
     const pi = session.payment_intent;
     const piId = objectId(pi);
-    const chargeId =
+    chargeId =
       pi && typeof pi !== 'string'
-        ? objectId((pi as Stripe.PaymentIntent).latest_charge)
+        ? objectId((pi as Stripe.PaymentIntent).latest_charge) ?? null
         : null;
     if (piId || chargeId) {
       await db.query(
@@ -167,4 +169,5 @@ export async function ingestStripeCheckoutEvent(event: Stripe.Event) {
       [randomUUID(), 'stripe', event.id, JSON.stringify(normalized)],
     );
   });
+  if (chargeId) await relinkOrphanTransfersForCharge(chargeId);
 }

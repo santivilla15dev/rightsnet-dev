@@ -18,6 +18,7 @@ import {
   getConnectStatus,
   ingestConnectAccountEvent,
   ingestThinConnectNotification,
+  resolveConnectCountry,
 } from '../apps/api/src/modules/stripe-connect.js';
 import { DomainError } from '../packages/domain/src/index.js';
 
@@ -27,6 +28,7 @@ let previousPayments: string;
 let accounts = new Map<string, StripeConnectAccount>();
 let createCalls = 0;
 let linkCalls = 0;
+let lastCreateCountry: string | undefined;
 let thinEvents = new Map<string, { id: string; type: string; related_object: { id: string } }>();
 
 function account(id: string, status: string, livemode = false): StripeConnectAccount {
@@ -52,8 +54,10 @@ function account(id: string, status: string, livemode = false): StripeConnectAcc
 
 function mockPort(): StripeConnectPort {
   return {
-    createAccount: async (_params, options) => {
+    createAccount: async (params, options) => {
       createCalls += 1;
+      const identity = params.identity as { country?: string } | undefined;
+      lastCreateCountry = identity?.country;
       const id = 'acct_test_' + (options?.idempotencyKey ?? randomUUID()).toString().slice(-12);
       const created = account(id, 'pending');
       accounts.set(id, created);
@@ -126,12 +130,13 @@ beforeEach(async () => {
   thinEvents = new Map();
   createCalls = 0;
   linkCalls = 0;
+  lastCreateCountry = undefined;
   config.payments = 'stripe';
   setStripeConnectPortForTests(mockPort());
   setStripeThinPortForTests(mockThinPort());
   await pool.query('DELETE FROM connect_accounts');
   await pool.query(
-    "UPDATE creators SET connected_account='sandbox_' || id::text WHERE user_id=$1",
+    "UPDATE creators SET connected_account='sandbox_' || id::text, location='Vienna, AT' WHERE user_id=$1",
     [creator.id],
   );
 });
@@ -142,6 +147,15 @@ afterEach(() => {
 });
 
 describe.sequential('Stripe Connect onboarding (mocked)', () => {
+  it('resolves Connect identity country from location suffix or default', () => {
+    expect(resolveConnectCountry('Vienna, AT')).toBe('at');
+    expect(resolveConnectCountry('Berlin, DE')).toBe('de');
+    expect(resolveConnectCountry('Madrid, ES')).toBe('es');
+    expect(resolveConnectCountry('Somewhere')).toBe('at');
+    expect(resolveConnectCountry(null, 'de')).toBe('de');
+    expect(resolveConnectCountry('Paris, FR', 'at')).toBe('at');
+  });
+
   it('reports sandbox simulation when payments provider is sandbox', async () => {
     config.payments = 'sandbox';
     const status = await getConnectStatus(creator);
@@ -156,6 +170,7 @@ describe.sequential('Stripe Connect onboarding (mocked)', () => {
     expect(first.url).toContain('https://connect.stripe.test/');
     expect(second.url).not.toBe(first.url);
     expect(createCalls).toBe(1);
+    expect(lastCreateCountry).toBe('at');
     expect(linkCalls).toBe(2);
     const rows = await pool.query(
       "SELECT * FROM connect_accounts WHERE creator_id=(SELECT id FROM creators WHERE user_id=$1)",
@@ -168,6 +183,12 @@ describe.sequential('Stripe Connect onboarding (mocked)', () => {
       await pool.query('SELECT connected_account FROM creators WHERE user_id=$1', [creator.id])
     ).rows[0].connected_account;
     expect(denormalized).toBe(rows.rows[0].stripe_account_id);
+  });
+
+  it('uses DE identity country when creator location ends with DE', async () => {
+    await pool.query("UPDATE creators SET location='Berlin, DE' WHERE user_id=$1", [creator.id]);
+    await createConnectOnboardingLink(creator);
+    expect(lastCreateCountry).toBe('de');
   });
 
   it('blocks cross-creator access to another creator connect status path via missing profile', async () => {

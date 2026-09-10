@@ -26,6 +26,7 @@ import {
 } from '../apps/api/src/modules/payments.js';
 import {
   acknowledgeDifference,
+  compareExternalLedger,
   listExternalReconciliation,
   runExternalReconciliation,
   importBalanceTransactions,
@@ -515,5 +516,43 @@ describe('Stripe external reconciliation (paso 5)', () => {
       await pool.query(`SELECT count(*)::int AS n FROM stripe_balance_transactions`)
     ).rows[0].n;
     expect(imported).toBe(0);
+  });
+
+  it('compara más de 500 balance transactions paginando', async () => {
+    const now = new Date();
+    const values: unknown[] = [];
+    const placeholders: string[] = [];
+    for (let i = 0; i < 501; i++) {
+      const o = i * 7;
+      placeholders.push(
+        `($${o + 1},$${o + 2},'test','platform','charge',$${o + 3},0,$${o + 3},'EUR',$${o + 4},$${o + 5},$${o + 6},$${o + 7})`,
+      );
+      values.push(
+        randomUUID(),
+        `txn_pagecmp_${i}`,
+        99900 + (i % 17),
+        `ch_pagecmp_${i}`,
+        `pagecmp ${i}`,
+        now,
+        new Date(now.getTime() - i * 1000),
+      );
+    }
+    await pool.query(
+      `INSERT INTO stripe_balance_transactions(
+         id, provider_ref, environment, account_ref, type, amount_minor, fee_minor, net_minor,
+         currency, source_ref, description, available_on, created_at_stripe
+       ) VALUES ${placeholders.join(',')}`,
+      values,
+    );
+    const runId = await newRun();
+    await compareExternalLedger(runId);
+    const orphans = (
+      await pool.query(
+        `SELECT count(*)::int AS n FROM reconciliation_differences
+         WHERE run_id=$1 AND kind='orphan_balance_transaction' AND status='open'`,
+        [runId],
+      )
+    ).rows[0].n;
+    expect(orphans).toBe(501);
   });
 });

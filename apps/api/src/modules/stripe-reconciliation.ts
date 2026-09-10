@@ -406,35 +406,41 @@ async function matchPayoutLike(
 /** Compare imported BTs against local money tables (forward match). */
 export async function compareExternalLedger(runId: string, accountRef = PLATFORM) {
   const environment = stripeEnvironment();
-  const rows = (
-    await pool.query(
-      `SELECT provider_ref, type, amount_minor, fee_minor, net_minor, source_ref
-       FROM stripe_balance_transactions
-       WHERE environment=$1 AND account_ref=$2
-       ORDER BY created_at_stripe DESC
-       LIMIT 500`,
-      [environment, accountRef],
-    )
-  ).rows as Array<{
-    provider_ref: string;
-    type: string;
-    amount_minor: number;
-    fee_minor: number;
-    net_minor: number;
-    source_ref: string | null;
-  }>;
-
-  for (const row of rows) {
-    if (['charge', 'payment'].includes(row.type)) {
-      await matchChargeLike(runId, environment, accountRef, row);
-    } else if (['refund', 'payment_refund'].includes(row.type)) {
-      await matchRefundLike(runId, environment, accountRef, row);
-    } else if (['transfer', 'transfer_refund'].includes(row.type)) {
-      await matchTransferLike(runId, environment, accountRef, row);
-    } else if (row.type === 'payout') {
-      await matchPayoutLike(runId, environment, accountRef, row);
+  const pageSize = 500;
+  let offset = 0;
+  for (;;) {
+    const rows = (
+      await pool.query(
+        `SELECT provider_ref, type, amount_minor, fee_minor, net_minor, source_ref
+         FROM stripe_balance_transactions
+         WHERE environment=$1 AND account_ref=$2
+         ORDER BY created_at_stripe DESC, provider_ref DESC
+         LIMIT $3 OFFSET $4`,
+        [environment, accountRef, pageSize, offset],
+      )
+    ).rows as Array<{
+      provider_ref: string;
+      type: string;
+      amount_minor: number;
+      fee_minor: number;
+      net_minor: number;
+      source_ref: string | null;
+    }>;
+    if (!rows.length) break;
+    for (const row of rows) {
+      if (['charge', 'payment'].includes(row.type)) {
+        await matchChargeLike(runId, environment, accountRef, row);
+      } else if (['refund', 'payment_refund'].includes(row.type)) {
+        await matchRefundLike(runId, environment, accountRef, row);
+      } else if (['transfer', 'transfer_refund'].includes(row.type)) {
+        await matchTransferLike(runId, environment, accountRef, row);
+      } else if (row.type === 'payout') {
+        await matchPayoutLike(runId, environment, accountRef, row);
+      }
+      // application_fee / stripe_fee / adjustment: retained as imported facts; no forced local journal.
     }
-    // application_fee / stripe_fee / adjustment: retained as imported facts; no forced local journal.
+    if (rows.length < pageSize) break;
+    offset += pageSize;
   }
 }
 

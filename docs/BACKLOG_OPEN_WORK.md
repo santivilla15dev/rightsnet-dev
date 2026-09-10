@@ -73,9 +73,9 @@ El founder elige **uno**. Cada fila es un posible SPECIFY → STOP.
 
 | Prioridad sugerida | Ítem | Detalle |
 |--------------------|------|---------|
-| Alta (piloto AT) | Connect país sesgado a test **ES** | Alinear onboarding Connect con alcance AT/DE cuando toque |
+| Alta (piloto AT) | ~~Connect país sesgado a test **ES**~~ | **PASS** código: `docs/CONNECT_COUNTRY_AT_DE_V0_1.md` (cuentas nuevas) |
 | Media | Review humana relación con activo | Sandbox hoy; validación operativa pendiente |
-| Media | Stripe test **reensayo** + gaps money/recon | Ver `docs/VERIFICATION.md`: thin v2 recovery, reversión parcial/paginada, asociación tardía transfers, fees/cuentas connected, límite 500 movimientos |
+| Media | Stripe test **reensayo** + gaps money/recon | Gaps código parcial PASS (`docs/STRIPE_MONEY_RECON_GAPS_V0_1.md`); reensayo founder OPEN (runbook R1–R5); thin v2 + fees abiertos |
 | Media | Storage real + malware scan | Hoy disco privado local |
 | Media | Roles DB / RLS | Migrator separado; ensayar tenancy |
 | Baja / infra | KMS / rotación remota | Hoy Ed25519 local |

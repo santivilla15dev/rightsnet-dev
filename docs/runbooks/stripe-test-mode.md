@@ -15,7 +15,9 @@ La tabla inferior conserva el ensayo previo de Cursor. Después de la revisión 
    Si ves `CONNECT_PLATFORM_REQUIRED` / `non_connect_platform_accounts_v2_access_blocked`:
    en Dashboard test abre [Connect platform setup](https://dashboard.stripe.com/test/settings/connect/platform-setup)
    (o **Connect → Get started / Configurar plataforma**) y completa el alta. Sin eso, Accounts v2 no deja crear `acct_`.
-6. Identidad de cuentas Connect: país **`es`**, moneda **EUR** (piloto RightsNet).
+6. Identidad de cuentas Connect nuevas: país desde `creators.location` (sufijo `AT`/`DE`/`ES`)
+   o `CONNECT_DEFAULT_COUNTRY` (default **`at`**); moneda **EUR**. No reescribe cuentas ya creadas.
+   Ver `docs/CONNECT_COUNTRY_AT_DE_V0_1.md`.
 
 ## Configuración local (tú la haces; no se versiona)
 
@@ -33,6 +35,7 @@ AUTH_PROVIDER=sandbox
 PAYMENTS_PROVIDER=stripe
 STRIPE_SECRET_KEY=sk_test_…          # solo test
 STRIPE_WEBHOOK_SECRET=whsec_…       # snapshot listen
+CONNECT_DEFAULT_COUNTRY=at          # opcional; at|de|es
 # Opcional; si falta, se reutiliza STRIPE_WEBHOOK_SECRET:
 STRIPE_THIN_WEBHOOK_SECRET=whsec_…
 WEB_URL=http://localhost:3000
@@ -93,6 +96,19 @@ El handler thin hace `parseEventNotification` → `v2.core.events.retrieve` → 
 | — | Disputa EUR ligada a orden viva | PASS | Orden `18caba7b…` · tarjeta `…0259` · `du_1UCn0k…`; licencia `issued`; admin review → `acknowledged`, sin revocar |
 
 \* Críticas: 0. Avisos no críticos (BT huérfanos de CLI trigger / cargos de fondeo auxiliar) se acusan al cerrar el ensayo.
+
+## Reensayo post-corrección (OPEN — founder)
+
+Tras gaps money/recon (`docs/STRIPE_MONEY_RECON_GAPS_V0_1.md`) y Connect country AT/DE.
+No marcar PASS hasta completar contra Dashboard/CLI. `LIVE_COMMERCE_ENABLED=false`.
+
+| # | Caso | Resultado | Notas |
+|---|---|---|---|
+| R1 | Crear recipient **nuevo** con location `…, AT` o `…, DE` → identity country correcto en Dashboard | OPEN | No reescribe `acct_` antiguos |
+| R2 | Checkout + webhook → `charge_ref` + transfer destination vinculados a orden | OPEN | Relink tardío si transfer llega antes |
+| R3 | Refund parcial / transfer reversal parcial (`reversed=false` + fila reversal) | OPEN | Status transfer no debe ser `reversed` completo |
+| R4 | Conciliar Stripe con >500 BT importados (o forzar volumen test) | OPEN | Compare paginado |
+| R5 | Thin v2 recovery + fees/multi-account | OPEN | Sigue gap aparte |
 
 ## Dónde mirar en RightsNet
 

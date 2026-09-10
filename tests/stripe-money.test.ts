@@ -26,6 +26,7 @@ import {
 } from '../apps/api/src/modules/payments.js';
 import {
   ingestMoneyMovementEvent,
+  relinkOrphanTransfersForCharge,
   reviewDispute,
 } from '../apps/api/src/modules/stripe-money.js';
 import type { Usage } from '../packages/domain/src/index.js';
@@ -312,5 +313,77 @@ describe.sequential('Stripe transfers, disputes and payouts (mocked)', () => {
         reversalId,
       ])).rowCount,
     ).toBe(1);
+  });
+
+  it('records partial transfer reversals without marking fully reversed', async () => {
+    const { order } = await fulfilledOrder();
+    const transferId = 'tr_partial_' + randomUUID().slice(0, 8);
+    const reversalId = 'trr_partial_' + randomUUID().slice(0, 8);
+    const partialAmount = Math.max(1, Math.floor(order.price.creator_minor / 2));
+    store.transfers.set(transferId, {
+      id: transferId,
+      object: 'transfer',
+      livemode: false,
+      amount: order.price.creator_minor,
+      currency: 'eur',
+      destination: account,
+      reversed: false,
+      metadata: { order_id: order.id },
+      reversals: {
+        object: 'list',
+        data: [
+          {
+            id: reversalId,
+            object: 'transfer_reversal',
+            amount: partialAmount,
+            currency: 'eur',
+            metadata: {},
+          },
+        ],
+        has_more: false,
+        url: '',
+      },
+    } as unknown as Stripe.Transfer);
+    await ingestMoneyMovementEvent({
+      id: 'evt_partial_' + randomUUID(),
+      object: 'event',
+      livemode: false,
+      type: 'transfer.reversed',
+      data: { object: { id: transferId, object: 'transfer' } },
+    } as never);
+    expect(
+      (await pool.query('SELECT status FROM stripe_transfers WHERE provider_ref=$1', [transferId]))
+        .rows[0].status,
+    ).toBe('paid');
+    expect(
+      (
+        await pool.query(
+          'SELECT amount_minor FROM stripe_transfer_reversals WHERE provider_ref=$1',
+          [reversalId],
+        )
+      ).rows[0].amount_minor,
+    ).toBe(partialAmount);
+  });
+
+  it('relinks orphan transfers once charge_ref appears', async () => {
+    const { order, attemptId } = await fulfilledOrder();
+    const charge = 'ch_late_' + randomUUID().slice(0, 8);
+    const transferId = 'tr_orphan_' + randomUUID().slice(0, 8);
+    await pool.query(
+      `INSERT INTO stripe_transfers(
+         id,provider_ref,environment,connected_account_ref,order_id,payment_attempt_id,
+         amount_minor,currency,status,source_transaction_ref)
+       VALUES($1,$2,'test',$3,NULL,NULL,$4,'EUR','paid',$5)`,
+      [randomUUID(), transferId, account, order.price.creator_minor, charge],
+    );
+    await pool.query('UPDATE payment_attempts SET charge_ref=$2 WHERE id=$1', [attemptId, charge]);
+    expect(await relinkOrphanTransfersForCharge(charge)).toBe(1);
+    const row = (
+      await pool.query('SELECT order_id, payment_attempt_id FROM stripe_transfers WHERE provider_ref=$1', [
+        transferId,
+      ])
+    ).rows[0];
+    expect(row.order_id).toBe(order.id);
+    expect(row.payment_attempt_id).toBe(attemptId);
   });
 });

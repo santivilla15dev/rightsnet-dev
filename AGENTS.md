@@ -119,5 +119,13 @@ funcional PASS: 35 tests focalizados H1–H6 y 6 E2E PASS, typecheck/lint PASS.
 Sin autoridad ejecutable ni clearance legal. **STOP H6**.
 
 Org buyers AT: domicilio org `AT|DE|ES` (CHECK 014 + contratos OpenAPI + seed demo
-AT); `docs/ORG_BUYERS_AT_V0_1.md`. **PASS**; no remap ES→AT de grants; Connect
-country sesgado a ES sigue aparte.
+AT); `docs/ORG_BUYERS_AT_V0_1.md`. **PASS**; no remap ES→AT de grants.
+
+Connect country AT/DE: `identity.country` para cuentas Connect nuevas desde
+`creators.location` o `CONNECT_DEFAULT_COUNTRY` (default `at`);
+`docs/CONNECT_COUNTRY_AT_DE_V0_1.md`. **PASS** código/mocks; no remap de `acct_`
+existentes.
+
+Stripe money/recon gaps: compare paginado, reversión parcial, relink charge_ref;
+`docs/STRIPE_MONEY_RECON_GAPS_V0_1.md`. **PASS** mocks; reensayo founder OPEN;
+thin v2 recovery y fees/multi-account abiertos.

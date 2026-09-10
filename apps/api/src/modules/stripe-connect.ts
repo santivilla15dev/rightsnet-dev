@@ -84,12 +84,31 @@ function statusFromAccount(
 
 async function creatorRow(user: Actor) {
   const row = (
-    await pool.query('SELECT id, display_name, connected_account FROM creators WHERE user_id=$1', [
-      user.id,
-    ])
+    await pool.query(
+      'SELECT id, display_name, connected_account, location FROM creators WHERE user_id=$1',
+      [user.id],
+    )
   ).rows[0];
   if (!row) throw new DomainError('CREATOR_REQUIRED', 422, 'Crea tu perfil antes de configurar cobros.');
-  return row as { id: string; display_name: string; connected_account: string | null };
+  return row as {
+    id: string;
+    display_name: string;
+    connected_account: string | null;
+    location: string;
+  };
+}
+
+/** Resolve Connect identity country for new accounts (at|de|es). */
+export function resolveConnectCountry(
+  location: string | null | undefined,
+  fallback = config.connectDefaultCountry,
+): 'at' | 'de' | 'es' {
+  const allowed = new Set(['at', 'de', 'es']);
+  const base = allowed.has(fallback) ? (fallback as 'at' | 'de' | 'es') : 'at';
+  const match = location?.trim().match(/(?:^|,\s*)([A-Za-z]{2})\s*$/);
+  if (!match) return base;
+  const code = match[1]!.toLowerCase();
+  return allowed.has(code) ? (code as 'at' | 'de' | 'es') : base;
 }
 
 async function syncConnectRow(
@@ -227,7 +246,7 @@ export async function ensureConnectAccount(user: Actor) {
             losses_collector: 'application',
           },
         },
-        identity: { country: 'es' },
+        identity: { country: resolveConnectCountry(creator.location) },
         configuration: {
           recipient: {
             capabilities: {

@@ -165,7 +165,8 @@ async function upsertTransfer(transfer: Stripe.Transfer) {
 }
 
 async function upsertTransferReversal(transfer: Stripe.Transfer) {
-  if (!transfer.reversed) return;
+  const hasReversals = (transfer.reversals?.data?.length ?? 0) > 0;
+  if (!transfer.reversed && !hasReversals) return;
   const parent = (
     await pool.query('SELECT * FROM stripe_transfers WHERE provider_ref=$1', [transfer.id])
   ).rows[0];
@@ -198,10 +199,27 @@ async function upsertTransferReversal(transfer: Stripe.Transfer) {
         [refund.id, rev.id],
       );
   }
-  await pool.query(
-    "UPDATE stripe_transfers SET status='reversed', updated_at=now() WHERE id=$1",
-    [row.id],
+  // Only mark fully reversed when Stripe says so; partial reversals stay paid + reversal rows.
+  if (transfer.reversed) {
+    await pool.query(
+      "UPDATE stripe_transfers SET status='reversed', updated_at=now() WHERE id=$1",
+      [row.id],
+    );
+  }
+}
+
+/** Link orphan transfers once charge_ref appears on a succeeded attempt. */
+export async function relinkOrphanTransfersForCharge(chargeRef: string) {
+  if (!chargeRef) return 0;
+  const linked = await resolveOrderFromCharge(chargeRef);
+  if (!linked) return 0;
+  const result = await pool.query(
+    `UPDATE stripe_transfers
+     SET order_id=COALESCE(order_id,$2), payment_attempt_id=COALESCE(payment_attempt_id,$3), updated_at=now()
+     WHERE source_transaction_ref=$1 AND order_id IS NULL`,
+    [chargeRef, linked.order_id, linked.attempt_id],
   );
+  return result.rowCount ?? 0;
 }
 
 async function upsertDispute(dispute: Stripe.Dispute) {

@@ -59,6 +59,11 @@ export const config = {
   ocrLiveEnabled: process.env.OCR_LIVE_ENABLED === 'true',
   ocrApiBase: process.env.OCR_API_BASE ?? '',
   ocrApiKey: process.env.OCR_API_KEY ?? '',
+  /**
+   * Default Stripe Connect identity country for new recipient accounts when
+   * creators.location has no AT/DE/ES suffix. Test/pilot default: at.
+   */
+  connectDefaultCountry: (process.env.CONNECT_DEFAULT_COUNTRY ?? 'at').toLowerCase(),
   port: Number(process.env.API_PORT ?? 4000),
 };
 export function assertConfiguration() {

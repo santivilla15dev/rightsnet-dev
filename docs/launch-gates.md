@@ -24,7 +24,7 @@ Piloto comercial propuesto: **Austria + Alemania** (constitución §5). No impli
 | Contrato y consentimiento jurídicos | Pendiente | Sustituir DEMO por plantilla aprobada/versionada |
 | IVA/fiscalidad/facturas | Pendiente | Diseñar e implementar según entidad y países |
 | Relación con activo (review humana) | Sandbox | Evidencia local; validación operativa pendiente |
-| Stripe Connect (cobros creador) | Implementado test | Live gated por flag; país Connect aún sesgado a test ES |
+| Stripe Connect (cobros creador) | Implementado test | Live gated por flag; país cuentas nuevas AT/DE/ES vía location / `CONNECT_DEFAULT_COUNTRY` |
 | Orgs buyer AT | PASS | Domicilio `AT\|DE\|ES`; `docs/ORG_BUYERS_AT_V0_1.md`. ES legacy permitido; sin remap |
 | Storage y malware scan | Sandbox local | Disco privado; integrar storage/scanner real |
 | Roles DB y RLS | Pendiente | Migrator separado; ensayar tenancy |
@@ -34,7 +34,7 @@ Piloto comercial propuesto: **Austria + Alemania** (constitución §5). No impli
 | Rate limiting distribuido | Pendiente | Límite local de una instancia |
 | Backups/PITR/restore | Pendiente | Ensayar restore DB + ficheros + claves |
 | Despliegue staging y seguridad | Pendiente | Región, secretos, HTTPS, CI remoto |
-| Prueba Stripe test end-to-end | Ensayo previo PASS; reensayo abierto | Ver `docs/VERIFICATION.md`. Flag live off por defecto |
+| Prueba Stripe test end-to-end | Ensayo previo PASS; reensayo OPEN | Runbook R1–R5; gaps código parcial. Flag live off por defecto |
 | Primera licencia/payout **real** | No iniciado | Solo después de cerrar gates legales + KYC ops + Connect live readiness |
 
 ## Checklist piloto AT–DE (sin activar live en producción)
