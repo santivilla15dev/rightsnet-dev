@@ -31,7 +31,7 @@ Piloto comercial propuesto: **Austria + Alemania** (constitución §5). No impli
 | KMS/rotación | Rotación local PASS | `docs/SIGNING_KEY_ROTATION_V0_1.md`; KMS remoto OPEN |
 | Auditoría resistente a admin | Parcial | Triggers append-only; archivo retenido pendiente |
 | Notificaciones y alertas | Pendiente | Email / métricas / cola |
-| Rate limiting distribuido | Pendiente | Límite local de una instancia |
+| Rate limiting distribuido | PASS v0.1 | Memory default; Redis opt-in `docs/RATE_LIMIT_DISTRIBUTED_V0_1.md` |
 | Backups/PITR/restore | Pendiente | Ensayar restore DB + ficheros + claves |
 | Despliegue staging y seguridad | Pendiente | Región, secretos, HTTPS, CI remoto |
 | Prueba Stripe test end-to-end | Ensayo previo PASS; reensayo OPEN | Runbook R1–R5; gaps código PASS (incl. thin/fees). Flag live off por defecto |

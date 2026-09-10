@@ -76,6 +76,13 @@ export const config = {
   malwareScanProvider: (process.env.MALWARE_SCAN_PROVIDER === 'clamav' ? 'clamav' : 'sandbox') as
     | 'sandbox'
     | 'clamav',
+  /**
+   * Rate limit backend. Default `memory` (per process). Opt-in `redis`
+   * — docs/RATE_LIMIT_DISTRIBUTED_V0_1.md.
+   */
+  rateLimitProvider: (process.env.RATE_LIMIT_PROVIDER === 'redis' ? 'redis' : 'memory') as
+    | 'memory'
+    | 'redis',
   port: Number(process.env.API_PORT ?? 4000),
 };
 export function assertConfiguration() {
@@ -92,6 +99,8 @@ export function assertConfiguration() {
   }
   if (config.malwareScanProvider === 'clamav' && !process.env.CLAMAV_HOST)
     throw new Error('MALWARE_SCAN_PROVIDER=clamav requires CLAMAV_HOST.');
+  if (config.rateLimitProvider === 'redis' && !process.env.REDIS_URL)
+    throw new Error('RATE_LIMIT_PROVIDER=redis requires REDIS_URL.');
   const signingProvider = (process.env.SIGNING_PROVIDER ?? 'local').toLowerCase();
   if (signingProvider !== 'local')
     throw new Error(

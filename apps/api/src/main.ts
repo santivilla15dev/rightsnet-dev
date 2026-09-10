@@ -15,6 +15,7 @@ import {
   WebhooksController,
 } from './modules/controllers.js';
 import { assertConfiguration, config } from './common/config.js';
+import { rateLimitPort } from './common/rate-limit.js';
 assertConfiguration();
 @Module({
   controllers: [
@@ -80,30 +81,29 @@ export async function bootstrap(port = config.port) {
     }),
   );
   app.useGlobalFilters(new ErrorFilter());
-  const limits = new Map<string, { count: number; until: number }>();
+  const limiter = rateLimitPort();
   app.use((req: Request, res: Response, next: NextFunction) => {
     res.setHeader('X-Request-Id', randomUUID());
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Cache-Control', 'no-store');
-    const key = req.ip + ':' + (req.path.includes('/auth/') ? 'auth' : 'api');
-    const now = Date.now();
-    const limit = limits.get(key);
-    if (limit && limit.until > now) {
-      limit.count++;
-      if (limit.count > (key.endsWith('auth') ? 60 : 1500)) {
-        res
-          .status(429)
-          .json({
+    const bucket = req.path.includes('/auth/') ? 'auth' : 'api';
+    const key = `${req.ip}:${bucket}`;
+    const max = bucket === 'auth' ? 60 : 1500;
+    void limiter
+      .hit(key, max, 60_000)
+      .then((r) => {
+        if (!r.allowed) {
+          res.status(429).json({
             error: {
               code: 'RATE_LIMITED',
               message: 'Espera un momento antes de volver a intentarlo.',
             },
           });
-        return;
-      }
-    } else limits.set(key, { count: 1, until: now + 60000 });
-    if (limits.size > 10000) for (const [k, v] of limits) if (v.until < now) limits.delete(k);
-    next();
+          return;
+        }
+        next();
+      })
+      .catch(next);
   });
   await app.listen(port, '127.0.0.1');
   return app;

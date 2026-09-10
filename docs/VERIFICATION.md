@@ -366,6 +366,11 @@ Cierre PASS local: `docs/SIGNING_KEY_ROTATION_V0_1.md`. `SigningKeyStore` +
 admin rotate/list; pubs históricos conservados. Tests signing-rotation 3/3.
 KMS remoto OPEN.
 
+## Rate limit distributed v0.1 — 2026-09-10
+
+Cierre PASS: `docs/RATE_LIMIT_DISTRIBUTED_V0_1.md`. Puerto memory + Redis
+RESP opt-in; middleware API. Tests rate-limit 3/3. CI memory.
+
 ## DB roles / tenancy v0.1 — 2026-09-10
 
 Cierre PASS roles: `docs/DB_ROLES_TENANCY_V0_1.md`. Migración 033; `MIGRATE_DATABASE_URL`;
