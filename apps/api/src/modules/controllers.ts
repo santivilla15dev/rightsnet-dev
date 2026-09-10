@@ -1,5 +1,11 @@
 import { getCampaignFlight, changeCampaignEvidence } from './campaign-flight.js';
 import { getCampaignClearance, updateCampaignUsage } from './campaign-clearance.js';
+import {
+  getDealBuilder,
+  upsertDealRequest,
+  sendDealRequest,
+  withdrawDealRequest,
+} from './campaign-deal-builder.js';
 import { talentInventory, campaignTalent, addCampaignTalent, removeCampaignTalent } from './talent-inventory.js';
 import { listCampaigns, getCampaign, createCampaign, updateCampaign } from './campaigns.js';
 import {
@@ -610,6 +616,28 @@ export class AccountsController {
 }
 @Controller('v1')
 export class CommerceController {
+  @Get('campaigns/:id/deal-builder') async campaignDealBuilder(@Req() req: Request, @Param('id') id: string) {
+    return getDealBuilder(await actor(req), id);
+  }
+  @Post('campaigns/:id/deal-requests') async campaignDealRequest(@Req() req: Request, @Param('id') id: string, @Body() body: unknown) {
+    return upsertDealRequest(await actor(req), id, body, idem(req));
+  }
+  @Post('campaigns/:id/deal-requests/:requestId/send') async campaignDealSend(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Param('requestId') requestId: string,
+    @Body() body: unknown,
+  ) {
+    return sendDealRequest(await actor(req), id, requestId, body, idem(req));
+  }
+  @Post('campaigns/:id/deal-requests/:requestId/withdraw') async campaignDealWithdraw(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Param('requestId') requestId: string,
+    @Body() body: unknown,
+  ) {
+    return withdrawDealRequest(await actor(req), id, requestId, body, idem(req));
+  }
   @Get('campaigns/:id/flight') async campaignFlight(@Req() req: Request, @Param('id') id: string) {
     return getCampaignFlight(await actor(req), id);
   }

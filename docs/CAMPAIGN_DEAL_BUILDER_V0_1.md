@@ -1,6 +1,6 @@
 # H5 — Campaign Deal Builder
 
-2026-09-10. SPECIFY PASS; implementación pendiente. Continuación autorizada tras STOP H4.
+2026-09-10. SPECIFY PASS; IMPLEMENT PASS (cierre abajo). Continuación autorizada tras STOP H4.
 
 ## Alcance y contratos
 
@@ -111,3 +111,21 @@ Sin notificaciones externas, sin portal del licensor, sin e-sign. SENT es regist
 interno. Un grant revocado después de SENT no se “arregla” solo: el request queda
 histórico; clearance/flight siguen siendo la verdad operativa. RLS y gates live
 siguen pendientes.
+
+## Cierre H5 — 2026-09-10
+
+SPECIFY → IMPLEMENT → MIGRATE → TEST → RUN → VERIFY → DOCUMENT → **STOP H5**.
+
+- Migración 030 aplicada (local + test); reaplicación idempotente. Tabla
+  `campaign_deal_requests` con único parcial DRAFT `(campaign_id, asset_id)`.
+- API: `GET …/deal-builder`, `POST …/deal-requests`, `…/send`, `…/withdraw`.
+  Gaps desde clearance H3 (lista cerrada); sin mutar RightsGrant; límite 50 → 409;
+  roles owner write / employee read / outsider 404; STALE gaps en borrador;
+  retirar talento → CLOSED.
+- UI pestaña **Solicitudes**; disclaimer de no autoridad; sin botón aprobar/aplicar.
+- Tests focalizados H1–H5: 32/32 PASS (4 nuevos). E2E H1–H5: 5/5 PASS.
+  Typecheck/lint PASS. Capturas: `docs/screenshots/campaign-deal-builder-desktop.png`
+  y `campaign-deal-builder-mobile.png`.
+
+No notificaciones externas ni e-sign. **STOP H5** antes de Campaign Passport (H6).
+H6 permanece propuesto, no implementado.

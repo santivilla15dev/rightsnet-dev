@@ -281,5 +281,11 @@ Capturas desktop/mobile en `docs/screenshots/campaign-flight-*`.
 Suite global post-código (DB compartida): 214 PASS / 33 FAIL. Baseline limpio pre-código
 H4: 207 PASS / 32 FAIL (`work/h4-baseline-clean.log`). Fallos fuera de módulos Campaigns
 (Stripe mock, integration, creator-lifecycle, rights-grants/ops, etc.). Sin PASS global.
-Ningún gate live o autoridad ejecutable cambia. H5 Deal Builder: SPECIFY PASS
-(`docs/CAMPAIGN_DEAL_BUILDER_V0_1.md`); IMPLEMENT no abierto.
+Ningún gate live o autoridad ejecutable cambia. H5 Deal Builder cerrado abajo.
+
+## Campaign Deal Builder H5 — 2026-09-10
+
+Cierre funcional PASS y STOP H5: `docs/CAMPAIGN_DEAL_BUILDER_V0_1.md`. Migración 030
+local/test aplicada. H1–H5: 32/32 tests focalizados y 5/5 E2E PASS; typecheck/lint PASS.
+UI Solicitudes: borrador → enviar → retirar; sin mutación de grants. Capturas
+`docs/screenshots/campaign-deal-builder-*`. H6 Passport no abierto.

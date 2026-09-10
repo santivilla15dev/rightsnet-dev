@@ -82,4 +82,4 @@ integration, creator-lifecycle, rights-grants/ops, etc.); no se declara PASS glo
 causalidad solo por H4. Detalle: `work/h4-tests-final.log`, `work/h4-baseline-clean.log`.
 
 H4 no emite autoridad ejecutable ni clearance legal. **STOP H4** antes de Deal Builder (H5).
-H5 SPECIFY PASS: `docs/CAMPAIGN_DEAL_BUILDER_V0_1.md` (IMPLEMENT pendiente). H6 propuesto.
+H5 SPECIFY + IMPLEMENT PASS: `docs/CAMPAIGN_DEAL_BUILDER_V0_1.md`. H6 propuesto.

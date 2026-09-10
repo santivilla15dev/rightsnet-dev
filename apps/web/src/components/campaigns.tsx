@@ -8,6 +8,7 @@ import { AuthRequired, ErrorPanel, Loading, Title } from './common';
 import { Button } from './ui/button';
 import { CampaignClearance } from './campaign-clearance';
 import { CampaignFlight } from './campaign-flight';
+import { CampaignDealBuilder } from './campaign-deal-builder';
 import { CampaignTalent } from './talent-inventory';
 
 type Campaign = {
@@ -164,6 +165,7 @@ export function Campaigns({ id }: { id?: string }) {
                     ['overview', 'Resumen'],
                     ['talent', 'Talento'],
                     ['rights', 'Derechos'],
+                    ['requests', 'Solicitudes'],
                     ['creative', 'Creatividad'],
                     ['production', 'Producción'],
                     ['outputs', 'Outputs'],
@@ -218,6 +220,14 @@ export function Campaigns({ id }: { id?: string }) {
                   }}
                 />
               ) : null}
+              {tab === 'requests' ? (
+                <CampaignDealBuilder
+                  id={id}
+                  onChanged={async () => {
+                    setCampaign(await api<Campaign>('campaigns/' + id));
+                  }}
+                />
+              ) : null}
               {tab === 'creative' ? editor(campaign.can_edit) : null}
               {['production', 'outputs', 'approvals', 'licenses'].includes(tab) ? (
                 <CampaignFlight
@@ -241,13 +251,21 @@ export function Campaigns({ id }: { id?: string }) {
                             ? 'Vínculo de evidencia retirado'
                             : event.action === 'campaign.usage_updated'
                               ? 'Uso actualizado'
-                              : event.action === 'campaign.created'
-                                ? 'Campaña creada'
-                                : event.action === 'campaign.talent_added'
-                                  ? 'Talento añadido'
-                                  : event.action === 'campaign.talent_removed'
-                                    ? 'Talento retirado'
-                                    : 'Campaña actualizada'}{' '}
+                              : event.action === 'campaign.deal_request_created'
+                                ? 'Solicitud creada'
+                                : event.action === 'campaign.deal_request_updated'
+                                  ? 'Solicitud actualizada'
+                                  : event.action === 'campaign.deal_request_sent'
+                                    ? 'Solicitud enviada'
+                                    : event.action === 'campaign.deal_request_withdrawn'
+                                      ? 'Solicitud retirada'
+                                      : event.action === 'campaign.created'
+                                        ? 'Campaña creada'
+                                        : event.action === 'campaign.talent_added'
+                                          ? 'Talento añadido'
+                                          : event.action === 'campaign.talent_removed'
+                                            ? 'Talento retirado'
+                                            : 'Campaña actualizada'}{' '}
                         · revisión {event.details.revision} ·{' '}
                         {new Date(event.created_at).toLocaleString('es-ES')}
                       </li>

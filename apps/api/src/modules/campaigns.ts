@@ -60,7 +60,7 @@ export async function getCampaign(user: Actor, id: string, query: unknown = {}) 
   const rows = (
     await pool.query(
       `SELECT action, details, created_at FROM audit_events
-     WHERE resource_id=$1 AND action IN ('campaign.created','campaign.updated','campaign.talent_added','campaign.talent_removed','campaign.usage_updated','campaign.evidence_added','campaign.evidence_removed')
+     WHERE resource_id=$1 AND action IN ('campaign.created','campaign.updated','campaign.talent_added','campaign.talent_removed','campaign.usage_updated','campaign.evidence_added','campaign.evidence_removed','campaign.deal_request_created','campaign.deal_request_updated','campaign.deal_request_sent','campaign.deal_request_withdrawn')
      ORDER BY created_at DESC, id DESC LIMIT 51 OFFSET $2`,
       [id, offset],
     )

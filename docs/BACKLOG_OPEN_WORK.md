@@ -43,7 +43,7 @@ Este documento lista lo que **aún falta**. No reabrir hitos ya **PASS**. Un hit
 | Rights Operations API + UI + org-member + pending CTA | docs `RIGHTS_OPERATIONS_*` |
 | **Live commerce L1 técnico** (`LIVE_COMMERCE_ENABLED`, CI off) | `docs/LIVE_COMMERCE_V0_1.md` |
 | Doc truth-sync | `docs/DOC_TRUTH_SYNC_V0_1.md` |
-| **Campaigns H1–H4** (planificación, talento, clearance, flight) | `docs/CAMPAIGNS_V0_1.md`, `TALENT_INVENTORY_*`, `CAMPAIGN_CLEARANCE_*`, `CAMPAIGN_FLIGHT_*` |
+| **Campaigns H1–H5** (plan, talento, clearance, flight, deal builder) | docs `CAMPAIGNS_*`, `TALENT_INVENTORY_*`, `CAMPAIGN_CLEARANCE_*`, `CAMPAIGN_FLIGHT_*`, `CAMPAIGN_DEAL_BUILDER_*` |
 
 Stripe Checkout / Connect / refunds / money / recon: mocks **PASS**; ensayo test externo previo **PASS** con reensayo abierto (ver §4).
 
@@ -72,8 +72,7 @@ El founder elige **uno**. Cada fila es un posible SPECIFY → STOP.
 
 | Prioridad sugerida | Ítem | Detalle |
 |--------------------|------|---------|
-| Media (Campaigns) | **H5 Deal Builder IMPLEMENT** | SPECIFY PASS (`docs/CAMPAIGN_DEAL_BUILDER_V0_1.md`); falta IMPLEMENT → TEST → DOCUMENT → STOP |
-| Baja (Campaigns) | **H6 Campaign Passport** | Allowlist compartible, revocable, caducidad, reevaluación; solo tras H5 |
+| Baja (Campaigns) | **H6 Campaign Passport** | Allowlist compartible, revocable, caducidad, reevaluación; solo tras STOP H5 |
 | Alta (piloto AT) | **Org buyers AT** | CHECK org country legacy `ES\|DE` — alinear para buyers AT antes del piloto |
 | Alta (piloto AT) | Connect país sesgado a test **ES** | Alinear onboarding Connect con alcance AT/DE cuando toque |
 | Media | Review humana relación con activo | Sandbox hoy; validación operativa pendiente |

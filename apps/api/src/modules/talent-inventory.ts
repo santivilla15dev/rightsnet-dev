@@ -3,6 +3,7 @@ import { pool, audit, type DB } from '../../../../packages/db/index.js';
 import { DomainError } from '../../../../packages/domain/src/index.js';
 import type { Actor } from '../common/auth.js';
 import { campaignAccess, findCampaign } from './campaigns.js';
+import { closeDealRequestsForTalent } from './campaign-deal-builder.js';
 import { mutate } from '../common/idempotency.js';
 
 const pageSchema = z.object({
@@ -233,6 +234,7 @@ export async function removeCampaignTalent(
       [id, asset],
     );
     if (removed.rowCount) {
+      await closeDealRequestsForTalent(db, id, asset);
       const updated = (
         await db.query(
           'UPDATE campaigns SET revision=revision+1,updated_at=now() WHERE id=$1 RETURNING revision',

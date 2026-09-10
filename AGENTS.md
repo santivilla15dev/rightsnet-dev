@@ -108,6 +108,8 @@ PASS, typecheck/lint/build PASS. Regresión global 214 PASS / 33 FAIL (baseline 
 pre-H4 207/32), fallos fuera de Campaigns y documentados. No concede autoridad ejecutable
 ni clearance legal. **STOP H4**.
 
-Campaign Deal Builder H5: SPECIFY **PASS** (`docs/CAMPAIGN_DEAL_BUILDER_V0_1.md`) —
-propuesta estructurada de gaps/solicitud humana sin autoactivar permisos; IMPLEMENT
-pendiente. H6 Passport propuesto, no implementado.
+Campaign Deal Builder H5: gaps estructurados + borrador/envío/retiro de solicitud
+humana sin autoactivar permisos; migración 030; `docs/CAMPAIGN_DEAL_BUILDER_V0_1.md`.
+H5 funcional PASS: 32 tests focalizados H1–H5 y 5 E2E PASS, typecheck/lint PASS.
+No muta grants ni concede autoridad. **STOP H5**; H6 Passport propuesto, no
+implementado.
