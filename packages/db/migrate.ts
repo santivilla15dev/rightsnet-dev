@@ -21,6 +21,8 @@ export async function migrate() {
     : pool;
 
   try {
+    // FORCE RLS on pilot tables: migrator must bypass when applying later DML in same role.
+    await migratePool.query(`SELECT set_config('app.rls_bypass', '1', false)`);
     await migratePool.query(
       'CREATE TABLE IF NOT EXISTS schema_migrations(name text PRIMARY KEY, applied_at timestamptz DEFAULT now())',
     );

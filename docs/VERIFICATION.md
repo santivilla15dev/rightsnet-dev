@@ -338,4 +338,10 @@ submit/review/extract exigen `clean`. S3/ClamAV reales fuera.
 ## DB roles / tenancy v0.1 — 2026-09-10
 
 Cierre PASS roles: `docs/DB_ROLES_TENANCY_V0_1.md`. Migración 033; `MIGRATE_DATABASE_URL`;
-test niega DDL a `rightsnet_app`. RLS pleno pendiente.
+test niega DDL a `rightsnet_app`.
+
+## DB RLS org pilot v0.1 — 2026-09-10
+
+Cierre PASS: `docs/DB_RLS_V0_1.md`. Migración 034 FORCE en organizations /
+organization_members / campaigns; helpers `withRlsActor`; bypass de pool por
+defecto; test `db-rls` aísla por membership. Cableado Nest progresivo OPEN.

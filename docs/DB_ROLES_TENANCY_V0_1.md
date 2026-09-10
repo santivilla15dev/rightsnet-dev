@@ -12,17 +12,18 @@ Separar rol SQL de migraciones del rol de la app:
 3. `migrate.ts` usa `MIGRATE_DATABASE_URL` (fallback `DATABASE_URL`).
 4. Ensayo: test que `rightsnet_app` no puede `CREATE TABLE`.
 
-Tenancy de negocio sigue en la API (org members, admin). **RLS pleno** no
-entra en v0.1 (placeholder documentado).
+Tenancy de negocio sigue en la API (org members, admin).
+RLS org pilot v0.1: `docs/DB_RLS_V0_1.md` (FORCE + GUC; bypass runtime por defecto).
 
 ## Fuera de alcance
 
 RLS por JWT Supabase, multi-schema por tenant, passwords en local trust.
+Cableado `withRlsActor` en todas las rutas Nest (ver `DB_RLS_V0_1.md`).
 
 ## STOP
 
 Roles separados PASS en local/CI cuando se provisiona `rightsnet_app`.
-RLS completo pendiente.
+RLS org pilot: ver `docs/DB_RLS_V0_1.md`.
 
 ## Cierre IMPLEMENT
 

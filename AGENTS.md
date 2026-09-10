@@ -136,4 +136,7 @@ Asset relationship review v0.1: preview evidencia admin + tests;
 `docs/ASSET_RELATIONSHIP_REVIEW_V0_1.md`. **PASS** código; ensayo humano founder opcional.
 
 Storage + scan v0.1: `docs/STORAGE_SCAN_V0_1.md`. **PASS** sandbox (local + EICAR).
-DB roles v0.1: `docs/DB_ROLES_TENANCY_V0_1.md`. **PASS** migrator≠`rightsnet_app`; RLS pleno OPEN.
+DB roles v0.1: `docs/DB_ROLES_TENANCY_V0_1.md`. **PASS** migrator≠`rightsnet_app`.
+DB RLS org pilot v0.1: `docs/DB_RLS_V0_1.md` — SPECIFY **PASS**; IMPLEMENT **PASS**
+(FORCE en organizations/members/campaigns; bypass runtime por defecto; cableado
+progresivo `withRlsActor` OPEN).
