@@ -439,6 +439,11 @@ Cierre PASS andamiaje: `docs/STAGING_API_DOCKER_V0_1.md`.
 `deploy/Dockerfile` (sin web) + compose example + fly `fra` +
 `pnpm staging:api-dockerfile`. `docker build` real OPEN (sin daemon local).
 
+## Founder prep next v0.1 — 2026-09-10
+
+Cierre PASS: `docs/FOUNDER_PREP_NEXT_V0_1.md`. Prioridades founder;
+`product:smoke` WARN si falta worker.
+
 ## DB roles / tenancy v0.1 — 2026-09-10
 
 Cierre PASS roles: `docs/DB_ROLES_TENANCY_V0_1.md`. Migración 033; `MIGRATE_DATABASE_URL`;

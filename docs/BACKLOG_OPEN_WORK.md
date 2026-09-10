@@ -112,4 +112,6 @@ Plantillas legales cableadas en producto: solo cuando §3 entregue textos aproba
 2. Codex: SPECIFY (`docs/…_V0_1.md`) → IMPLEMENT → TEST → DOCUMENT (`AGENTS.md` / `VERIFICATION.md` / `launch-gates.md` si aplica) → **STOP**.  
 3. No encadenar el siguiente hito en la misma entrega.
 
+Lista corta para el founder (prioridad): `docs/FOUNDER_PREP_NEXT_V0_1.md`.
+
 Checklist piloto AT–DE (referencia): `docs/launch-gates.md`.

@@ -70,6 +70,8 @@ pnpm product:smoke
 Runbook: [`product-smoke-manual.md`](product-smoke-manual.md) ·
 [`product-ready-local.md`](product-ready-local.md).
 
+Próximos pasos (prioridad founder): [`../FOUNDER_PREP_NEXT_V0_1.md`](../FOUNDER_PREP_NEXT_V0_1.md).
+
 Andamiaje staging (web Vercel EU + API aparte), sin deploy automático:
 
 [`staging-host-scaffold.md`](staging-host-scaffold.md).

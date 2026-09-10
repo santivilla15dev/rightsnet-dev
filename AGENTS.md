@@ -170,6 +170,8 @@ Staging API Docker v0.1: `docs/STAGING_API_DOCKER_V0_1.md` — SPECIFY **PASS**;
 IMPLEMENT **PASS** (`deploy/Dockerfile` + fly fra examples; deploy OPEN).
 Product smoke manual v0.1: `docs/PRODUCT_SMOKE_MANUAL_V0_1.md` — SPECIFY **PASS**;
 IMPLEMENT **PASS** (`pnpm product:smoke` + checklist visual).
+Founder prep next v0.1: `docs/FOUNDER_PREP_NEXT_V0_1.md` — SPECIFY **PASS**;
+IMPLEMENT **PASS** (prioridades + WARN worker en smoke).
 DB roles v0.1: `docs/DB_ROLES_TENANCY_V0_1.md`. **PASS** migrator≠`rightsnet_app`.
 DB RLS org pilot v0.1: `docs/DB_RLS_V0_1.md` — SPECIFY **PASS**; IMPLEMENT **PASS**
 (FORCE en organizations/members/campaigns; bypass runtime por defecto; cableado
