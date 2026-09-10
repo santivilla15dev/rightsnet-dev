@@ -8,9 +8,16 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+/** @type {[string, RegExp, string, boolean?][]} */
 const checks = [
   ['deploy/Dockerfile', /PROCESS=api/, 'Dockerfile default PROCESS=api'],
   ['deploy/Dockerfile', /pnpm worker/, 'Dockerfile can run worker'],
+  ['deploy/Dockerfile', /COPY apps\/web/, 'Dockerfile must NOT copy apps/web', true],
+  [
+    'deploy/docker-compose.staging.example.yml',
+    /PROCESS:\s*worker/,
+    'compose worker',
+  ],
   ['deploy/fly.api.toml.example', /primary_region\s*=\s*"fra"/, 'fly API fra'],
   ['deploy/fly.worker.toml.example', /PROCESS\s*=\s*"worker"/, 'fly worker PROCESS'],
   ['.dockerignore', /node_modules/, '.dockerignore node_modules'],
@@ -18,11 +25,12 @@ const checks = [
 
 let failed = false;
 console.log('Staging API Docker scaffold\n');
-for (const [rel, re, label] of checks) {
+for (const [rel, re, label, mustAbsent] of checks) {
   const full = path.join(root, rel);
   const exists = existsSync(full);
   const body = exists ? readFileSync(full, 'utf8') : '';
-  const ok = exists && re.test(body);
+  const matched = re.test(body);
+  const ok = exists && (mustAbsent ? !matched : matched);
   console.log(`${ok ? 'PASS' : 'FAIL'}  ${label} — ${rel}`);
   if (!ok) failed = true;
 }

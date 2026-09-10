@@ -9,12 +9,13 @@ plantilla para API/worker en un host Node EU.
 
 ## Alcance v0.1
 
-1. `deploy/Dockerfile` — imagen monorepo; `PROCESS=api|worker`.
+1. `deploy/Dockerfile` — imagen monorepo; `PROCESS=api|worker` (sin apps/web).
 2. `deploy/fly.api.toml.example` + `deploy/fly.worker.toml.example` (región `fra`).
-3. `.dockerignore`.
-4. Actualizar runbook staging-host + `.env.staging.example` notas.
-5. `pnpm staging:api-dockerfile` — valida que el Dockerfile existe y el
-   target `PROCESS` está documentado (smoke sin `docker build` obligatorio).
+3. `deploy/docker-compose.staging.example.yml` — api+worker, Postgres externo.
+4. `.dockerignore`.
+5. Actualizar runbook staging-host + `.env.staging.example` notas.
+6. `pnpm staging:api-dockerfile` — valida archivos (smoke sin `docker build`
+   obligatorio; build real OPEN si no hay daemon).
 
 ## Fuera de alcance
 
@@ -26,5 +27,6 @@ Andamiaje API PASS; deploy cloud OPEN.
 
 ## Cierre IMPLEMENT
 
-`deploy/Dockerfile` + fly `fra` examples + `.dockerignore` +
-`pnpm staging:api-dockerfile`. Deploy cloud OPEN.
+`deploy/Dockerfile` (api/worker only) + fly `fra` + compose example +
+`.dockerignore` + `pnpm staging:api-dockerfile`. `docker build` real OPEN
+(sin daemon en workstation de ensayo 2026-09-10).

@@ -2,6 +2,7 @@
 # Build from repo root: docker build -f deploy/Dockerfile -t rightsnet-api .
 # Run API:  docker run --env-file … -e PROCESS=api -p 4000:4000 rightsnet-api
 # Run worker: docker run --env-file … -e PROCESS=worker rightsnet-api
+# Compose: docker compose -f deploy/docker-compose.staging.example.yml …
 # docs/STAGING_API_DOCKER_V0_1.md
 
 FROM node:22.20.0-bookworm-slim
@@ -14,7 +15,9 @@ ENV NODE_ENV=production \
 RUN corepack enable && corepack prepare pnpm@10.29.3 --activate
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.json ./
-COPY apps ./apps
+# API + worker only (web is Vercel / separate). packages/* for shared DB/domain.
+COPY apps/api ./apps/api
+COPY apps/worker ./apps/worker
 COPY packages ./packages
 COPY scripts ./scripts
 

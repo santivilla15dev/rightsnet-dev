@@ -33,6 +33,7 @@ Imagen Docker (scaffold):
 docker build -f deploy/Dockerfile -t rightsnet-api .
 docker run --env-file .env.staging -e PROCESS=api -p 4000:4000 rightsnet-api
 docker run --env-file .env.staging -e PROCESS=worker rightsnet-api
+# o: docker compose -f deploy/docker-compose.staging.example.yml up --build
 ```
 
 Plantillas Fly EU (`fra`): `deploy/fly.api.toml.example`,
