@@ -151,6 +151,7 @@ import {
   runExternalReconciliation,
 } from './stripe-reconciliation.js';
 import { verifyPayload, signingKeys, rotateSigningKey, signingKeyStore } from '../integrations/signing.js';
+import { notificationPort } from '../common/notifications.js';
 const uuid = (id: string) => z.uuid().parse(id);
 const reasonSchema = z.object({ reason: z.string().trim().min(10).max(1000) }).strict();
 /** Legacy base64url (32) or RN-LIC-YYYY-######. */
@@ -951,6 +952,15 @@ export class AdminController {
         ? req.query.day
         : new Date().toISOString().slice(0, 10);
     return verifyAuditArchiveDay(day);
+  }
+  @Get('notifications/recent') async recentNotifications(@Req() req: Request) {
+    admin(await actor(req));
+    const limitRaw = typeof req.query.limit === 'string' ? Number(req.query.limit) : 50;
+    const limit = Number.isFinite(limitRaw) ? Math.min(Math.max(1, Math.floor(limitRaw)), 200) : 50;
+    return {
+      provider: process.env.NOTIFY_PROVIDER ?? 'sandbox',
+      items: await notificationPort().listRecent(limit),
+    };
   }
   @Post('signing-keys/rotate') @HttpCode(200) async rotateSigningKeys(
     @Req() req: Request,

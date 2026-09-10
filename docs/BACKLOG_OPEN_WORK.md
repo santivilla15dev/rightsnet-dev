@@ -81,7 +81,7 @@ El founder elige **uno**. Cada fila es un posible SPECIFY → STOP.
 | Media | ~~Roles DB / RLS~~ | FORCE commerce + campaigns + Stripe money **PASS** (`docs/DB_RLS_*`); bypass default on; `DB_RLS_BYPASS_DEFAULT=false` OPEN |
 | Baja / infra | ~~KMS / rotación remota~~ | Rotación local Ed25519 **PASS** (`docs/SIGNING_KEY_ROTATION_V0_1.md`); AWS/GCP KMS OPEN |
 | Baja / infra | ~~Auditoría resistente a admin~~ | Trigger DB + archivo hash-chain **PASS** (`docs/AUDIT_ARCHIVE_V0_1.md`); WORM cloud OPEN |
-| Baja / infra | Notificaciones y alertas | Email / métricas / cola |
+| Baja / infra | ~~Notificaciones y alertas~~ | Sandbox JSONL + hooks ops **PASS** (`docs/NOTIFICATIONS_V0_1.md`); email real OPEN |
 | Baja / infra | ~~Rate limiting distribuido~~ | **PASS** puerto memory+redis opt-in (`docs/RATE_LIMIT_DISTRIBUTED_V0_1.md`); CI memory |
 | Baja / infra | ~~Backups / PITR / restore~~ | Ensayo local dump/restore **PASS** (`docs/BACKUP_RESTORE_V0_1.md`); PITR cloud OPEN |
 | Baja / infra | Despliegue staging y seguridad | Región, secretos, HTTPS, CI remoto |

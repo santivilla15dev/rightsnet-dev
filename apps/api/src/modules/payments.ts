@@ -4,6 +4,7 @@ import { DomainError, hash } from '../../../../packages/domain/src/index.js';
 import { type Actor } from '../common/auth.js';
 import { getOrder, eligibleRequest, assertOrderIssuable } from './licensing.js';
 import { config } from '../common/config.js';
+import { notifyOps } from '../common/notifications.js';
 import { signPayload } from '../integrations/signing.js';
 export { stripeClient } from '../integrations/stripe.js';
 import { stripeCheckout } from './stripe-checkout.js';
@@ -208,6 +209,12 @@ export async function processPaymentEvents() {
             [randomUUID(), o.id],
           );
         await audit(db, null, 'payment.confirmed', o.id, { provider: record.provider });
+        notifyOps({
+          kind: 'payment.confirmed',
+          title: 'Pago confirmado',
+          body: `Orden ${o.id} cobrada (${record.provider}).`,
+          resource_id: o.id,
+        });
       }
       await db.query("UPDATE provider_events SET status='done' WHERE id=$1", [record.id]);
       return true;
@@ -333,12 +340,29 @@ export async function issueLicenses() {
         await db.query("UPDATE orders SET status='fulfilled' WHERE id=$1", [o.id]);
         await db.query("UPDATE outbox SET status='done' WHERE id=$1", [job.id]);
         await audit(db, null, 'license.issued', license?.id ?? id, { sandbox: true });
+        notifyOps({
+          kind: 'license.issued',
+          title: 'Licencia emitida',
+          body: `Licencia ${license?.id ?? id} para orden ${o.id}.`,
+          resource_id: String(license?.id ?? id),
+        });
       });
     } catch (e) {
       await pool.query(
         "UPDATE outbox SET attempts=attempts+1,last_error=$2,available_at=now()+make_interval(secs=>least(300,power(2,attempts+1)::int)),status=CASE WHEN attempts>=7 THEN 'dead' ELSE 'pending' END WHERE id=$1 AND status='pending'",
         [row.id, e instanceof Error ? e.message : 'issuance_failed'],
       );
+      const dead = (
+        await pool.query("SELECT status FROM outbox WHERE id=$1", [row.id])
+      ).rows[0];
+      if (dead?.status === 'dead') {
+        notifyOps({
+          kind: 'outbox.dead',
+          title: 'Outbox job muerto',
+          body: `Job ${row.id} agotó reintentos: ${e instanceof Error ? e.message : 'issuance_failed'}`,
+          resource_id: row.id,
+        });
+      }
     }
   }
 }

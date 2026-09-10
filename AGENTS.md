@@ -150,6 +150,8 @@ Audit archive v0.1: `docs/AUDIT_ARCHIVE_V0_1.md` — SPECIFY **PASS**;
 IMPLEMENT **PASS** (JSONL hash-chain; WORM cloud OPEN).
 Backup/restore drill v0.1: `docs/BACKUP_RESTORE_V0_1.md` — SPECIFY **PASS**;
 IMPLEMENT **PASS** (local dump→restore; PITR cloud OPEN).
+Notifications v0.1: `docs/NOTIFICATIONS_V0_1.md` — SPECIFY **PASS**;
+IMPLEMENT **PASS** (sandbox JSONL; email OPEN).
 DB roles v0.1: `docs/DB_ROLES_TENANCY_V0_1.md`. **PASS** migrator≠`rightsnet_app`.
 DB RLS org pilot v0.1: `docs/DB_RLS_V0_1.md` — SPECIFY **PASS**; IMPLEMENT **PASS**
 (FORCE en organizations/members/campaigns; bypass runtime por defecto; cableado

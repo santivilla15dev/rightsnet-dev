@@ -381,6 +381,11 @@ Cierre PASS: `docs/AUDIT_ARCHIVE_V0_1.md`. Append JSONL con hash-chain desde
 Cierre PASS local: `docs/BACKUP_RESTORE_V0_1.md`. `pnpm db:backup-drill`
 dump→restore smoke PASS. PITR cloud OPEN.
 
+## Notifications v0.1 — 2026-09-10
+
+Cierre PASS sandbox: `docs/NOTIFICATIONS_V0_1.md`. Alertas ops en pago/
+licencia/outbox.dead; admin recent. Tests notifications 3/3. Email OPEN.
+
 ## DB roles / tenancy v0.1 — 2026-09-10
 
 Cierre PASS roles: `docs/DB_ROLES_TENANCY_V0_1.md`. Migración 033; `MIGRATE_DATABASE_URL`;

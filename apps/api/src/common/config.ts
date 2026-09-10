@@ -83,6 +83,15 @@ export const config = {
   rateLimitProvider: (process.env.RATE_LIMIT_PROVIDER === 'redis' ? 'redis' : 'memory') as
     | 'memory'
     | 'redis',
+  /**
+   * Notifications. Default `sandbox` (JSONL). `log` = console; `email` fail-closed.
+   * docs/NOTIFICATIONS_V0_1.md
+   */
+  notifyProvider: (process.env.NOTIFY_PROVIDER === 'log'
+    ? 'log'
+    : process.env.NOTIFY_PROVIDER === 'email'
+      ? 'email'
+      : 'sandbox') as 'sandbox' | 'log' | 'email',
   port: Number(process.env.API_PORT ?? 4000),
 };
 export function assertConfiguration() {
@@ -101,6 +110,10 @@ export function assertConfiguration() {
     throw new Error('MALWARE_SCAN_PROVIDER=clamav requires CLAMAV_HOST.');
   if (config.rateLimitProvider === 'redis' && !process.env.REDIS_URL)
     throw new Error('RATE_LIMIT_PROVIDER=redis requires REDIS_URL.');
+  if (config.notifyProvider === 'email')
+    throw new Error(
+      'NOTIFY_PROVIDER=email is not implemented (v0.1 sandbox|log only; see docs/NOTIFICATIONS_V0_1.md).',
+    );
   const signingProvider = (process.env.SIGNING_PROVIDER ?? 'local').toLowerCase();
   if (signingProvider !== 'local')
     throw new Error(
