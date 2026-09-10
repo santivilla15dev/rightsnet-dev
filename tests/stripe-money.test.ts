@@ -179,6 +179,39 @@ describe.sequential('Stripe transfers, disputes and payouts (mocked)', () => {
     expect((await pool.query('SELECT 1 FROM payout_records')).rowCount).toBe(0);
   });
 
+  it('idempotent transfer.created when provider_ref already exists', async () => {
+    const { order } = await fulfilledOrder();
+    const transferId = 'tr_dup_' + randomUUID().slice(0, 8);
+    store.transfers.set(transferId, {
+      id: transferId,
+      object: 'transfer',
+      livemode: false,
+      amount: order.price.creator_minor,
+      currency: 'eur',
+      destination: account,
+      reversed: false,
+      metadata: { order_id: order.id },
+      reversals: { object: 'list', data: [], has_more: false, url: '' },
+    } as unknown as Stripe.Transfer);
+    const evt = {
+      id: 'evt_tr_dup_' + randomUUID(),
+      object: 'event',
+      livemode: false,
+      type: 'transfer.created',
+      data: { object: { id: transferId, object: 'transfer' } },
+    } as never;
+    await ingestMoneyMovementEvent(evt);
+    await ingestMoneyMovementEvent({
+      ...evt,
+      id: 'evt_tr_dup2_' + randomUUID(),
+    } as never);
+    expect(
+      (await pool.query('SELECT count(*)::int AS n FROM stripe_transfers WHERE provider_ref=$1', [
+        transferId,
+      ])).rows[0].n,
+    ).toBe(1);
+  });
+
   it('opens a dispute for human review without revoking the license', async () => {
     const { order, pi } = await fulfilledOrder();
     const license = (

@@ -120,33 +120,20 @@ async function upsertTransfer(transfer: Stripe.Transfer) {
   let status: string = transfer.reversed ? 'reversed' : transfer.amount === 0 ? 'canceled' : 'paid';
   if (transfer.reversed) status = 'reversed';
   await transaction(async (db) => {
-    const existing = (
-      await db.query('SELECT * FROM stripe_transfers WHERE provider_ref=$1 FOR UPDATE', [
-        transfer.id,
-      ])
-    ).rows[0];
-    if (existing) {
-      await db.query(
-        `UPDATE stripe_transfers SET status=$2, order_id=COALESCE(order_id,$3), payment_attempt_id=COALESCE(payment_attempt_id,$4),
-         destination_payment_ref=COALESCE(destination_payment_ref,$5), source_transaction_ref=COALESCE(source_transaction_ref,$6),
-         updated_at=now() WHERE id=$1`,
-        [
-          existing.id,
-          status,
-          orderId,
-          attemptId,
-          objectId(transfer.destination_payment),
-          source,
-        ],
-      );
-      return existing.id as string;
-    }
     const id = randomUUID();
     await db.query(
       `INSERT INTO stripe_transfers(
          id,provider_ref,environment,connected_account_ref,order_id,payment_attempt_id,
          amount_minor,currency,status,destination_payment_ref,source_transaction_ref)
-       VALUES($1,$2,$3,$4,$5,$6,$7,'EUR',$8,$9,$10)`,
+       VALUES($1,$2,$3,$4,$5,$6,$7,'EUR',$8,$9,$10)
+       ON CONFLICT (provider_ref) DO UPDATE SET
+         status = EXCLUDED.status,
+         order_id = COALESCE(stripe_transfers.order_id, EXCLUDED.order_id),
+         payment_attempt_id = COALESCE(stripe_transfers.payment_attempt_id, EXCLUDED.payment_attempt_id),
+         destination_payment_ref = COALESCE(stripe_transfers.destination_payment_ref, EXCLUDED.destination_payment_ref),
+         source_transaction_ref = COALESCE(stripe_transfers.source_transaction_ref, EXCLUDED.source_transaction_ref),
+         updated_at = now()
+       RETURNING id`,
       [
         id,
         transfer.id,
@@ -160,7 +147,6 @@ async function upsertTransfer(transfer: Stripe.Transfer) {
         source,
       ],
     );
-    return id;
   });
 }
 
