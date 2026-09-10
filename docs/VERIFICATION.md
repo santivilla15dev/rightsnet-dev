@@ -433,6 +433,12 @@ checklist visual runbook.
 Banda final home: «Recorre el flujo completo» (cobros en modo prueba), sin
 copy de playground.
 
+## Staging API Docker v0.1 — 2026-09-10
+
+Cierre PASS andamiaje: `docs/STAGING_API_DOCKER_V0_1.md`.
+`deploy/Dockerfile` + fly `fra` examples + `pnpm staging:api-dockerfile`.
+Deploy OPEN.
+
 ## DB roles / tenancy v0.1 — 2026-09-10
 
 Cierre PASS roles: `docs/DB_ROLES_TENANCY_V0_1.md`. Migración 033; `MIGRATE_DATABASE_URL`;

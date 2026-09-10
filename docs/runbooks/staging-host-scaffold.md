@@ -27,11 +27,24 @@ del host (nunca a Git).
 
 ## API (manual, otro host)
 
-1. Build: `pnpm install --frozen-lockfile && pnpm build` (o image Docker propia).
-2. Procesos: `pnpm api` y `pnpm worker` (o equivalentes).
-3. `DATABASE_URL`, `MIGRATE_DATABASE_URL`, claves `.local/keys` montadas o
-   volumen; `DEMO_UI_ENABLED=false`; `AUTH_PROVIDER=supabase`.
-4. Migraciones: `pnpm db:migrate` con rol migrator.
+Imagen Docker (scaffold):
+
+```bash
+docker build -f deploy/Dockerfile -t rightsnet-api .
+docker run --env-file .env.staging -e PROCESS=api -p 4000:4000 rightsnet-api
+docker run --env-file .env.staging -e PROCESS=worker rightsnet-api
+```
+
+Plantillas Fly EU (`fra`): `deploy/fly.api.toml.example`,
+`deploy/fly.worker.toml.example`. Validar archivos: `pnpm staging:api-dockerfile`.
+
+1. Build: `pnpm install --frozen-lockfile` (o la imagen Docker arriba).
+2. Procesos: API (`PROCESS=api`) y worker (`PROCESS=worker`).
+3. `DATABASE_URL`, `MIGRATE_DATABASE_URL`, claves de firma montadas;
+   `DEMO_UI_ENABLED=false`; `AUTH_PROVIDER=supabase`.
+4. Migraciones: `pnpm db:migrate` con rol migrator (job one-shot o local).
+
+Alcance Docker: `docs/STAGING_API_DOCKER_V0_1.md`.
 
 ## Checklist post-deploy
 

@@ -1,0 +1,36 @@
+# Example Fly.io app for RightsNet API (staging). Copy to fly.toml and edit.
+# Region EU (Frankfurt). Do NOT set APP_ENV=production or LIVE_COMMERCE_ENABLED=true.
+# Secrets via `fly secrets set` from .env.staging.example values.
+# docs/STAGING_API_DOCKER_V0_1.md
+
+app = "rightsnet-api-staging"
+primary_region = "fra"
+
+[build]
+  dockerfile = "deploy/Dockerfile"
+
+[env]
+  PROCESS = "api"
+  APP_ENV = "sandbox"
+  LIVE_COMMERCE_ENABLED = "false"
+  DEMO_UI_ENABLED = "false"
+  API_PORT = "4000"
+
+[http_service]
+  internal_port = 4000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "40s"
+    method = "GET"
+    path = "/v1/health"
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1

@@ -166,6 +166,8 @@ Product ready local v0.1: `docs/PRODUCT_READY_LOCAL_V0_1.md` — SPECIFY **PASS*
 IMPLEMENT **PASS** (`pnpm product:ready`; no live/production).
 Staging host scaffold v0.1: `docs/STAGING_HOST_SCAFFOLD_V0_1.md` — SPECIFY **PASS**;
 IMPLEMENT **PASS** (runbook + `.env.staging.example` + vercel.json; deploy OPEN).
+Staging API Docker v0.1: `docs/STAGING_API_DOCKER_V0_1.md` — SPECIFY **PASS**;
+IMPLEMENT **PASS** (`deploy/Dockerfile` + fly fra examples; deploy OPEN).
 Product smoke manual v0.1: `docs/PRODUCT_SMOKE_MANUAL_V0_1.md` — SPECIFY **PASS**;
 IMPLEMENT **PASS** (`pnpm product:smoke` + checklist visual).
 DB roles v0.1: `docs/DB_ROLES_TENANCY_V0_1.md`. **PASS** migrator≠`rightsnet_app`.

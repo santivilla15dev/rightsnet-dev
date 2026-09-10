@@ -1,0 +1,20 @@
+# Example Fly.io app for RightsNet worker (staging). Copy to fly.worker.toml.
+# Same image as API; PROCESS=worker. No public HTTP service.
+# docs/STAGING_API_DOCKER_V0_1.md
+
+app = "rightsnet-worker-staging"
+primary_region = "fra"
+
+[build]
+  dockerfile = "deploy/Dockerfile"
+
+[env]
+  PROCESS = "worker"
+  APP_ENV = "sandbox"
+  LIVE_COMMERCE_ENABLED = "false"
+  DEMO_UI_ENABLED = "false"
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1

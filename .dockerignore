@@ -1,0 +1,16 @@
+node_modules
+.pnpm-store
+.local
+.cursor
+.next
+.git
+work
+coverage
+playwright-report
+test-results
+.env
+.env.*
+!.env.example
+!.env.staging.example
+*.log
+docs/RightNet.code-workspace

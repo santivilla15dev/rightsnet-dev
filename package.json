@@ -12,6 +12,7 @@
     "db:backup-drill": "node scripts/backup-restore-drill.mjs",
     "staging:security": "node scripts/staging-security-checklist.mjs",
     "staging:health": "node scripts/staging-health-smoke.mjs",
+    "staging:api-dockerfile": "node scripts/staging-api-dockerfile-check.mjs",
     "product:ready": "node scripts/product-ready.mjs",
     "product:smoke": "node scripts/product-smoke.mjs",
     "db:migrate": "tsx packages/db/migrate.ts",
