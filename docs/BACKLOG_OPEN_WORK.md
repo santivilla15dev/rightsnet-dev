@@ -78,7 +78,7 @@ El founder elige **uno**. Cada fila es un posible SPECIFY → STOP.
 | Media | ~~Review humana relación con activo~~ | **PASS** código v0.1: `docs/ASSET_RELATIONSHIP_REVIEW_V0_1.md` (preview + tests); ensayo humano founder opcional |
 | Media | ~~Stripe test **reensayo** + gaps money/recon~~ | **PASS*** R1–R5 2026-09-10 — `docs/runbooks/stripe-reensayo-checklist.md` |
 | Media | ~~Storage real + malware scan~~ | **PASS** v0.1 sandbox: `docs/STORAGE_SCAN_V0_1.md` (puertos local+EICAR); S3/ClamAV reales abiertos |
-| Media | ~~Roles DB / RLS~~ | Core commerce + campaigns FORCE **PASS** (`docs/DB_RLS_*`); Stripe transfer/balance tables OPEN |
+| Media | ~~Roles DB / RLS~~ | FORCE commerce + campaigns + Stripe money **PASS** (`docs/DB_RLS_*`); bypass default on; `DB_RLS_BYPASS_DEFAULT=false` OPEN |
 | Baja / infra | KMS / rotación remota | Hoy Ed25519 local |
 | Baja / infra | Auditoría resistente a admin | Triggers append-only; archivo retenido pendiente |
 | Baja / infra | Notificaciones y alertas | Email / métricas / cola |

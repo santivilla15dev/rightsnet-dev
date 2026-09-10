@@ -415,3 +415,10 @@ Cierre PASS: `docs/DB_RLS_PAYMENTS_REFUNDS_V0_1.md`. Migración 040 FORCE en
 Cierre PASS: `docs/DB_RLS_PROVIDER_ACCEPTANCES_V0_1.md`. Migración 041 FORCE en
 `contract_acceptances` (vía orden) y `provider_events` (bypass/admin).
 Tests `db-rls` 8/8 + stripe events/checkout PASS.
+
+## DB RLS Stripe money v0.1 — 2026-09-10
+
+Cierre PASS: `docs/DB_RLS_STRIPE_MONEY_V0_1.md`. Migración 042 FORCE en
+transfers/reversals/disputes/payouts/balance BT + reconciliation_*.
+Helpers `app_can_see_order` / `app_owns_connected_account`. Tests `db-rls` 9/9
++ stripe-money/recon PASS.

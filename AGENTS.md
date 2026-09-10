@@ -148,4 +148,5 @@ H2–H6 **PASS** `docs/DB_RLS_CAMPAIGN_H2_H6_WIRING_V0_1.md`; Rights Ops **PASS*
 `docs/DB_RLS_ORDERS_V0_1.md`; ledger/outbox **PASS**
 `docs/DB_RLS_LEDGER_OUTBOX_V0_1.md`; payment_attempts/refunds **PASS**
 `docs/DB_RLS_PAYMENTS_REFUNDS_V0_1.md`; provider_events/contract_acceptances **PASS**
-`docs/DB_RLS_PROVIDER_ACCEPTANCES_V0_1.md`; Stripe transfer tables OPEN).
+`docs/DB_RLS_PROVIDER_ACCEPTANCES_V0_1.md`; Stripe money/recon **PASS**
+`docs/DB_RLS_STRIPE_MONEY_V0_1.md`).
