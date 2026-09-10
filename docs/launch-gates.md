@@ -26,9 +26,9 @@ Piloto comercial propuesto: **Austria + Alemania** (constitución §5). No impli
 | Relación con activo (review humana) | Sandbox operable v0.1 | Preview evidencia + tests; `docs/ASSET_RELATIONSHIP_REVIEW_V0_1.md`. Ensayo humano founder pendiente |
 | Stripe Connect (cobros creador) | Implementado test | Live gated por flag; país cuentas nuevas AT/DE/ES vía location / `CONNECT_DEFAULT_COUNTRY` |
 | Orgs buyer AT | PASS | Domicilio `AT\|DE\|ES`; `docs/ORG_BUYERS_AT_V0_1.md`. ES legacy permitido; sin remap |
-| Storage y malware scan | Sandbox v0.1 PASS | `docs/STORAGE_SCAN_V0_1.md`; S3/ClamAV reales pendientes |
-| Roles DB y RLS | Roles SQL + RLS org pilot v0.1 PASS | `docs/DB_ROLES_TENANCY_V0_1.md`, `docs/DB_RLS_V0_1.md`; más tablas / cableado Nest OPEN |
-| KMS/rotación | Parcial | Ed25519 local; gestión remota pendiente |
+| Storage y malware scan | PASS opt-in | Sandbox + S3/ClamAV/presign/multipart; `docs/STORAGE_*` |
+| Roles DB y RLS | FORCE commerce+campaigns PASS | Bypass default on; `DB_RLS_BYPASS_DEFAULT=false` OPEN |
+| KMS/rotación | Rotación local PASS | `docs/SIGNING_KEY_ROTATION_V0_1.md`; KMS remoto OPEN |
 | Auditoría resistente a admin | Parcial | Triggers append-only; archivo retenido pendiente |
 | Notificaciones y alertas | Pendiente | Email / métricas / cola |
 | Rate limiting distribuido | Pendiente | Límite local de una instancia |

@@ -92,6 +92,11 @@ export function assertConfiguration() {
   }
   if (config.malwareScanProvider === 'clamav' && !process.env.CLAMAV_HOST)
     throw new Error('MALWARE_SCAN_PROVIDER=clamav requires CLAMAV_HOST.');
+  const signingProvider = (process.env.SIGNING_PROVIDER ?? 'local').toLowerCase();
+  if (signingProvider !== 'local')
+    throw new Error(
+      `SIGNING_PROVIDER=${signingProvider} is not implemented (v0.1 local only; see docs/SIGNING_KEY_ROTATION_V0_1.md).`,
+    );
   const key = process.env.STRIPE_SECRET_KEY;
   if (key && !/^(sk|rk)_test_/.test(key)) {
     if (!/^(sk|rk)_live_/.test(key))

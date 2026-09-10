@@ -142,6 +142,8 @@ Storage presigned GET v0.1: `docs/STORAGE_PRESIGNED_V0_1.md` — SPECIFY **PASS*
 IMPLEMENT **PASS** (`files/:id` → 302 con S3).
 Storage multipart v0.1: `docs/STORAGE_MULTIPART_V0_1.md` — SPECIFY **PASS**;
 IMPLEMENT **PASS** (S3 auto-multipart sobre umbral).
+Signing key rotation v0.1: `docs/SIGNING_KEY_ROTATION_V0_1.md` — SPECIFY **PASS**;
+IMPLEMENT **PASS** (local archive+new; KMS remoto OPEN).
 DB roles v0.1: `docs/DB_ROLES_TENANCY_V0_1.md`. **PASS** migrator≠`rightsnet_app`.
 DB RLS org pilot v0.1: `docs/DB_RLS_V0_1.md` — SPECIFY **PASS**; IMPLEMENT **PASS**
 (FORCE en organizations/members/campaigns; bypass runtime por defecto; cableado

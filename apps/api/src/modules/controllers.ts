@@ -150,7 +150,7 @@ import {
   listExternalReconciliation,
   runExternalReconciliation,
 } from './stripe-reconciliation.js';
-import { verifyPayload, signingKeys } from '../integrations/signing.js';
+import { verifyPayload, signingKeys, rotateSigningKey, signingKeyStore } from '../integrations/signing.js';
 const uuid = (id: string) => z.uuid().parse(id);
 const reasonSchema = z.object({ reason: z.string().trim().min(10).max(1000) }).strict();
 /** Legacy base64url (32) or RN-LIC-YYYY-######. */
@@ -928,6 +928,47 @@ export class AdminController {
       payouts: money.payouts,
       money_note: money.note,
     };
+  }
+  @Get('signing-keys') async listSigningKeys(@Req() req: Request) {
+    admin(await actor(req));
+    const store = signingKeyStore();
+    const license = store.getActive('license');
+    const rnAuth = store.getActive('rn-auth');
+    return {
+      provider: process.env.SIGNING_PROVIDER ?? 'local',
+      algorithm: 'Ed25519',
+      active: {
+        license: { key_id: license.kid },
+        rn_auth: { key_id: rnAuth.kid },
+      },
+      public_key_ids: store.listPublicKids(),
+    };
+  }
+  @Post('signing-keys/rotate') @HttpCode(200) async rotateSigningKeys(
+    @Req() req: Request,
+    @Body() body: unknown,
+  ) {
+    const user = await actor(req);
+    admin(user);
+    const data = z
+      .object({ purpose: z.enum(['license', 'rn-auth']) })
+      .strict()
+      .parse(body);
+    return mutate(user.id, 'signing-keys/rotate/' + data.purpose, idem(req), body, async (db) => {
+      const previous = signingKeyStore().getActive(data.purpose);
+      const next = rotateSigningKey(data.purpose);
+      await audit(db, user.id, 'signing_key.rotated', data.purpose, {
+        previous_key_id: previous.kid,
+        key_id: next.kid,
+      });
+      return {
+        purpose: data.purpose,
+        previous_key_id: previous.kid,
+        key_id: next.kid,
+        algorithm: 'Ed25519',
+        public_key: next.pem,
+      };
+    });
   }
   @Post('assets/:id/review') async review(
     @Req() req: Request,

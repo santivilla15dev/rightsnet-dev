@@ -360,6 +360,12 @@ Cierre PASS: `docs/STORAGE_PRESIGNED_V0_1.md`. `presignGet` + redirect
 Cierre PASS: `docs/STORAGE_MULTIPART_V0_1.md`. S3 multipart auto en `put`
 sobre umbral; tests storage-scan 7/7.
 
+## Signing key rotation v0.1 — 2026-09-10
+
+Cierre PASS local: `docs/SIGNING_KEY_ROTATION_V0_1.md`. `SigningKeyStore` +
+admin rotate/list; pubs históricos conservados. Tests signing-rotation 3/3.
+KMS remoto OPEN.
+
 ## DB roles / tenancy v0.1 — 2026-09-10
 
 Cierre PASS roles: `docs/DB_ROLES_TENANCY_V0_1.md`. Migración 033; `MIGRATE_DATABASE_URL`;
