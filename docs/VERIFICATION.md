@@ -380,3 +380,9 @@ Cierre PASS: `docs/DB_RLS_OPS_WIRING_V0_1.md`. `assertOps*` + overview/campaign-
 Cierre PASS: `docs/DB_RLS_GRANTS_EXTERNAL_V0_1.md`. Migración 035 FORCE en
 `rights_grants` / `external_agreements` (org member o grantor). Tests `db-rls` 2/2
 + talent/ops focalizados PASS.
+
+## DB RLS licenses + generation v0.1 — 2026-09-10
+
+Cierre PASS: `docs/DB_RLS_LICENSES_GENERATION_V0_1.md`. Migración 036 FORCE en
+`licenses` / `generation_auths` / `generation_records`. Tests `db-rls` 3/3 +
+rn-auth/report-output PASS.

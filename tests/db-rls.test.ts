@@ -253,4 +253,169 @@ describe('DB RLS org pilot v0.1', () => {
       await migratePool.end();
     }
   });
+
+  it('aísla generation_auths/records por org; licenses tiene FORCE RLS', async () => {
+    const migrateUrl = migrateConnectionString();
+    const migratePool = new pg.Pool({ connectionString: migrateUrl, max: 1 });
+    const appUrl = new URL(migrateUrl);
+    appUrl.username = 'rightsnet_app';
+    appUrl.password = '';
+    const appPool = new pg.Pool({ connectionString: appUrl.toString(), max: 1 });
+
+    const userA = randomUUID();
+    const userB = randomUUID();
+    const grantor = randomUUID();
+    const orgA = randomUUID();
+    const orgB = randomUUID();
+    const creatorId = randomUUID();
+    const assetId = randomUUID();
+    const grantA = randomUUID();
+    const grantB = randomUUID();
+    const authA = randomUUID();
+    const authB = randomUUID();
+    const recA = randomUUID();
+    const recB = randomUUID();
+    const now = new Date();
+    const later = new Date(now.getTime() + 86400000);
+
+    try {
+      await migratePool.query(`SELECT set_config('app.rls_bypass', '1', false)`);
+      const force = await migratePool.query(
+        `SELECT c.relrowsecurity AND c.relforcerowsecurity AS forced
+         FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+         WHERE n.nspname='public' AND c.relname='licenses'`,
+      );
+      expect(force.rows[0].forced).toBe(true);
+
+      await migratePool.query(
+        `INSERT INTO users(id,email,display_name,role) VALUES
+          ($1,$2,'RLS LA','buyer'),
+          ($3,$4,'RLS LB','buyer'),
+          ($5,$6,'RLS LG','creator')`,
+        [
+          userA,
+          `rls-la-${userA}@example.com`,
+          userB,
+          `rls-lb-${userB}@example.com`,
+          grantor,
+          `rls-lg-${grantor}@example.com`,
+        ],
+      );
+      await migratePool.query(
+        `INSERT INTO organizations(id,legal_name,country) VALUES ($1,'RLS Lic A','AT'),($2,'RLS Lic B','AT')`,
+        [orgA, orgB],
+      );
+      await migratePool.query(
+        `INSERT INTO organization_members(organization_id,user_id,role) VALUES ($1,$2,'owner'),($3,$4,'owner')`,
+        [orgA, userA, orgB, userB],
+      );
+      await migratePool.query(
+        `INSERT INTO creators(id,user_id,display_name,bio,location,portrait) VALUES ($1,$2,'G','b','AT','x')`,
+        [creatorId, grantor],
+      );
+      await migratePool.query(`INSERT INTO assets(id,creator_id,status) VALUES($1,$2,'published')`, [
+        assetId,
+        creatorId,
+      ]);
+      const payload = JSON.stringify({ rights: {} });
+      await migratePool.query(
+        `INSERT INTO rights_grants(
+           id,grantor_user_id,grantee_organization_id,asset_id,source_type,source_id,payload,status,valid_from,valid_until)
+         VALUES
+           ($1,$2,$3,$4,'EXISTING_AGREEMENT',$5,$6::jsonb,'ACTIVE',$7,$8),
+           ($9,$2,$10,$4,'EXISTING_AGREEMENT',$11,$6::jsonb,'ACTIVE',$7,$8)`,
+        [
+          grantA,
+          grantor,
+          orgA,
+          assetId,
+          randomUUID(),
+          payload,
+          now.toISOString(),
+          later.toISOString(),
+          grantB,
+          orgB,
+          randomUUID(),
+        ],
+      );
+      const authPayload = JSON.stringify({ auth_id: authA });
+      await migratePool.query(
+        `INSERT INTO generation_auths(
+           id,grant_id,organization_id,asset_id,provider,use_snapshot,payload,signature,key_id,status,issued_at,expires_at)
+         VALUES
+           ($1,$2,$3,$4,'test','{}'::jsonb,$5::jsonb,'sig','kid','ISSUED',$6,$7),
+           ($8,$9,$10,$4,'test','{}'::jsonb,$11::jsonb,'sig','kid','ISSUED',$6,$7)`,
+        [
+          authA,
+          grantA,
+          orgA,
+          assetId,
+          authPayload,
+          now.toISOString(),
+          later.toISOString(),
+          authB,
+          grantB,
+          orgB,
+          JSON.stringify({ auth_id: authB }),
+        ],
+      );
+      await migratePool.query(
+        `INSERT INTO generation_records(
+           id,auth_id,grant_id,organization_id,asset_id,provider,payload)
+         VALUES
+           ($1,$2,$3,$4,$5,'test','{}'::jsonb),
+           ($6,$7,$8,$9,$5,'test','{}'::jsonb)`,
+        [recA, authA, grantA, orgA, assetId, recB, authB, grantB, orgB],
+      );
+
+      const client = await appPool.connect();
+      try {
+        await client.query('BEGIN');
+        await client.query(`SELECT set_config('app.rls_bypass', '0', true)`);
+        await client.query(`SELECT set_config('app.current_user_id', $1, true)`, [userA]);
+        await client.query(`SELECT set_config('app.is_admin', '0', true)`);
+
+        expect(
+          (
+            await client.query('SELECT id FROM generation_auths WHERE id=ANY($1::uuid[]) ORDER BY id', [
+              [authA, authB],
+            ])
+          ).rows.map((r) => r.id),
+        ).toEqual([authA]);
+        expect(
+          (
+            await client.query(
+              'SELECT id FROM generation_records WHERE id=ANY($1::uuid[]) ORDER BY id',
+              [[recA, recB]],
+            )
+          ).rows.map((r) => r.id),
+        ).toEqual([recA]);
+        await client.query('ROLLBACK');
+      } finally {
+        client.release();
+      }
+    } finally {
+      await migratePool.query(`SELECT set_config('app.rls_bypass', '1', false)`);
+      await migratePool.query('DELETE FROM generation_records WHERE id=ANY($1::uuid[])', [
+        [recA, recB],
+      ]);
+      await migratePool.query('DELETE FROM generation_auths WHERE id=ANY($1::uuid[])', [
+        [authA, authB],
+      ]);
+      await migratePool.query('DELETE FROM rights_grants WHERE id=ANY($1::uuid[])', [
+        [grantA, grantB],
+      ]);
+      await migratePool.query('DELETE FROM assets WHERE id=$1', [assetId]);
+      await migratePool.query('DELETE FROM creators WHERE id=$1', [creatorId]);
+      await migratePool.query('DELETE FROM organization_members WHERE organization_id=ANY($1::uuid[])', [
+        [orgA, orgB],
+      ]);
+      await migratePool.query('DELETE FROM organizations WHERE id=ANY($1::uuid[])', [[orgA, orgB]]);
+      await migratePool.query('DELETE FROM users WHERE id=ANY($1::uuid[])', [
+        [userA, userB, grantor],
+      ]);
+      await appPool.end();
+      await migratePool.end();
+    }
+  });
 });
