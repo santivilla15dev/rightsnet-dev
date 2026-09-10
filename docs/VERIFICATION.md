@@ -541,3 +541,11 @@ Helpers `app_can_see_order` / `app_owns_connected_account`. Tests `db-rls` 9/9
 | Timeouts largos | Ajuste | buyer + onboarding `test.setTimeout(120_000)` |
 
 **STOP.** No live commerce. Ensayo humano Supabase del founder sigue OPEN (`docs/FOUNDER_HUMAN_TRIAL_V0_1.md`).
+
+## E2E journeys §28 — 2026-09-10
+
+| Entrega | Resultado | Evidencia |
+| --- | --- | --- |
+| `tests/e2e/journeys.spec.ts` | **3/3 PASS** | onboarding 1–4; discover→pay→verify 5–10; REQUIRES_APPROVAL (~14 s, :3010/:4010) |
+
+**STOP.** Stack producto (`:3000` Supabase + Stripe test + `stripe listen`) listo; ensayo humano founder OPEN.
