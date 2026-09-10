@@ -423,6 +423,11 @@ valida `.env` founder; tests product-ready. Live/staging cloud OPEN.
 Cierre PASS andamiaje: `docs/STAGING_HOST_SCAFFOLD_V0_1.md`.
 `.env.staging.example` + `apps/web/vercel.json` + runbook. Deploy OPEN.
 
+## Product smoke manual v0.1 — 2026-09-10
+
+Cierre PASS: `docs/PRODUCT_SMOKE_MANUAL_V0_1.md`. `pnpm product:smoke` +
+checklist visual runbook.
+
 ## DB roles / tenancy v0.1 — 2026-09-10
 
 Cierre PASS roles: `docs/DB_ROLES_TENANCY_V0_1.md`. Migración 033; `MIGRATE_DATABASE_URL`;

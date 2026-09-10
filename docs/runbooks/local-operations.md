@@ -61,7 +61,14 @@ pnpm product:ready
 Tras un `git pull` que cambie la API, reinicia el proceso `pnpm api` (o
 `pnpm dev`) para que `/v1/config` exponga campos nuevos (`demo_ui`, etc.).
 
-Runbook: [`product-ready-local.md`](product-ready-local.md).
+Humo corto (automático + checklist visual):
+
+```bash
+pnpm product:smoke
+```
+
+Runbook: [`product-smoke-manual.md`](product-smoke-manual.md) ·
+[`product-ready-local.md`](product-ready-local.md).
 
 Andamiaje staging (web Vercel EU + API aparte), sin deploy automático:
 

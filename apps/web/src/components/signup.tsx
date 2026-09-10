@@ -85,8 +85,9 @@ export function Signup() {
           </p>
           <h1>Crear cuenta</h1>
           <p className="login-lead">
-            El registro requiere <code>AUTH_PROVIDER=supabase</code>. En CI usa la ruta técnica de
-            demo.
+            El registro requiere <code>AUTH_PROVIDER=supabase</code> (uso de producto). En CI el
+            acceso técnico usa sandbox con <code>DEMO_UI_ENABLED=true</code>; no es el camino de
+            cuentas reales.
           </p>
           <p className="login-demo-note">
             <Link href="/login" className="login-help-link">
