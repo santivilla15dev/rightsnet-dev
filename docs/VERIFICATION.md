@@ -530,3 +530,14 @@ Cierre PASS: `docs/DB_RLS_STRIPE_MONEY_V0_1.md`. Migración 042 FORCE en
 transfers/reversals/disputes/payouts/balance BT + reconciliation_*.
 Helpers `app_can_see_order` / `app_owns_connected_account`. Tests `db-rls` 9/9
 + stripe-money/recon PASS.
+
+## E2E commerce + fix Ops `/ops` crash — 2026-09-10
+
+| Entrega | Resultado | Evidencia |
+| --- | --- | --- |
+| Causa | PASS | `Button asChild` en `admin.tsx` con **2** `Link` + texto → Slot Radix lanza; error boundary en `/ops` |
+| Fix | PASS | Dos botones `asChild` (uno por enlace) |
+| `tests/e2e/commerce.spec.ts` | **5/5 PASS** | buyer journey, approval, viewer/CSRF, onboarding (~20 s, :3010/:4010) |
+| Timeouts largos | Ajuste | buyer + onboarding `test.setTimeout(120_000)` |
+
+**STOP.** No live commerce. Ensayo humano Supabase del founder sigue OPEN (`docs/FOUNDER_HUMAN_TRIAL_V0_1.md`).

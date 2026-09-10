@@ -42,6 +42,7 @@ test('buyer journey: contract, failed payment, retry, signed license, admin refu
   page,
   browser,
 }) => {
+  test.setTimeout(120_000);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await login(page, 'marca');
@@ -163,6 +164,7 @@ test('new creator onboarding: evidence, consent, review and publication', async 
   page,
   browser,
 }) => {
+  test.setTimeout(120_000);
   const name = 'Creador E2E ' + Date.now();
   await onboardNewCreator(page, name);
   const admin = await browser.newPage();

@@ -155,7 +155,8 @@ export function Admin() {
           <span style={{ display: 'inline-flex', gap: '0.5rem', flexWrap: 'wrap' }}>
             <Button variant="outline" asChild>
               <Link href="/ops/rights">Rights Operations</Link>
-              {' · '}
+            </Button>
+            <Button variant="outline" asChild>
               <Link href="/ops/rights/ingest">Existing Deal / OCR</Link>
             </Button>
             <Button variant="outline" onClick={() => void load()}>
