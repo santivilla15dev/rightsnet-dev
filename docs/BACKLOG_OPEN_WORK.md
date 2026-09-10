@@ -80,7 +80,7 @@ El founder elige **uno**. Cada fila es un posible SPECIFY → STOP.
 | Media | ~~Storage real + malware scan~~ | Sandbox + S3/ClamAV + presign + multipart **PASS**; límites SQL asset 2 MiB intactos |
 | Media | ~~Roles DB / RLS~~ | FORCE commerce + campaigns + Stripe money **PASS** (`docs/DB_RLS_*`); bypass default on; `DB_RLS_BYPASS_DEFAULT=false` OPEN |
 | Baja / infra | ~~KMS / rotación remota~~ | Rotación local Ed25519 **PASS** (`docs/SIGNING_KEY_ROTATION_V0_1.md`); AWS/GCP KMS OPEN |
-| Baja / infra | Auditoría resistente a admin | Triggers append-only; archivo retenido pendiente |
+| Baja / infra | ~~Auditoría resistente a admin~~ | Trigger DB + archivo hash-chain **PASS** (`docs/AUDIT_ARCHIVE_V0_1.md`); WORM cloud OPEN |
 | Baja / infra | Notificaciones y alertas | Email / métricas / cola |
 | Baja / infra | ~~Rate limiting distribuido~~ | **PASS** puerto memory+redis opt-in (`docs/RATE_LIMIT_DISTRIBUTED_V0_1.md`); CI memory |
 | Baja / infra | Backups / PITR / restore | Ensayar restore DB + ficheros + claves |

@@ -371,6 +371,11 @@ KMS remoto OPEN.
 Cierre PASS: `docs/RATE_LIMIT_DISTRIBUTED_V0_1.md`. Puerto memory + Redis
 RESP opt-in; middleware API. Tests rate-limit 3/3. CI memory.
 
+## Audit archive v0.1 — 2026-09-10
+
+Cierre PASS: `docs/AUDIT_ARCHIVE_V0_1.md`. Append JSONL con hash-chain desde
+`audit()`; verify admin. Tests audit-archive 2/2. WORM cloud OPEN.
+
 ## DB roles / tenancy v0.1 — 2026-09-10
 
 Cierre PASS roles: `docs/DB_ROLES_TENANCY_V0_1.md`. Migración 033; `MIGRATE_DATABASE_URL`;

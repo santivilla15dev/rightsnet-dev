@@ -29,7 +29,7 @@ Piloto comercial propuesto: **Austria + Alemania** (constitución §5). No impli
 | Storage y malware scan | PASS opt-in | Sandbox + S3/ClamAV/presign/multipart; `docs/STORAGE_*` |
 | Roles DB y RLS | FORCE commerce+campaigns PASS | Bypass default on; `DB_RLS_BYPASS_DEFAULT=false` OPEN |
 | KMS/rotación | Rotación local PASS | `docs/SIGNING_KEY_ROTATION_V0_1.md`; KMS remoto OPEN |
-| Auditoría resistente a admin | Parcial | Triggers append-only; archivo retenido pendiente |
+| Auditoría resistente a admin | PASS v0.1 | Trigger + JSONL hash-chain `docs/AUDIT_ARCHIVE_V0_1.md`; WORM cloud OPEN |
 | Notificaciones y alertas | Pendiente | Email / métricas / cola |
 | Rate limiting distribuido | PASS v0.1 | Memory default; Redis opt-in `docs/RATE_LIMIT_DISTRIBUTED_V0_1.md` |
 | Backups/PITR/restore | Pendiente | Ensayar restore DB + ficheros + claves |

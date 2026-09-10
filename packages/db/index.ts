@@ -1,6 +1,8 @@
 import 'dotenv/config';
 import pg from 'pg';
 import { randomUUID } from 'node:crypto';
+import { appendAuditArchive } from './audit-archive.js';
+export { appendAuditArchive, verifyAuditArchiveDay, auditArchiveEnabled } from './audit-archive.js';
 export const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL ?? 'postgresql://rightsnet@127.0.0.1:55432/rightsnet',
   max: 10,
@@ -68,8 +70,18 @@ export async function audit(
   id: string,
   details: unknown = {},
 ) {
+  const eventId = randomUUID();
+  const created_at = new Date().toISOString();
   await db.query(
-    'INSERT INTO audit_events(id,actor_id,action,resource_id,details) VALUES($1,$2,$3,$4,$5)',
-    [randomUUID(), actor, action, id, JSON.stringify(details)],
+    'INSERT INTO audit_events(id,actor_id,action,resource_id,details,created_at) VALUES($1,$2,$3,$4,$5,$6)',
+    [eventId, actor, action, id, JSON.stringify(details), created_at],
   );
+  appendAuditArchive({
+    id: eventId,
+    actor_id: actor,
+    action,
+    resource_id: id,
+    details,
+    created_at,
+  });
 }

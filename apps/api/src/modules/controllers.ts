@@ -30,7 +30,7 @@ import {
 import type { Request, Response } from 'express';
 import { randomUUID, createHash } from 'node:crypto';
 import { z } from 'zod';
-import { pool, audit } from '../../../../packages/db/index.js';
+import { pool, audit, verifyAuditArchiveDay } from '../../../../packages/db/index.js';
 import {
   DomainError,
   licenseStatus,
@@ -943,6 +943,14 @@ export class AdminController {
       },
       public_key_ids: store.listPublicKids(),
     };
+  }
+  @Get('audit-archive/verify') async verifyAuditArchive(@Req() req: Request) {
+    admin(await actor(req));
+    const day =
+      typeof req.query.day === 'string' && req.query.day
+        ? req.query.day
+        : new Date().toISOString().slice(0, 10);
+    return verifyAuditArchiveDay(day);
   }
   @Post('signing-keys/rotate') @HttpCode(200) async rotateSigningKeys(
     @Req() req: Request,
