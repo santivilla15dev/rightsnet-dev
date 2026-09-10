@@ -3,8 +3,10 @@ import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 const data = path.resolve('.local/postgres');
 const bin = process.env.POSTGRES_BIN ?? '/opt/homebrew/opt/postgresql@16/bin';
+/** macOS + Homebrew: pg_ctl can fail with "postmaster became multithreaded" without a locale. */
+const pgEnv = { ...process.env, LC_ALL: process.env.LC_ALL ?? 'C', LANG: process.env.LANG ?? 'C' };
 const run = (cmd, args) => {
-  const r = spawnSync(cmd, args, { stdio: 'inherit' });
+  const r = spawnSync(cmd, args, { stdio: 'inherit', env: pgEnv });
   if (r.status !== 0) throw new Error(cmd + ' failed');
 };
 if (!existsSync(bin + '/initdb')) {
@@ -39,11 +41,11 @@ const alreadyUp = () => {
       '-tAc',
       'SELECT 1',
     ],
-    { encoding: 'utf8' },
+    { encoding: 'utf8', env: pgEnv },
   );
   return r.status === 0 && r.stdout.trim() === '1';
 };
-const status = spawnSync(bin + '/pg_ctl', ['-D', data, 'status'], { stdio: 'ignore' });
+const status = spawnSync(bin + '/pg_ctl', ['-D', data, 'status'], { stdio: 'ignore', env: pgEnv });
 if (status.status !== 0 && !alreadyUp())
   run(bin + '/pg_ctl', [
     '-D',
@@ -68,7 +70,7 @@ const db = spawnSync(
     '-tAc',
     "SELECT 1 FROM pg_database WHERE datname='rightsnet'",
   ],
-  { encoding: 'utf8' },
+  { encoding: 'utf8', env: pgEnv },
 );
 if (!db.stdout.trim())
   run(bin + '/createdb', ['-h', '127.0.0.1', '-p', '55432', '-U', 'rightsnet', 'rightsnet']);
