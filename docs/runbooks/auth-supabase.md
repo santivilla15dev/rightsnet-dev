@@ -30,6 +30,16 @@ WEB_URL=http://localhost:3000
 
 Reinicia `pnpm dev`.
 
+## Primer usuario (email, local)
+
+1. En Supabase Dashboard → **Authentication → Providers → Email**: ON.
+2. En desarrollo: desactiva **Confirm email** (Auth → Providers → Email) para entrar al instante.
+3. Abre [http://localhost:3000/signup](http://localhost:3000/signup), crea cuenta con email + contraseña.
+4. Tras signup → `/welcome`: elige **marca** (`/company/setup`) o **creador** (`/onboarding`).
+5. Si Google/Apple fallan, basta el email; OAuth necesita Client ID/Secret y redirects de la sección Prerequisites.
+
+Comprueba que la API usa Supabase: `curl -s http://127.0.0.1:4000/v1/config` → `"auth":"supabase"`.
+
 ## Flujos
 
 | Ruta | Uso |
