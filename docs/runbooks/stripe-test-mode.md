@@ -106,7 +106,7 @@ No marcar PASS hasta completar contra Dashboard/CLI. `LIVE_COMMERCE_ENABLED=fals
 |---|---|---|---|
 | R1 | Crear recipient **nuevo** con location `…, AT` o `…, DE` → identity country correcto en Dashboard | OPEN | No reescribe `acct_` antiguos |
 | R2 | Checkout + webhook → `charge_ref` + transfer destination vinculados a orden | **PASS** 2026-09-10 | Orden `efeff10f…` · `ch_3UE5Zc…` · `tr_3UE5Zc…` · licencia `RN-LIC-2026-000005`; `checkout.session.completed` 200. Nota: carrera `transfer.created` duplicada → 500 (fix ON CONFLICT en mismo día). |
-| R3 | Refund parcial / transfer reversal parcial (`reversed=false` + fila reversal) | OPEN | Status transfer no debe ser `reversed` completo |
+| R3 | Refund parcial / transfer reversal parcial (`reversed=false` + fila reversal) | **PASS** 2026-09-10 | `tr_3UE5Zc…` status **paid**; `trr_1UE5h0…` amount 5000; webhook `transfer.reversed` 200 |
 | R4 | Conciliar Stripe con >500 BT importados (o forzar volumen test) | OPEN* | Compare paginado; *test automatizado “>500 BT” PASS 2026-09-10 |
 | R5 | Thin v2 recovery + fees/multi-account | OPEN | Código PASS (`docs/STRIPE_THIN_FEES_MULTI_V0_1.md`); falta evidencia CLI |
 
