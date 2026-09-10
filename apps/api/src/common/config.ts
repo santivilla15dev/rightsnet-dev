@@ -65,12 +65,13 @@ export const config = {
    */
   connectDefaultCountry: (process.env.CONNECT_DEFAULT_COUNTRY ?? 'at').toLowerCase(),
   /**
-   * Object storage backend. v0.1: local disk only (`.local/uploads`).
-   * Future: s3 — not implemented yet.
+   * Object storage backend. Default `local` (`.local/uploads`).
+   * Opt-in `s3` — docs/STORAGE_S3_CLAMAV_V0_1.md (CI stays local).
    */
   storageProvider: (process.env.STORAGE_PROVIDER === 's3' ? 's3' : 'local') as 'local' | 's3',
   /**
-   * Malware scan provider. v0.1: sandbox (EICAR reject). Future: clamav.
+   * Malware scan provider. Default `sandbox` (EICAR). Opt-in `clamav`
+   * — docs/STORAGE_S3_CLAMAV_V0_1.md (CI stays sandbox).
    */
   malwareScanProvider: (process.env.MALWARE_SCAN_PROVIDER === 'clamav' ? 'clamav' : 'sandbox') as
     | 'sandbox'
@@ -82,6 +83,15 @@ export function assertConfiguration() {
     throw new Error('Production is blocked until launch gates are complete.');
   if (config.liveCommerceEnabled && config.payments !== 'stripe')
     throw new Error('LIVE_COMMERCE_ENABLED requires PAYMENTS_PROVIDER=stripe.');
+  if (config.storageProvider === 's3') {
+    const bucket = process.env.S3_BUCKET;
+    const ak = process.env.AWS_ACCESS_KEY_ID ?? process.env.S3_ACCESS_KEY_ID;
+    const sk = process.env.AWS_SECRET_ACCESS_KEY ?? process.env.S3_SECRET_ACCESS_KEY;
+    if (!bucket || !ak || !sk)
+      throw new Error('STORAGE_PROVIDER=s3 requires S3_BUCKET and AWS/S3 access keys.');
+  }
+  if (config.malwareScanProvider === 'clamav' && !process.env.CLAMAV_HOST)
+    throw new Error('MALWARE_SCAN_PROVIDER=clamav requires CLAMAV_HOST.');
   const key = process.env.STRIPE_SECRET_KEY;
   if (key && !/^(sk|rk)_test_/.test(key)) {
     if (!/^(sk|rk)_live_/.test(key))

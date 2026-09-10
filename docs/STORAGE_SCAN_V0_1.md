@@ -20,7 +20,8 @@ Flags (off / local por defecto):
 
 ## Fuera de alcance
 
-S3/R2 real, ClamAV en CI, URLs firmadas, multipart, live commerce.
+S3/R2 real y ClamAV: **PASS** opt-in en `docs/STORAGE_S3_CLAMAV_V0_1.md`
+(CI sigue local+sandbox). URLs firmadas, multipart, live commerce.
 
 ## STOP
 

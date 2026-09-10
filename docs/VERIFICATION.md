@@ -343,7 +343,12 @@ Ensayo humano founder opcional para marcar gate operativo.
 ## Storage + malware scan v0.1 — 2026-09-10
 
 Cierre PASS sandbox: `docs/STORAGE_SCAN_V0_1.md`. Puertos local store + scanner EICAR;
-submit/review/extract exigen `clean`. S3/ClamAV reales fuera.
+submit/review/extract exigen `clean`.
+
+## Storage S3 + ClamAV v0.1 — 2026-09-10
+
+Cierre PASS opt-in: `docs/STORAGE_S3_CLAMAV_V0_1.md`. `s3Store` SigV4 +
+`clamavScanner` INSTREAM; CI defaults local/sandbox; tests storage-scan 5/5.
 
 ## DB roles / tenancy v0.1 — 2026-09-10
 
