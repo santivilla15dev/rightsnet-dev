@@ -93,6 +93,15 @@ export type StripeThinNotification = {
   related_object?: { id?: string; type?: string; url?: string } | null;
 };
 
+/** Listed thin event row (V2 list). Recovery still retrieves before sync. */
+export type StripeThinListEvent = {
+  id: string;
+  type: string;
+  created: string;
+  livemode?: boolean;
+  related_object?: { id?: string; type?: string; url?: string } | null;
+};
+
 export type StripeThinPort = {
   parseNotification: (
     payload: Buffer | string,
@@ -105,6 +114,13 @@ export type StripeThinPort = {
     livemode?: boolean;
     related_object?: { id?: string; type?: string; url?: string } | null;
   }>;
+  /** V2 page-token pagination (not starting_after). */
+  listEvents: (params: {
+    limit?: number;
+    page?: string | null;
+    created?: { gte?: number };
+    types?: string[];
+  }) => Promise<{ data: StripeThinListEvent[]; next_page: string | null }>;
 };
 
 export type StripeRefund = {
@@ -269,6 +285,20 @@ export function stripeConnectPort(): StripeConnectPort {
 export function stripeThinPort(): StripeThinPort {
   if (thinTestPort) return thinTestPort;
   const client = stripeClient();
+  const mapListed = (event: {
+    id: string;
+    type: string;
+    created: string;
+    livemode?: boolean;
+    related_object?: StripeThinNotification['related_object'];
+  }): StripeThinListEvent => ({
+    id: event.id,
+    type: event.type,
+    created: String(event.created),
+    livemode: Boolean(event.livemode),
+    related_object:
+      'related_object' in event ? (event.related_object ?? null) : null,
+  });
   return {
     parseNotification: (payload, signature, secret) => {
       const notification = client.parseEventNotification(payload, signature, secret);
@@ -295,6 +325,30 @@ export function stripeThinPort(): StripeThinPort {
             ? ((event as { related_object?: StripeThinNotification['related_object'] })
                 .related_object ?? null)
             : null,
+      };
+    },
+    listEvents: async ({ limit, page, created, types }) => {
+      const result = await client.v2.core.events.list({
+        limit: limit ?? 100,
+        types,
+        created,
+        ...(page ? { page } : {}),
+      } as Parameters<typeof client.v2.core.events.list>[0] & { page?: string });
+      let nextPage: string | null = null;
+      if (result.next_page_url) {
+        try {
+          nextPage = new URL(result.next_page_url, 'https://api.stripe.com').searchParams.get(
+            'page',
+          );
+        } catch {
+          nextPage = null;
+        }
+      }
+      return {
+        data: result.data.map((event) =>
+          mapListed(event as unknown as Parameters<typeof mapListed>[0]),
+        ),
+        next_page: nextPage,
       };
     },
   };

@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { scanStripePages } from './stripe-pagination.js';
+import { scanStripePages, scanThinEventPages } from './stripe-pagination.js';
 import { audit, pool } from '../../../../packages/db/index.js';
 import { DomainError } from '../../../../packages/domain/src/index.js';
 import type { Actor } from '../common/auth.js';
@@ -8,10 +8,16 @@ import {
   assertLiveCommerceAllowed,
   stripeEnvironment,
   stripeReconciliationPort,
+  stripeThinPort,
   type StripeBalanceTransaction,
 } from '../integrations/stripe.js';
 import { ingestStripeCheckoutEvent } from './stripe-events.js';
-import { ingestConnectAccountEvent, isConnectAccountEvent } from './stripe-connect.js';
+import {
+  ingestConnectAccountEvent,
+  ingestThinConnectEventById,
+  isConnectAccountEvent,
+  THIN_CONNECT_RECOVERY_TYPES,
+} from './stripe-connect.js';
 import { ingestStripeRefundEvent, isRefundEvent } from './stripe-refunds.js';
 import { ingestMoneyMovementEvent, isMoneyMovementEvent } from './stripe-money.js';
 
@@ -361,6 +367,139 @@ async function matchTransferLike(
   }
 }
 
+async function matchApplicationFeeLike(
+  runId: string,
+  environment: string,
+  accountRef: string,
+  row: { provider_ref: string; amount_minor: number; source_ref: string | null },
+) {
+  if (accountRef !== PLATFORM) return;
+  const abs = Math.abs(row.amount_minor);
+  const matches = (
+    await pool.query(
+      `SELECT a.id, a.order_id, (o.price->>'fee_minor')::int AS fee_minor
+       FROM payment_attempts a
+       JOIN orders o ON o.id=a.order_id
+       WHERE a.provider='stripe' AND a.status='succeeded'
+         AND (o.price->>'fee_minor')::int = $1
+       ORDER BY a.created_at DESC
+       LIMIT 5`,
+      [abs],
+    )
+  ).rows as Array<{ id: string; order_id: string; fee_minor: number }>;
+  if (!matches.length) {
+    await insertDiff({
+      runId,
+      environment,
+      accountRef,
+      kind: 'orphan_application_fee',
+      severity: 'warning',
+      providerRef: row.provider_ref,
+      amountMinor: abs,
+      detail: `Application fee BT ${row.provider_ref} sin pago local con fee_minor=${abs}.`,
+    });
+    return;
+  }
+  let chosen = matches[0]!;
+  for (const m of matches) {
+    const feeEntry = (
+      await pool.query(
+        `SELECT 1 FROM journals j
+         JOIN ledger_entries e ON e.journal_id=j.id
+         WHERE j.order_id=$1 AND e.account='platform_fee_revenue' AND e.side='credit'
+         LIMIT 1`,
+        [m.order_id],
+      )
+    ).rowCount;
+    if (feeEntry) {
+      chosen = m;
+      break;
+    }
+  }
+  const feeEntry = (
+    await pool.query(
+      `SELECT 1 FROM journals j
+       JOIN ledger_entries e ON e.journal_id=j.id
+       WHERE j.order_id=$1 AND e.account='platform_fee_revenue' AND e.side='credit'
+       LIMIT 1`,
+      [chosen.order_id],
+    )
+  ).rowCount;
+  if (!feeEntry) {
+    await insertDiff({
+      runId,
+      environment,
+      accountRef,
+      kind: 'missing_fee_journal',
+      severity: 'critical',
+      providerRef: row.provider_ref,
+      localRef: chosen.order_id,
+      amountMinor: abs,
+      detail: `Application fee Stripe sin crédito local platform_fee_revenue.`,
+    });
+  }
+}
+
+async function matchApplicationFeeRefundLike(
+  runId: string,
+  environment: string,
+  accountRef: string,
+  row: { provider_ref: string; amount_minor: number; source_ref: string | null },
+) {
+  if (accountRef !== PLATFORM) return;
+  const abs = Math.abs(row.amount_minor);
+  const refund = (
+    await pool.query(
+      `SELECT r.id, r.order_id, r.application_fee_refund_ref, (o.price->>'fee_minor')::int AS fee_minor
+       FROM refunds r
+       JOIN orders o ON o.id=r.order_id
+       WHERE r.status IN ('succeeded','pending','requested')
+         AND (
+           ($1::text IS NOT NULL AND r.application_fee_refund_ref=$1)
+           OR (o.price->>'fee_minor')::int = $2
+         )
+       ORDER BY CASE WHEN $1::text IS NOT NULL AND r.application_fee_refund_ref=$1 THEN 0 ELSE 1 END,
+                r.created_at DESC
+       LIMIT 1`,
+      [row.source_ref, abs],
+    )
+  ).rows[0] as
+    | { id: string; order_id: string; application_fee_refund_ref: string | null; fee_minor: number }
+    | undefined;
+  if (!refund) {
+    await insertDiff({
+      runId,
+      environment,
+      accountRef,
+      kind: 'orphan_application_fee_refund',
+      severity: 'warning',
+      providerRef: row.provider_ref,
+      amountMinor: abs,
+      detail: `Application fee refund BT sin refund local coincidente.`,
+    });
+    return;
+  }
+  if (Number(refund.fee_minor) !== abs) {
+    await insertDiff({
+      runId,
+      environment,
+      accountRef,
+      kind: 'application_fee_refund_amount_mismatch',
+      severity: 'critical',
+      providerRef: row.provider_ref,
+      localRef: refund.id,
+      amountMinor: abs,
+      detail: `Fee refund BT ${abs} ≠ fee local ${refund.fee_minor}.`,
+    });
+  }
+  if (row.source_ref && !refund.application_fee_refund_ref) {
+    await pool.query(
+      'UPDATE refunds SET application_fee_refund_ref=COALESCE(application_fee_refund_ref,$2), updated_at=now() WHERE id=$1',
+      [refund.id, row.source_ref],
+    );
+  }
+}
+
 async function matchPayoutLike(
   runId: string,
   environment: string,
@@ -436,8 +575,12 @@ export async function compareExternalLedger(runId: string, accountRef = PLATFORM
         await matchTransferLike(runId, environment, accountRef, row);
       } else if (row.type === 'payout') {
         await matchPayoutLike(runId, environment, accountRef, row);
+      } else if (row.type === 'application_fee') {
+        await matchApplicationFeeLike(runId, environment, accountRef, row);
+      } else if (row.type === 'application_fee_refund') {
+        await matchApplicationFeeRefundLike(runId, environment, accountRef, row);
       }
-      // application_fee / stripe_fee / adjustment: retained as imported facts; no forced local journal.
+      // stripe_fee / adjustment: retained as imported facts; no forced local journal.
     }
     if (rows.length < pageSize) break;
     offset += pageSize;
@@ -543,6 +686,63 @@ export async function recoverMissedEvents(runId: string, options: { maxPages?: n
   return { recovered, complete: scan.complete };
 }
 
+/** Recover missed thin Accounts v2 events via GET /v2/core/events (page tokens). */
+export async function recoverMissedThinEvents(
+  runId: string,
+  options: { maxPages?: number } = {},
+) {
+  const environment = stripeEnvironment();
+  const port = stripeThinPort();
+  let recovered = 0;
+  const scan = await scanThinEventPages({
+    environment,
+    accountRef: PLATFORM,
+    maxPages: options.maxPages ?? 10,
+    initialSince: Math.floor(Date.now() / 1000) - 7 * 86400,
+    fetch: (params) =>
+      port.listEvents({
+        ...params,
+        types: [...THIN_CONNECT_RECOVERY_TYPES],
+      }),
+    consume: async (listed) => {
+      assertLiveCommerceAllowed(Boolean(listed.livemode));
+      if (
+        (
+          await pool.query(
+            "SELECT 1 FROM provider_events WHERE provider='stripe' AND event_id=$1",
+            [listed.id],
+          )
+        ).rowCount
+      )
+        return;
+      try {
+        const result = await ingestThinConnectEventById(listed.id);
+        if (!('duplicate' in result && result.duplicate) && !('ignored' in result && result.ignored))
+          recovered++;
+      } catch (error) {
+        await insertDiff({
+          runId,
+          environment,
+          accountRef: PLATFORM,
+          kind: 'thin_event_recovery_failed',
+          providerRef: listed.id,
+          detail: `No se pudo reingestar thin ${listed.type}: ${error instanceof DomainError ? error.code : 'unknown'}`,
+        });
+        throw error;
+      }
+    },
+  });
+  if (!scan.complete)
+    await insertDiff({
+      runId,
+      environment,
+      accountRef: PLATFORM,
+      kind: 'thin_event_recovery_incomplete',
+      detail: 'Recuperación thin paginada pendiente; el próximo ciclo retomará la página restante.',
+    });
+  return { recovered, complete: scan.complete };
+}
+
 /**
  * Full external reconciliation run. Must NOT be invoked from the internal ledger
  * balance GET — that check stays double-entry only.
@@ -592,7 +792,8 @@ export async function runExternalReconciliation(
 
     let recovered = 0;
     if (options.recoverEvents !== false && accountRef === PLATFORM) {
-      recovered = (await recoverMissedEvents(runId)).recovered;
+      recovered += (await recoverMissedEvents(runId)).recovered;
+      recovered += (await recoverMissedThinEvents(runId)).recovered;
     }
     const diffs = (
       await pool.query(
@@ -634,18 +835,54 @@ export async function runExternalReconciliation(
   }
 }
 
-/** Worker-safe: skip if a run finished recently; never throws out of loop. */
+/** Worker-safe: platform + bounded connected accounts; never throws out of loop. */
 export async function processExternalReconciliation() {
   if (config.payments !== 'stripe') return { skipped: true as const };
   const recent = (
     await pool.query(
       `SELECT 1 FROM reconciliation_runs
-       WHERE status IN ('running','done') AND started_at > now() - interval '5 minutes'
+       WHERE account_ref=$1 AND status IN ('running','done')
+         AND started_at > now() - interval '5 minutes'
        LIMIT 1`,
+      [PLATFORM],
     )
   ).rowCount;
   if (recent) return { skipped: true as const };
-  return runExternalReconciliation({ recoverEvents: true });
+
+  const platform = await runExternalReconciliation({ recoverEvents: true });
+  const accounts = (
+    await pool.query(
+      `SELECT DISTINCT ON (stripe_account_id) stripe_account_id
+       FROM connect_accounts
+       WHERE environment=$1 AND stripe_account_id LIKE 'acct_%'
+       ORDER BY stripe_account_id, updated_at DESC
+       LIMIT 10`,
+      [stripeEnvironment()],
+    )
+  ).rows as Array<{ stripe_account_id: string }>;
+
+  const connected_runs: Array<
+    | Awaited<ReturnType<typeof runExternalReconciliation>>
+    | { account_ref: string; status: 'failed'; error: string }
+  > = [];
+  for (const row of accounts) {
+    try {
+      connected_runs.push(
+        await runExternalReconciliation({
+          accountRef: row.stripe_account_id,
+          recoverEvents: false,
+          checkMissingSince: null,
+        }),
+      );
+    } catch (error) {
+      connected_runs.push({
+        account_ref: row.stripe_account_id,
+        status: 'failed',
+        error: error instanceof Error ? error.message : 'unknown',
+      });
+    }
+  }
+  return { skipped: false as const, platform, connected_runs };
 }
 
 export async function listExternalReconciliation() {

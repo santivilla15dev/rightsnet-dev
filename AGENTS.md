@@ -127,5 +127,7 @@ Connect country AT/DE: `identity.country` para cuentas Connect nuevas desde
 existentes.
 
 Stripe money/recon gaps: compare paginado, reversión parcial, relink charge_ref;
-`docs/STRIPE_MONEY_RECON_GAPS_V0_1.md`. **PASS** mocks; reensayo founder OPEN;
-thin v2 recovery y fees/multi-account abiertos.
+`docs/STRIPE_MONEY_RECON_GAPS_V0_1.md`. **PASS** mocks.
+
+Thin v2 recovery + fees/multi-account: `docs/STRIPE_THIN_FEES_MULTI_V0_1.md`.
+**PASS** mocks (migración 032); reensayo founder OPEN.

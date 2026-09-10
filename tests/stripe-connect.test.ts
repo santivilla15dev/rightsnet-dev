@@ -98,6 +98,7 @@ function mockThinPort(): StripeThinPort {
       if (!row) throw new DomainError('NOT_FOUND', 404);
       return { id: row.id, type: row.type, livemode: false, related_object: row.related_object };
     },
+    listEvents: async () => ({ data: [], next_page: null }),
   };
 }
 

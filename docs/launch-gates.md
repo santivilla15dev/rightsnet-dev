@@ -34,7 +34,7 @@ Piloto comercial propuesto: **Austria + Alemania** (constitución §5). No impli
 | Rate limiting distribuido | Pendiente | Límite local de una instancia |
 | Backups/PITR/restore | Pendiente | Ensayar restore DB + ficheros + claves |
 | Despliegue staging y seguridad | Pendiente | Región, secretos, HTTPS, CI remoto |
-| Prueba Stripe test end-to-end | Ensayo previo PASS; reensayo OPEN | Runbook R1–R5; gaps código parcial. Flag live off por defecto |
+| Prueba Stripe test end-to-end | Ensayo previo PASS; reensayo OPEN | Runbook R1–R5; gaps código PASS (incl. thin/fees). Flag live off por defecto |
 | Primera licencia/payout **real** | No iniciado | Solo después de cerrar gates legales + KYC ops + Connect live readiness |
 
 ## Checklist piloto AT–DE (sin activar live en producción)

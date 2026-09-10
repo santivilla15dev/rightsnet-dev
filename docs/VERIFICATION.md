@@ -162,10 +162,9 @@ Revisión de código y pruebas repetidas en esta tarea; no se ha repetido el ens
 - Checkout no fija email ficticio ni lista de métodos. Mantiene EUR; los métodos se controlan en Dashboard. Por tanto, la fila anterior «async N/A» solo describe el ensayo de tarjeta, no todos los métodos configurables.
 - Planner real disponible y usado: respuestas originales en `stripe-planner-decision-tree.json` y `stripe-planner-accepted.json`. La respuesta accepted confirma hosted/web, no valida integralmente Connect ni las pruebas.
 
-**Pendiente:** reensayo externo founder (checklist R1–R5 en `docs/runbooks/stripe-test-mode.md`);
-thin v2 recovery paginada; fees / multi connected accounts. Gaps cerrados en código:
-compare >500, reversión parcial registrada, relink transfer↔`charge_ref`. Ver
-`docs/STRIPE_MONEY_RECON_GAPS_V0_1.md` y `docs/CONNECT_COUNTRY_AT_DE_V0_1.md`.
+**Pendiente:** reensayo externo founder (checklist R1–R5 en `docs/runbooks/stripe-test-mode.md`).
+Gaps código cerrados: compare >500, reversión parcial, relink transfer↔`charge_ref`,
+thin v2 recovery paginada, fees + multi connected (`docs/STRIPE_THIN_FEES_MULTI_V0_1.md`).
 
 ## Ensayo Stripe modo test (6 sep 2026) — evidencia previa de Cursor
 
@@ -317,4 +316,10 @@ cuentas nuevas. Tests `stripe-connect` PASS.
 
 Implementación parcial PASS mocks: `docs/STRIPE_MONEY_RECON_GAPS_V0_1.md`. Compare
 paginado >500; reversión parcial; relink huérfanos al setear `charge_ref`. Reensayo
-founder CLI **OPEN** (runbook R1–R5). Thin v2 recovery y fees/multi-account abiertos.
+founder CLI **OPEN** (runbook R1–R5).
+
+## Thin v2 recovery + fees / multi-account — 2026-09-10
+
+Cierre PASS código/mocks: `docs/STRIPE_THIN_FEES_MULTI_V0_1.md`. Migración 032.
+`recoverMissedThinEvents`; match application fee/refund; worker multi-`acct_*`.
+Tests recon + typecheck/lint PASS. Reensayo founder sigue OPEN.

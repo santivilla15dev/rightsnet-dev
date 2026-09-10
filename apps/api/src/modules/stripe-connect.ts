@@ -445,6 +445,67 @@ export function isThinConnectEventType(type: string): boolean {
   return THIN_CONNECT_TYPES.has(type) || type.startsWith('v2.core.account');
 }
 
+/** Types recovered via GET /v2/core/events (max 20 per Stripe). */
+export const THIN_CONNECT_RECOVERY_TYPES = [
+  'v2.core.account[requirements].updated',
+  'v2.core.account[configuration.recipient].capability_status_updated',
+  'v2.core.account[configuration.recipient].updated',
+  'v2.core.account.updated',
+  'v2.core.account.created',
+] as const;
+
+/**
+ * Shared ingest after a thin event id is known (webhook or list recovery).
+ * Always retrieve → Accounts API; never trust notification/list body as account state.
+ */
+export async function ingestThinConnectEventById(eventId: string) {
+  const port = stripeThinPort();
+  const full = await port.retrieveEvent(eventId);
+  assertLiveCommerceAllowed(Boolean(full.livemode));
+  if (!isThinConnectEventType(full.type)) {
+    return { received: true, ignored: true, type: full.type };
+  }
+
+  if (
+    (await pool.query("SELECT 1 FROM provider_events WHERE provider='stripe' AND event_id=$1", [
+      eventId,
+    ])).rowCount
+  )
+    return { received: true, duplicate: true };
+
+  const accountId = full.related_object?.id?.startsWith('acct_')
+    ? full.related_object.id
+    : null;
+
+  if (!accountId) {
+    await pool.query(
+      "INSERT INTO provider_events(id,provider,event_id,payload,status,error) VALUES($1,'stripe',$2,$3,'failed','CONNECT_EVENT_MISSING_ACCOUNT') ON CONFLICT(provider,event_id) DO NOTHING",
+      [randomUUID(), eventId, JSON.stringify({ type: full.type, source: 'thin' })],
+    );
+    return { received: true, error: 'CONNECT_EVENT_MISSING_ACCOUNT' };
+  }
+
+  const synthetic = {
+    id: eventId,
+    object: 'event',
+    type: full.type,
+    livemode: Boolean(full.livemode),
+    data: { object: { id: accountId } },
+    account: accountId,
+  } as unknown as Stripe.Event;
+
+  if (full.type === 'v2.core.account[requirements].updated') {
+    await ingestConnectAccountEvent(synthetic);
+    return { received: true, handled: 'requirements', account: accountId };
+  }
+  if (full.type === 'v2.core.account[configuration.recipient].capability_status_updated') {
+    await ingestConnectAccountEvent(synthetic);
+    return { received: true, handled: 'capability', account: accountId };
+  }
+  await ingestConnectAccountEvent(synthetic);
+  return { received: true, handled: 'account', type: full.type, account: accountId };
+}
+
 /**
  * Thin Account v2 notifications: verify → retrieve full event → sync via Accounts API.
  * Never treat the thin body as authoritative account state.
@@ -465,50 +526,5 @@ export async function ingestThinConnectNotification(
   if (!isThinConnectEventType(thin.type)) {
     return { received: true, ignored: true, type: thin.type };
   }
-
-  if (
-    (await pool.query("SELECT 1 FROM provider_events WHERE provider='stripe' AND event_id=$1", [
-      thin.id,
-    ])).rowCount
-  )
-    return { received: true, duplicate: true };
-
-  const full = await port.retrieveEvent(thin.id);
-  assertLiveCommerceAllowed(Boolean(full.livemode));
-
-  const accountId =
-    full.related_object?.id?.startsWith('acct_')
-      ? full.related_object.id
-      : thin.related_object?.id?.startsWith('acct_')
-        ? thin.related_object.id
-        : null;
-
-  if (!accountId) {
-    await pool.query(
-      "INSERT INTO provider_events(id,provider,event_id,payload,status,error) VALUES($1,'stripe',$2,$3,'failed','CONNECT_EVENT_MISSING_ACCOUNT') ON CONFLICT(provider,event_id) DO NOTHING",
-      [randomUUID(), thin.id, JSON.stringify({ type: thin.type, source: 'thin' })],
-    );
-    return { received: true, error: 'CONNECT_EVENT_MISSING_ACCOUNT' };
-  }
-
-  // Build a minimal Event-shaped object for the shared snapshot ingest path.
-  const synthetic = {
-    id: thin.id,
-    object: 'event',
-    type: full.type,
-    livemode: Boolean(full.livemode),
-    data: { object: { id: accountId } },
-    account: accountId,
-  } as unknown as Stripe.Event;
-
-  if (full.type === 'v2.core.account[requirements].updated') {
-    await ingestConnectAccountEvent(synthetic);
-    return { received: true, handled: 'requirements', account: accountId };
-  }
-  if (full.type === 'v2.core.account[configuration.recipient].capability_status_updated') {
-    await ingestConnectAccountEvent(synthetic);
-    return { received: true, handled: 'capability', account: accountId };
-  }
-  await ingestConnectAccountEvent(synthetic);
-  return { received: true, handled: 'account', type: full.type, account: accountId };
+  return ingestThinConnectEventById(thin.id);
 }

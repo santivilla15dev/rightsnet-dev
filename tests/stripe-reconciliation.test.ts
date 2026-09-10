@@ -7,9 +7,14 @@ import { demoIds, seed } from '../packages/db/seed.js';
 import type { Actor } from '../apps/api/src/common/auth.js';
 import { config } from '../apps/api/src/common/config.js';
 import {
+  setStripeConnectPortForTests,
   setStripeReconciliationPortForTests,
+  setStripeThinPortForTests,
   type StripeBalanceTransaction,
+  type StripeConnectAccount,
+  type StripeConnectPort,
   type StripeReconciliationPort,
+  type StripeThinPort,
 } from '../apps/api/src/integrations/stripe.js';
 import {
   acceptOrder,
@@ -28,10 +33,13 @@ import {
   acknowledgeDifference,
   compareExternalLedger,
   listExternalReconciliation,
+  processExternalReconciliation,
+  recoverMissedThinEvents,
   runExternalReconciliation,
   importBalanceTransactions,
   recoverMissedEvents,
 } from '../apps/api/src/modules/stripe-reconciliation.js';
+import { DomainError } from '../packages/domain/src/index.js';
 import type { Usage } from '../packages/domain/src/index.js';
 
 let buyer: Actor;
@@ -40,7 +48,20 @@ let previousPayments: string;
 let assetId: string;
 
 const balanceStore: StripeBalanceTransaction[] = [];
+const connectedBalanceStore = new Map<string, StripeBalanceTransaction[]>();
 const eventStore: Stripe.Event[] = [];
+const thinListStore: Array<{
+  id: string;
+  type: string;
+  created: string;
+  livemode?: boolean;
+  related_object?: { id: string } | null;
+}> = [];
+const thinRetrieve = new Map<
+  string,
+  { id: string; type: string; livemode?: boolean; related_object?: { id: string } | null }
+>();
+const connectAccountStore = new Map<string, StripeConnectAccount>();
 
 const usage = (): Usage => ({
   campaign_name: 'Recon ' + randomUUID().slice(0, 8),
@@ -60,10 +81,11 @@ const usage = (): Usage => ({
 function reconPort(): StripeReconciliationPort {
   return {
     // Mirror Stripe: newest-first + optional created[gte] + starting_after toward older.
-    listBalanceTransactions: async ({ starting_after, limit, created }) => {
-      let sorted = [...balanceStore].sort(
-        (a, b) => b.created - a.created || b.id.localeCompare(a.id),
-      );
+    listBalanceTransactions: async ({ starting_after, limit, created, stripeAccount }) => {
+      const source = stripeAccount
+        ? (connectedBalanceStore.get(stripeAccount) ?? [])
+        : balanceStore;
+      let sorted = [...source].sort((a, b) => b.created - a.created || b.id.localeCompare(a.id));
       if (created?.gte !== undefined) sorted = sorted.filter((t) => t.created >= created.gte!);
       let start = 0;
       if (starting_after) {
@@ -84,6 +106,43 @@ function reconPort(): StripeReconciliationPort {
       }
       const slice = list.slice(start, start + (limit ?? 100));
       return { data: slice, has_more: start + slice.length < list.length };
+    },
+  };
+}
+
+function thinPort(): StripeThinPort {
+  return {
+    parseNotification: () => {
+      throw new Error('not used in recon tests');
+    },
+    retrieveEvent: async (id) => {
+      const row = thinRetrieve.get(id);
+      if (!row) throw new DomainError('NOT_FOUND', 404);
+      return row;
+    },
+    listEvents: async ({ page, limit }) => {
+      // Small pages so recovery pagination tests exercise maxPages + next_page tokens.
+      const pageSize = Math.min(limit ?? 100, 2);
+      const start = page ? Number(page) : 0;
+      const slice = thinListStore.slice(start, start + pageSize);
+      const next = start + slice.length < thinListStore.length ? String(start + pageSize) : null;
+      return { data: slice, next_page: next };
+    },
+  };
+}
+
+function connectPort(): StripeConnectPort {
+  return {
+    createAccount: async () => {
+      throw new Error('not used');
+    },
+    retrieveAccount: async (id) => {
+      const row = connectAccountStore.get(id);
+      if (!row) throw new DomainError('NOT_FOUND', 404);
+      return row;
+    },
+    createAccountLink: async () => {
+      throw new Error('not used');
     },
   };
 }
@@ -148,8 +207,14 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   balanceStore.length = 0;
+  connectedBalanceStore.clear();
   eventStore.length = 0;
+  thinListStore.length = 0;
+  thinRetrieve.clear();
+  connectAccountStore.clear();
   setStripeReconciliationPortForTests(reconPort());
+  setStripeThinPortForTests(thinPort());
+  setStripeConnectPortForTests(connectPort());
   config.payments = 'stripe';
   await pool.query(`
     DELETE FROM reconciliation_differences;
@@ -161,6 +226,8 @@ beforeEach(async () => {
 
 afterEach(() => {
   setStripeReconciliationPortForTests(null);
+  setStripeThinPortForTests(null);
+  setStripeConnectPortForTests(null);
   config.payments = previousPayments;
 });
 
@@ -554,5 +621,175 @@ describe('Stripe external reconciliation (paso 5)', () => {
       )
     ).rows[0].n;
     expect(orphans).toBe(501);
+  });
+
+  it('recupera eventos thin v2 paginados y sincroniza Connect', async () => {
+    const creatorRow = (
+      await pool.query('SELECT id FROM creators WHERE user_id=$1', [demoIds.creator])
+    ).rows[0];
+    const acct = 'acct_thin_rec_' + randomUUID().slice(0, 8);
+    await pool.query('DELETE FROM connect_accounts WHERE creator_id=$1', [creatorRow.id]);
+    await pool.query(
+      `INSERT INTO connect_accounts(id,creator_id,environment,stripe_account_id,transfers_status,requirements_due)
+       VALUES($1,$2,'test',$3,'pending',true)`,
+      [randomUUID(), creatorRow.id, acct],
+    );
+    connectAccountStore.set(acct, {
+      id: acct,
+      livemode: false,
+      configuration: {
+        recipient: {
+          capabilities: {
+            stripe_balance: { stripe_transfers: { status: 'active' } },
+          },
+        },
+      },
+      requirements: {
+        entries: [],
+        summary: { minimum_deadline: { status: 'complete' } },
+      },
+    });
+
+    const now = Date.now();
+    for (let i = 0; i < 3; i++) {
+      const id = `evt_thin_page_${i}`;
+      thinListStore.push({
+        id,
+        type: 'v2.core.account[configuration.recipient].capability_status_updated',
+        created: new Date(now - i * 1000).toISOString(),
+        livemode: false,
+        related_object: { id: acct },
+      });
+      thinRetrieve.set(id, {
+        id,
+        type: 'v2.core.account[configuration.recipient].capability_status_updated',
+        livemode: false,
+        related_object: { id: acct },
+      });
+    }
+
+    const runId = await newRun();
+    const first = await recoverMissedThinEvents(runId, { maxPages: 1 });
+    expect(first.complete).toBe(false);
+    expect(first.recovered).toBeGreaterThanOrEqual(1);
+    const second = await recoverMissedThinEvents(runId, { maxPages: 5 });
+    expect(second.complete).toBe(true);
+    const synced = (
+      await pool.query('SELECT transfers_status, requirements_due FROM connect_accounts WHERE stripe_account_id=$1', [
+        acct,
+      ])
+    ).rows[0];
+    expect(synced.transfers_status).toBe('active');
+    expect(synced.requirements_due).toBe(false);
+    expect(
+      (await pool.query("SELECT count(*)::int AS n FROM provider_events WHERE event_id LIKE 'evt_thin_page_%'"))
+        .rows[0].n,
+    ).toBe(3);
+  });
+
+  it('marca application fee huérfana y concilia fee local coincidente', async () => {
+    balanceStore.push({
+      id: 'txn_fee_orphan',
+      livemode: false,
+      type: 'application_fee',
+      amount: 4242,
+      fee: 0,
+      net: 4242,
+      currency: 'eur',
+      source: 'fee_nobody',
+      description: 'orphan fee',
+      available_on: Math.floor(Date.now() / 1000),
+      created: Math.floor(Date.now() / 1000),
+    });
+    const orphanRun = await runExternalReconciliation({
+      recoverEvents: false,
+      checkMissingSince: null,
+    });
+    expect(orphanRun.difference_count).toBeGreaterThanOrEqual(1);
+    expect(
+      (await listExternalReconciliation()).open_differences.some(
+        (d: { kind: string }) => d.kind === 'orphan_application_fee',
+      ),
+    ).toBe(true);
+
+    await pool.query(`
+      DELETE FROM reconciliation_differences;
+      DELETE FROM reconciliation_runs;
+      DELETE FROM reconciliation_cursors;
+      DELETE FROM stripe_balance_transactions;
+    `);
+    balanceStore.length = 0;
+
+    const paid = await fulfilledStripeOrder();
+    balanceStore.push({
+      id: 'txn_fee_ok',
+      livemode: false,
+      type: 'application_fee',
+      amount: paid.fee,
+      fee: 0,
+      net: paid.fee,
+      currency: 'eur',
+      source: 'fee_' + paid.pi,
+      description: 'Platform fee',
+      available_on: Math.floor(Date.now() / 1000),
+      created: Math.floor(Date.now() / 1000),
+    });
+    const ok = await runExternalReconciliation({
+      recoverEvents: false,
+      checkMissingSince: null,
+    });
+    expect(ok.difference_count).toBe(0);
+  });
+
+  it('worker importa también balance de una cuenta connected', async () => {
+    const creatorRow = (
+      await pool.query('SELECT id FROM creators WHERE user_id=$1', [demoIds.creator])
+    ).rows[0];
+    const acct = 'acct_multi_' + randomUUID().slice(0, 8);
+    await pool.query('DELETE FROM connect_accounts WHERE creator_id=$1', [creatorRow.id]);
+    await pool.query(
+      `INSERT INTO connect_accounts(id,creator_id,environment,stripe_account_id,transfers_status,requirements_due)
+       VALUES($1,$2,'test',$3,'active',false)`,
+      [randomUUID(), creatorRow.id, acct],
+    );
+    connectedBalanceStore.set(acct, [
+      {
+        id: 'txn_conn_po',
+        livemode: false,
+        type: 'payout',
+        amount: -5000,
+        fee: 0,
+        net: -5000,
+        currency: 'eur',
+        source: 'po_conn_1',
+        description: acct,
+        available_on: Math.floor(Date.now() / 1000),
+        created: Math.floor(Date.now() / 1000),
+      },
+    ]);
+    await pool.query(
+      `INSERT INTO payout_records(
+         id,connected_account_ref,provider_payout_id,environment,amount_minor,currency,status)
+       VALUES($1,$2,'po_conn_1','test',5000,'EUR','paid')`,
+      [randomUUID(), acct],
+    );
+
+    const result = await processExternalReconciliation();
+    expect(result).toMatchObject({ skipped: false });
+    if ('skipped' in result && result.skipped === false) {
+      expect(result.connected_runs.length).toBeGreaterThanOrEqual(1);
+      const connected = result.connected_runs.find(
+        (r) => 'account_ref' in r && r.account_ref === acct,
+      );
+      expect(connected).toMatchObject({ status: 'done', imported_count: 1 });
+    }
+    expect(
+      (
+        await pool.query(
+          `SELECT 1 FROM stripe_balance_transactions WHERE account_ref=$1 AND provider_ref='txn_conn_po'`,
+          [acct],
+        )
+      ).rowCount,
+    ).toBe(1);
   });
 });
