@@ -44,12 +44,17 @@ export async function transaction<T>(fn: (db: DB) => Promise<T>): Promise<T> {
   }
 }
 
+export type WithRlsActorOptions = { readonly?: boolean };
+
 /** Run work inside a transaction with RLS actor or explicit bypass. */
 export async function withRlsActor<T>(
   actor: RlsActor | 'bypass',
   fn: (db: DB) => Promise<T>,
+  opts?: WithRlsActorOptions,
 ): Promise<T> {
   return transaction(async (db) => {
+    if (opts?.readonly)
+      await db.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY');
     if (actor === 'bypass') await setRlsBypass(db, true);
     else await setRlsActor(db, actor);
     return fn(db);

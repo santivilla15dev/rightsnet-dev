@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { pool, transaction, audit, type DB } from '../../../../packages/db/index.js';
+import { withRlsActor, audit, type DB } from '../../../../packages/db/index.js';
 import {
   DomainError,
   GenerationRecordPayloadSchema,
@@ -14,7 +14,7 @@ import {
 } from '../../../../packages/domain/src/rights-core/campaign-clearance.js';
 import { verifyRnAuthPayload } from '../integrations/signing.js';
 import { verifyRnAuthToken } from './generation-auth.js';
-import { findCampaign } from './campaigns.js';
+import { campaignRlsActor, findCampaign } from './campaigns.js';
 import { mutate } from '../common/idempotency.js';
 import type { Actor } from '../common/auth.js';
 
@@ -64,7 +64,8 @@ export async function changeCampaignEvidence(
   remove = false,
 ) {
   const data = evidenceSchema.parse(body);
-  await findCampaign(pool, user, id, true);
+  const rls = campaignRlsActor(user);
+  await withRlsActor(rls, (db) => findCampaign(db, user, id, true));
   return mutate(
     user.id,
     `campaigns/${id}/evidence${remove ? '/remove' : ''}`,
@@ -130,6 +131,7 @@ export async function changeCampaignEvidence(
       }
       return { linked: !remove, ...data };
     },
+    rls,
   );
 }
 
@@ -404,8 +406,9 @@ async function flight(db: DB, user: Actor, id: string, now: Date) {
   };
 }
 export async function getCampaignFlight(user: Actor, id: string, now = new Date()) {
-  return transaction(async (db) => {
-    await db.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY');
-    return flight(db, user, id, now);
-  });
+  return withRlsActor(
+    campaignRlsActor(user),
+    async (db) => flight(db, user, id, now),
+    { readonly: true },
+  );
 }

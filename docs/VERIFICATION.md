@@ -359,5 +359,12 @@ defecto; test `db-rls` aísla por membership. Cableado Nest progresivo OPEN.
 ## DB RLS Campaigns H1 wiring v0.1 — 2026-09-10
 
 Cierre PASS: `docs/DB_RLS_CAMPAIGN_WIRING_V0_1.md`. `list`/`get`/`create`/`update`
-con GUCs RLS; `mutate(..., rls?)`. Tests campaigns + H2–H6 focalizados + `db-rls`
-PASS (27). H2–H6 siguen con bypass de pool.
+con GUCs RLS; `mutate(..., rls?)`. Tests campaigns + `db-rls` PASS.
+
+## DB RLS Campaigns H2–H6 wiring v0.1 — 2026-09-10
+
+Cierre PASS: `docs/DB_RLS_CAMPAIGN_H2_H6_WIRING_V0_1.md`. Talent inventory, clearance,
+flight, deal builder y passport con `campaignRlsActor` + `withRlsActor` /
+`mutate(..., rls)`; lecturas snapshot con `{ readonly: true }`. Sin
+`findCampaign(pool, …)` en módulos campaign. Tests focalizados H1–H6 + `db-rls`:
+36/36 PASS.

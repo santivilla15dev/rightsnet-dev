@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
-import { pool, audit, type DB } from '../../../../packages/db/index.js';
+import { pool, audit, withRlsActor, type DB } from '../../../../packages/db/index.js';
 import { DomainError } from '../../../../packages/domain/src/index.js';
-import { findCampaign } from './campaigns.js';
+import { campaignRlsActor, findCampaign } from './campaigns.js';
 import { getCampaignClearance } from './campaign-clearance.js';
 import { getCampaignFlight } from './campaign-flight.js';
 import { mutate } from '../common/idempotency.js';
@@ -101,18 +101,20 @@ async function bumpCampaign(
 }
 
 export async function listCampaignPassports(user: Actor, id: string) {
-  const campaign = await findCampaign(pool, user, id);
-  const rows = (
-    await pool.query(
-      `SELECT * FROM campaign_passports WHERE campaign_id=$1 ORDER BY created_at DESC, id DESC`,
-      [id],
-    )
-  ).rows;
-  return {
-    campaign_id: id,
-    can_edit: campaign.can_edit,
-    items: rows.map((r) => mapRow(r)),
-  };
+  return withRlsActor(campaignRlsActor(user), async (db) => {
+    const campaign = await findCampaign(db, user, id);
+    const rows = (
+      await db.query(
+        `SELECT * FROM campaign_passports WHERE campaign_id=$1 ORDER BY created_at DESC, id DESC`,
+        [id],
+      )
+    ).rows;
+    return {
+      campaign_id: id,
+      can_edit: campaign.can_edit,
+      items: rows.map((r) => mapRow(r)),
+    };
+  });
 }
 
 export async function issueCampaignPassport(user: Actor, id: string, body: unknown, key?: string) {
@@ -124,7 +126,8 @@ export async function issueCampaignPassport(user: Actor, id: string, body: unkno
     throw new DomainError('VALIDATION', 400, 'La caducidad debe ser futura.');
   if (expires.getTime() > now.getTime() + 30 * 86400000)
     throw new DomainError('VALIDATION', 400, 'La caducidad máxima es de 30 días.');
-  await findCampaign(pool, user, id, true);
+  const rls = campaignRlsActor(user);
+  await withRlsActor(rls, (db) => findCampaign(db, user, id, true));
   return mutate(user.id, `campaigns/${id}/passports`, key, data, async (db) => {
     const campaign = await findCampaign(db, user, id, true);
     await db.query('SELECT id FROM campaigns WHERE id=$1 FOR UPDATE', [id]);
@@ -159,7 +162,7 @@ export async function issueCampaignPassport(user: Actor, id: string, body: unkno
       public_token: token,
     });
     return mapRow(row);
-  });
+  }, rls);
 }
 
 export async function revokeCampaignPassport(
@@ -171,7 +174,8 @@ export async function revokeCampaignPassport(
 ) {
   z.string().uuid().parse(passportId);
   z.object({}).strict().parse(body ?? {});
-  await findCampaign(pool, user, id, true);
+  const rls = campaignRlsActor(user);
+  await withRlsActor(rls, (db) => findCampaign(db, user, id, true));
   return mutate(
     user.id,
     `campaigns/${id}/passports/${passportId}/revoke`,
@@ -203,6 +207,7 @@ export async function revokeCampaignPassport(
       });
       return mapRow(updated);
     },
+    rls,
   );
 }
 
@@ -217,7 +222,9 @@ export async function publicVerifyCampaignPassport(token: string) {
   if (new Date(row.expires_at).getTime() <= now.getTime()) throw new DomainError('NOT_FOUND', 404);
 
   const issuer = await actorById(row.created_by);
-  const campaign = await findCampaign(pool, issuer, row.campaign_id);
+  const campaign = await withRlsActor(campaignRlsActor(issuer), (db) =>
+    findCampaign(db, issuer, row.campaign_id),
+  );
   const clearance = await getCampaignClearance(issuer, row.campaign_id, now);
   const flight = await getCampaignFlight(issuer, row.campaign_id, now);
   const openDeal = (

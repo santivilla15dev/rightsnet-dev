@@ -34,5 +34,5 @@ bypass de pool permanece el default.
 
 - `mutate(..., rls?)` aplica GUCs al inicio de la transacción.
 - `campaigns.ts`: list/get/create/update con `campaignRlsActor` + `withRlsActor`.
-- H2–H6 siguen con bypass de pool vía `findCampaign(pool, …)` (hito siguiente).
-- Tests: `campaigns` + H2–H6 focalizados + `db-rls` PASS (27).
+- H2–H6 cableados en `docs/DB_RLS_CAMPAIGN_H2_H6_WIRING_V0_1.md` (**PASS**).
+- Tests H1: `campaigns` + `db-rls` PASS; suite H1–H6 focalizada 36/36 PASS.

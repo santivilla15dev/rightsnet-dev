@@ -140,4 +140,4 @@ DB roles v0.1: `docs/DB_ROLES_TENANCY_V0_1.md`. **PASS** migrator≠`rightsnet_a
 DB RLS org pilot v0.1: `docs/DB_RLS_V0_1.md` — SPECIFY **PASS**; IMPLEMENT **PASS**
 (FORCE en organizations/members/campaigns; bypass runtime por defecto; cableado
 progresivo `withRlsActor`: Campaigns H1 **PASS** `docs/DB_RLS_CAMPAIGN_WIRING_V0_1.md`;
-H2–H6 / más tablas OPEN).
+H2–H6 **PASS** `docs/DB_RLS_CAMPAIGN_H2_H6_WIRING_V0_1.md`; más tablas OPEN).

@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
-import { pool, audit, type DB } from '../../../../packages/db/index.js';
+import { audit, withRlsActor, type DB } from '../../../../packages/db/index.js';
 import { DomainError } from '../../../../packages/domain/src/index.js';
 import {
   CampaignUsageSchema,
@@ -10,7 +10,7 @@ import {
   evaluateCampaignClearance,
   type ClearanceTalent,
 } from '../../../../packages/domain/src/rights-core/campaign-clearance.js';
-import { findCampaign } from './campaigns.js';
+import { campaignRlsActor, findCampaign } from './campaigns.js';
 import { getCampaignClearance } from './campaign-clearance.js';
 import { mutate } from '../common/idempotency.js';
 import type { Actor } from '../common/auth.js';
@@ -154,83 +154,86 @@ async function clearanceItems(db: DB, campaignId: string, orgId: string, usage: 
 
 export async function getDealBuilder(user: Actor, id: string) {
   const clearance = await getCampaignClearance(user, id);
-  const campaign = await findCampaign(pool, user, id);
-  const requests = (
-    await pool.query(
-      `SELECT id,campaign_id,organization_id,asset_id,selected_grant_id,status,gaps,desired_usage,note,
+  return withRlsActor(campaignRlsActor(user), async (db) => {
+    const campaign = await findCampaign(db, user, id);
+    const requests = (
+      await db.query(
+        `SELECT id,campaign_id,organization_id,asset_id,selected_grant_id,status,gaps,desired_usage,note,
               revision,created_by,updated_by,created_at,updated_at,sent_at
        FROM campaign_deal_requests WHERE campaign_id=$1
        ORDER BY updated_at DESC, id DESC LIMIT 100`,
-      [id],
-    )
-  ).rows;
-  const talent = (
-    await pool.query(
-      `SELECT t.asset_id,c.display_name,t.selected_grant_id
+        [id],
+      )
+    ).rows;
+    const talent = (
+      await db.query(
+        `SELECT t.asset_id,c.display_name,t.selected_grant_id
        FROM campaign_talent t JOIN assets a ON a.id=t.asset_id JOIN creators c ON c.id=a.creator_id
        WHERE t.campaign_id=$1 ORDER BY t.asset_id`,
-      [id],
-    )
-  ).rows;
-  const usage = CampaignUsageSchema.parse(clearance.usage ?? {});
-  const items = (clearance.items as ClearanceItem[]).map((item) => {
-    const suggested = gapsFromClearanceItem(item, usage);
-    const draft = requests.find((r) => r.asset_id === item.asset_id && r.status === 'DRAFT');
-    const stale_gaps = draft
-      ? stableGaps(draft.gaps as Gap[]) !== stableGaps(suggested)
-      : false;
+        [id],
+      )
+    ).rows;
+    const usage = CampaignUsageSchema.parse(clearance.usage ?? {});
+    const items = (clearance.items as ClearanceItem[]).map((item) => {
+      const suggested = gapsFromClearanceItem(item, usage);
+      const draft = requests.find((r) => r.asset_id === item.asset_id && r.status === 'DRAFT');
+      const stale_gaps = draft
+        ? stableGaps(draft.gaps as Gap[]) !== stableGaps(suggested)
+        : false;
+      return {
+        asset_id: item.asset_id,
+        display_name: item.display_name,
+        selected_grant_id: item.selected_grant_id,
+        clearance_status: item.status,
+        suggested_gaps: suggested,
+        stale_gaps,
+      };
+    });
     return {
-      asset_id: item.asset_id,
-      display_name: item.display_name,
-      selected_grant_id: item.selected_grant_id,
-      clearance_status: item.status,
-      suggested_gaps: suggested,
-      stale_gaps,
+      campaign_id: id,
+      revision: campaign.revision,
+      can_edit: campaign.can_edit,
+      clearance: {
+        status: clearance.status,
+        score: clearance.score,
+        reason_codes: clearance.reason_codes,
+        evaluated_at: clearance.evaluated_at,
+      },
+      talent: talent.map((t) => ({
+        asset_id: t.asset_id,
+        display_name: t.display_name,
+        selected_grant_id: t.selected_grant_id,
+      })),
+      items,
+      requests: requests.map((r) => ({
+        id: r.id,
+        asset_id: r.asset_id,
+        selected_grant_id: r.selected_grant_id,
+        status: r.status,
+        gaps: r.gaps,
+        desired_usage: r.desired_usage,
+        note: r.note,
+        revision: r.revision,
+        stale_gaps:
+          r.status === 'DRAFT'
+            ? (() => {
+                const item = items.find((i) => i.asset_id === r.asset_id);
+                return item ? item.stale_gaps : true;
+              })()
+            : false,
+        created_at: new Date(r.created_at).toISOString(),
+        updated_at: new Date(r.updated_at).toISOString(),
+        sent_at: r.sent_at ? new Date(r.sent_at).toISOString() : null,
+      })),
+      authority: false,
     };
   });
-  return {
-    campaign_id: id,
-    revision: campaign.revision,
-    can_edit: campaign.can_edit,
-    clearance: {
-      status: clearance.status,
-      score: clearance.score,
-      reason_codes: clearance.reason_codes,
-      evaluated_at: clearance.evaluated_at,
-    },
-    talent: talent.map((t) => ({
-      asset_id: t.asset_id,
-      display_name: t.display_name,
-      selected_grant_id: t.selected_grant_id,
-    })),
-    items,
-    requests: requests.map((r) => ({
-      id: r.id,
-      asset_id: r.asset_id,
-      selected_grant_id: r.selected_grant_id,
-      status: r.status,
-      gaps: r.gaps,
-      desired_usage: r.desired_usage,
-      note: r.note,
-      revision: r.revision,
-      stale_gaps:
-        r.status === 'DRAFT'
-          ? (() => {
-              const item = items.find((i) => i.asset_id === r.asset_id);
-              return item ? item.stale_gaps : true;
-            })()
-          : false,
-      created_at: new Date(r.created_at).toISOString(),
-      updated_at: new Date(r.updated_at).toISOString(),
-      sent_at: r.sent_at ? new Date(r.sent_at).toISOString() : null,
-    })),
-    authority: false,
-  };
 }
 
 export async function upsertDealRequest(user: Actor, id: string, body: unknown, key?: string) {
   const data = draftBody.parse(body);
-  await findCampaign(pool, user, id, true);
+  const rls = campaignRlsActor(user);
+  await withRlsActor(rls, (db) => findCampaign(db, user, id, true));
   return mutate(user.id, `campaigns/${id}/deal-requests`, key, data, async (db) => {
     const campaign = await findCampaign(db, user, id, true);
     await db.query('SELECT id FROM campaigns WHERE id=$1 FOR UPDATE', [id]);
@@ -312,7 +315,7 @@ export async function upsertDealRequest(user: Actor, id: string, body: unknown, 
       asset_id: data.asset_id,
     });
     return row;
-  });
+  }, rls);
 }
 
 export async function sendDealRequest(
@@ -324,7 +327,8 @@ export async function sendDealRequest(
 ) {
   z.string().uuid().parse(requestId);
   z.object({}).strict().parse(body ?? {});
-  await findCampaign(pool, user, id, true);
+  const rls = campaignRlsActor(user);
+  await withRlsActor(rls, (db) => findCampaign(db, user, id, true));
   return mutate(user.id, `campaigns/${id}/deal-requests/${requestId}/send`, key, {}, async (db) => {
     await findCampaign(db, user, id, true);
     await db.query('SELECT id FROM campaigns WHERE id=$1 FOR UPDATE', [id]);
@@ -365,7 +369,7 @@ export async function sendDealRequest(
       asset_id: row.asset_id,
     });
     return updated;
-  });
+  }, rls);
 }
 
 export async function withdrawDealRequest(
@@ -377,7 +381,8 @@ export async function withdrawDealRequest(
 ) {
   z.string().uuid().parse(requestId);
   z.object({}).strict().parse(body ?? {});
-  await findCampaign(pool, user, id, true);
+  const rls = campaignRlsActor(user);
+  await withRlsActor(rls, (db) => findCampaign(db, user, id, true));
   return mutate(
     user.id,
     `campaigns/${id}/deal-requests/${requestId}/withdraw`,
@@ -412,6 +417,7 @@ export async function withdrawDealRequest(
       });
       return updated;
     },
+    rls,
   );
 }
 

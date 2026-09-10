@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { pool, audit, type DB } from '../../../../packages/db/index.js';
+import { audit, withRlsActor, type DB } from '../../../../packages/db/index.js';
 import { DomainError } from '../../../../packages/domain/src/index.js';
 import type { Actor } from '../common/auth.js';
-import { campaignAccess, findCampaign } from './campaigns.js';
+import { campaignAccess, campaignRlsActor, findCampaign } from './campaigns.js';
 import { closeDealRequestsForTalent } from './campaign-deal-builder.js';
 import { mutate } from '../common/idempotency.js';
 
@@ -66,9 +66,10 @@ const sourceSql =
 
 export async function talentInventory(user: Actor, query: unknown, now = new Date()) {
   const f = inventorySchema.parse(query);
-  const can_edit = await campaignAccess(pool, user, f.organization_id);
+  return withRlsActor(campaignRlsActor(user), async (db) => {
+  const can_edit = await campaignAccess(db, user, f.organization_id);
   const rows = (
-    await pool.query(
+    await db.query(
       `SELECT a.id AS asset_id, a.status AS asset_status, c.display_name
      FROM assets a JOIN creators c ON c.id=a.creator_id
      WHERE (EXISTS(SELECT 1 FROM rights_grants g WHERE g.asset_id=a.id AND g.grantee_organization_id=$1 AND ${sourceSql})
@@ -85,13 +86,13 @@ export async function talentInventory(user: Actor, query: unknown, now = new Dat
   const items = rows.slice(0, f.limit);
   const ids = items.map((i) => i.asset_id);
   const [grants, pending] = await Promise.all([
-    pool.query(
+    db.query(
       `SELECT g.* FROM rights_grants g WHERE g.grantee_organization_id=$1 AND g.asset_id=ANY($2::uuid[])
       AND ($3='all' OR g.source_type=CASE WHEN $3='marketplace' THEN 'MARKETPLACE_LICENSE' ELSE 'EXISTING_AGREEMENT' END)
       ORDER BY g.valid_until DESC,g.id`,
       [f.organization_id, ids, f.source],
     ),
-    pool.query(
+    db.query(
       `SELECT asset_id,count(*)::int AS count FROM external_agreements WHERE organization_id=$1
       AND asset_id=ANY($2::uuid[]) AND status IN ('draft','pending_confirm') GROUP BY asset_id`,
       [f.organization_id, ids],
@@ -113,6 +114,7 @@ export async function talentInventory(user: Actor, query: unknown, now = new Dat
     })),
     next_offset: rows.length > f.limit ? f.offset + f.limit : null,
   };
+  });
 }
 
 export async function campaignTalent(
@@ -122,9 +124,10 @@ export async function campaignTalent(
   now = new Date(),
 ) {
   const f = pageSchema.strict().parse(query);
-  const campaign = await findCampaign(pool, user, id);
+  return withRlsActor(campaignRlsActor(user), async (db) => {
+  const campaign = await findCampaign(db, user, id);
   const rows = (
-    await pool.query(
+    await db.query(
       `SELECT t.asset_id,t.selected_grant_id,t.created_at,c.display_name,a.status AS asset_status,
       g.id,g.source_type,g.source_id,g.status,g.valid_from,g.valid_until,g.payload
      FROM campaign_talent t JOIN assets a ON a.id=t.asset_id JOIN creators c ON c.id=a.creator_id
@@ -148,6 +151,7 @@ export async function campaignTalent(
     })),
     next_offset: rows.length > f.limit ? f.offset + f.limit : null,
   };
+  });
 }
 
 async function eligibleAsset(db: DB, org: string, asset: string) {
@@ -171,7 +175,8 @@ export async function addCampaignTalent(user: Actor, id: string, body: unknown, 
     })
     .strict()
     .parse(body);
-  await findCampaign(pool, user, id, true);
+  const rls = campaignRlsActor(user);
+  await withRlsActor(rls, (db) => findCampaign(db, user, id, true));
   return mutate(user.id, `campaigns/${id}/talent`, key, data, async (db) => {
     const campaign = await findCampaign(db, user, id, true);
     await eligibleAsset(db, campaign.organization_id, data.asset_id);
@@ -214,7 +219,7 @@ export async function addCampaignTalent(user: Actor, id: string, body: unknown, 
     ).rows[0];
     await audit(db, user.id, 'campaign.talent_added', id, { ...data, revision: updated.revision });
     return { asset_id: data.asset_id, linked: true, changed: true };
-  });
+  }, rls);
 }
 export async function removeCampaignTalent(
   user: Actor,
@@ -225,7 +230,8 @@ export async function removeCampaignTalent(
 ) {
   z.string().uuid().parse(asset);
   z.object({}).strict().parse(body);
-  await findCampaign(pool, user, id, true);
+  const rls = campaignRlsActor(user);
+  await withRlsActor(rls, (db) => findCampaign(db, user, id, true));
   return mutate(user.id, `campaigns/${id}/talent/${asset}/remove`, key, {}, async (db) => {
     await findCampaign(db, user, id, true);
     await db.query('SELECT id FROM campaigns WHERE id=$1 FOR UPDATE', [id]);
@@ -247,5 +253,5 @@ export async function removeCampaignTalent(
       });
     }
     return { asset_id: asset, linked: false, changed: !!removed.rowCount };
-  });
+  }, rls);
 }
