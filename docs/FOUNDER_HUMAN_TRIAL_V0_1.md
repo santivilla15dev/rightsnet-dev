@@ -23,4 +23,5 @@ Runbook PASS; el founder ejecuta el ensayo.
 
 ## Cierre IMPLEMENT
 
-Runbook + smoke local PASS (2026-09-10, search items=7). Ensayo humano OPEN.
+Runbook + smoke local PASS (2026-09-10, search items=7).
+`pnpm product:trial-preflight` (+ tip `stripe listen`). Ensayo humano OPEN.

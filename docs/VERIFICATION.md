@@ -448,7 +448,7 @@ Cierre PASS: `docs/FOUNDER_PREP_NEXT_V0_1.md`. Prioridades founder;
 
 Cierre PASS runbook: `docs/FOUNDER_HUMAN_TRIAL_V0_1.md` ·
 `docs/runbooks/founder-human-trial.md`. Smoke local PASS; search seed 7.
-Ejecución del ensayo: OPEN (founder).
+`pnpm product:trial-preflight`. Ejecución del ensayo: OPEN (founder).
 
 ## DB roles / tenancy v0.1 — 2026-09-10
 

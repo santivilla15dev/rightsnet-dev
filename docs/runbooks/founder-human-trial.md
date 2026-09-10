@@ -6,11 +6,14 @@ sin modo demo. No es clearance legal ni comercio live.
 ## Antes (2 min)
 
 ```bash
-pnpm product:smoke
+pnpm product:trial-preflight
 # Si hace falta: pnpm api · pnpm worker · pnpm --filter @rightsnet/web start
+# Webhooks Stripe test (terminal aparte):
+#   stripe listen --forward-to localhost:4000/v1/webhooks/stripe
+# Copia el whsec_… a STRIPE_WEBHOOK_SECRET en .env y reinicia la API si cambió.
 ```
 
-Esperado: PASS (incl. `demo_ui=false` y worker).
+Esperado: PASS (el WARN de `stripe.listen` se arregla con el comando de arriba).
 
 Abre: http://localhost:3000
 

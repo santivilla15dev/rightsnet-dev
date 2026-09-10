@@ -74,6 +74,10 @@ Próximos pasos (prioridad founder): [`../FOUNDER_PREP_NEXT_V0_1.md`](../FOUNDER
 
 Ensayo humano (marca/creador local): [`founder-human-trial.md`](founder-human-trial.md).
 
+```bash
+pnpm product:trial-preflight
+```
+
 Andamiaje staging (web Vercel EU + API aparte), sin deploy automático:
 
 [`staging-host-scaffold.md`](staging-host-scaffold.md).
