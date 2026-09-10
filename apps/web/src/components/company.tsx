@@ -570,7 +570,7 @@ export function OrderDetail({ id, paymentPage = false }: { id: string; paymentPa
               <div className="demo-payment">
                 <CreditCard size={32} />
                 <div>
-                  <b>{stripeMode ? 'Pago Stripe test' : 'Pago sandbox'}</b>
+                  <b>{stripeMode ? 'Pago Stripe test' : 'Pago simulado'}</b>
                   <p>
                     {stripeMode
                       ? 'Checkout alojado · tarjeta de prueba 4242'

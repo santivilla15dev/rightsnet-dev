@@ -408,6 +408,11 @@ valida API/web; tests staging-health 3/3. Host cloud OPEN.
 Cierre PASS: `docs/DEMO_UI_GATE_V0_1.md`. Producto sin `/demo`/banner/chip
 por defecto; CI/E2E `DEMO_UI_ENABLED=true`. Test demo-ui-gate.
 
+## Product copy sandbox tone v0.1 — 2026-09-10
+
+Cierre PASS: `docs/PRODUCT_COPY_SANDBOX_TONE_V0_1.md`. Notas UI y home/help
+sin etiqueta «Sandbox:»; AuthRequired → login producto.
+
 ## DB roles / tenancy v0.1 — 2026-09-10
 
 Cierre PASS roles: `docs/DB_ROLES_TENANCY_V0_1.md`. Migración 033; `MIGRATE_DATABASE_URL`;

@@ -86,7 +86,7 @@ El founder elige **uno**. Cada fila es un posible SPECIFY → STOP.
 | Baja / infra | ~~Backups / PITR / restore~~ | Ensayo local dump/restore **PASS** (`docs/BACKUP_RESTORE_V0_1.md`); PITR cloud OPEN |
 | Baja / infra | ~~Despliegue staging y seguridad~~ | Higiene + CI + health smoke **PASS**; host cloud staging OPEN |
 | Baja / cloud | Host staging real | Founder elige plataforma; prep: higiene + `pnpm staging:health` PASS |
-| Media / UX | ~~Demo UI en producto~~ | **PASS** gate off por defecto (`docs/DEMO_UI_GATE_V0_1.md`); CI/E2E on |
+| Media / UX | ~~Demo UI en producto~~ | **PASS** gate off (`docs/DEMO_UI_GATE_V0_1.md`); tono copy **PASS** (`docs/PRODUCT_COPY_SANDBOX_TONE_V0_1.md`) |
 | Baja / cloud | SMTP / email real | Tras outbox; SES/SendGrid u otro — no en CI |
 | Baja / cloud | KMS remoto / WORM / PITR managed | Tras decisión de host cloud |
 | Media / riesgo | `DB_RLS_BYPASS_DEFAULT=false` | Solo ensayo aislado; rompe API sin `withRlsActor` completo |

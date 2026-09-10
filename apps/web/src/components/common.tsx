@@ -94,9 +94,9 @@ export function AuthRequired() {
   return (
     <Empty
       title="Un espacio para tus derechos"
-      description="Entra con una cuenta de prueba para guardar talento, crear campañas o gestionar tu likeness."
+      description="Inicia sesión para guardar talento, crear campañas o gestionar tu likeness."
       href="/login"
-      label="Elegir acceso de prueba"
+      label="Iniciar sesión"
     />
   );
 }
@@ -105,8 +105,8 @@ export function SandboxNote() {
     <div className="sandbox-note">
       <ShieldCheck size={17} />
       <span>
-        Sandbox: perfiles ilustrados, verificaciones y pagos simulados. Las licencias de prueba no
-        conceden derechos reales.
+        Entorno de ensayo: pagos e identidad pueden ser de prueba. Las licencias emitidas aquí no
+        sustituyen clearance legal ni contratos aprobados.
       </span>
     </div>
   );

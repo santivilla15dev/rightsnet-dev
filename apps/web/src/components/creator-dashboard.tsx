@@ -773,7 +773,7 @@ export function CreatorDashboard() {
                   <p>
                     {appConfig.identity === 'stripe'
                       ? 'Stripe Identity (test): documento oficial + selfie de coincidencia. RightsNet no guarda esas fotos.'
-                      : 'Comprobación simulada en este sandbox (no es KYC real).'}
+                      : 'Comprobación simulada en modo prueba (no es KYC real).'}
                   </p>
                   {a.identity_status !== 'verified' ? (
                     <Button
@@ -911,7 +911,7 @@ export function CreatorDashboard() {
                   {connect?.provider === 'sandbox' ? (
                     <>
                       <p>
-                        En sandbox los cobros son simulados. La verificación de identidad ya deja un
+                        En modo prueba los cobros pueden ser simulados. La verificación de identidad ya deja un
                         destino de prueba.
                       </p>
                       <Badge

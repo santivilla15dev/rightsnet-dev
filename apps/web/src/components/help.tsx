@@ -133,7 +133,7 @@ export function Help() {
       <section id="verification" className="panel help-panel">
         <h2>Verificación</h2>
         <p>
-          Identidad del creador (sandbox o Stripe Identity de prueba). Evidencia visual y
+          Identidad del creador (simulación local o Stripe Identity de prueba). Evidencia visual y
           consentimiento versionado antes de la revisión Ops.
         </p>
       </section>
@@ -149,8 +149,8 @@ export function Help() {
       <section id="payments" className="panel help-panel">
         <h2>Pagos</h2>
         <p>
-          En sandbox el pago es simulado. Comercio live permanece desactivado hasta las
-          condiciones de lanzamiento documentadas.
+          Con pagos en modo prueba el cobro no es live. El comercio live permanece desactivado hasta
+          las condiciones de lanzamiento documentadas.
         </p>
       </section>
 

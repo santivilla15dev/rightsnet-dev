@@ -4,11 +4,11 @@ import type { User } from './types';
 export const DEMO_ORGANIZATIONS = [
   {
     id: '20000000-0000-4000-8000-000000000001',
-    legal_name: 'Estudio Norte · Sandbox',
+    legal_name: 'Estudio Norte',
   },
   {
     id: '20000000-0000-4000-8000-000000000002',
-    legal_name: 'Otra empresa · Sandbox',
+    legal_name: 'Otra empresa',
   },
 ] as const;
 

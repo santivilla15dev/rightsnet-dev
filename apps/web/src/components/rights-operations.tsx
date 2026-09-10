@@ -135,7 +135,7 @@ export function RightsOperationsOverview() {
           {isAdmin ? (
             <>
               <label>
-                Demo sandbox
+                Orgs de ejemplo
                 <select
                   value={
                     DEMO_ORGANIZATIONS.some((o) => o.id === organizationId) ? organizationId : ''

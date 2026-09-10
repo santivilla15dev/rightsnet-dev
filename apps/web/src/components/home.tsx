@@ -202,7 +202,7 @@ export function Home() {
           <Link href="/help">Guía del producto</Link>
           <Link href="/discover">Encontrar creadores</Link>
           <Link href="/signup">Crear cuenta</Link>
-          <span>Entorno de prueba · sin comercio live</span>
+          <span>Sin comercio live · plantillas contractuales provisionales</span>
         </div>
       </footer>
     </div>
