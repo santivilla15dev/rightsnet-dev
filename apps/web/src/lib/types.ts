@@ -71,6 +71,12 @@ export type Asset = {
   policy_hash: string;
   consented?: boolean;
   files?: { id: string; scan_status: string }[];
+  evidence_files?: {
+    id: string;
+    mime_type: string;
+    scan_status: string;
+    size_bytes: number;
+  }[];
 };
 export type User = {
   id: string;

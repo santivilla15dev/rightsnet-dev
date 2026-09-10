@@ -131,3 +131,6 @@ Stripe money/recon gaps: compare paginado, reversión parcial, relink charge_ref
 
 Thin v2 recovery + fees/multi-account: `docs/STRIPE_THIN_FEES_MULTI_V0_1.md`.
 **PASS** mocks (migración 032); reensayo founder OPEN.
+
+Asset relationship review v0.1: preview evidencia admin + tests;
+`docs/ASSET_RELATIONSHIP_REVIEW_V0_1.md`. **PASS** código; ensayo humano founder opcional.

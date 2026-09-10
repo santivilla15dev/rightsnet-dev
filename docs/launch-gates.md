@@ -23,7 +23,7 @@ Piloto comercial propuesto: **Austria + Alemania** (constitución §5). No impli
 | Entidad, países admitidos y jurisdicción | Pendiente fundador/asesoría | Decidir operador y modelo contractual AT/DE |
 | Contrato y consentimiento jurídicos | Pendiente | Sustituir DEMO por plantilla aprobada/versionada |
 | IVA/fiscalidad/facturas | Pendiente | Diseñar e implementar según entidad y países |
-| Relación con activo (review humana) | Sandbox | Evidencia local; validación operativa pendiente |
+| Relación con activo (review humana) | Sandbox operable v0.1 | Preview evidencia + tests; `docs/ASSET_RELATIONSHIP_REVIEW_V0_1.md`. Ensayo humano founder pendiente |
 | Stripe Connect (cobros creador) | Implementado test | Live gated por flag; país cuentas nuevas AT/DE/ES vía location / `CONNECT_DEFAULT_COUNTRY` |
 | Orgs buyer AT | PASS | Domicilio `AT\|DE\|ES`; `docs/ORG_BUYERS_AT_V0_1.md`. ES legacy permitido; sin remap |
 | Storage y malware scan | Sandbox local | Disco privado; integrar storage/scanner real |

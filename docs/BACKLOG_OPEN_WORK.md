@@ -74,7 +74,7 @@ El founder elige **uno**. Cada fila es un posible SPECIFY → STOP.
 | Prioridad sugerida | Ítem | Detalle |
 |--------------------|------|---------|
 | Alta (piloto AT) | ~~Connect país sesgado a test **ES**~~ | **PASS** código: `docs/CONNECT_COUNTRY_AT_DE_V0_1.md` (cuentas nuevas) |
-| Media | Review humana relación con activo | Sandbox hoy; validación operativa pendiente |
+| Media | ~~Review humana relación con activo~~ | **PASS** código v0.1: `docs/ASSET_RELATIONSHIP_REVIEW_V0_1.md` (preview + tests); ensayo humano founder opcional |
 | Media | Stripe test **reensayo** + gaps money/recon | Gaps código **PASS** (`STRIPE_MONEY_RECON_GAPS` + `STRIPE_THIN_FEES_MULTI`); reensayo founder OPEN (runbook R1–R5) |
 | Media | Storage real + malware scan | Hoy disco privado local |
 | Media | Roles DB / RLS | Migrator separado; ensayar tenancy |

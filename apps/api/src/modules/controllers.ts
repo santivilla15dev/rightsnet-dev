@@ -14,6 +14,7 @@ import {
 } from './campaign-passport.js';
 import { talentInventory, campaignTalent, addCampaignTalent, removeCampaignTalent } from './talent-inventory.js';
 import { listCampaigns, getCampaign, createCampaign, updateCampaign } from './campaigns.js';
+import { reviewAssetRelationship, listAssetEvidenceFiles } from './asset-relationship.js';
 import {
   Controller,
   Get,
@@ -606,8 +607,14 @@ export class AccountsController {
     ).rows[0];
     if (!f || (f.user_id !== user.id && user.role !== 'admin'))
       throw new DomainError('NOT_FOUND', 404);
-    res.setHeader('Content-Type', 'application/octet-stream');
-    res.setHeader('Content-Disposition', 'attachment; filename="evidence.bin"');
+    const mime = typeof f.mime_type === 'string' && f.mime_type ? f.mime_type : 'application/octet-stream';
+    res.setHeader('Content-Type', mime);
+    res.setHeader(
+      'Content-Disposition',
+      mime.startsWith('image/')
+        ? 'inline; filename="evidence"'
+        : 'attachment; filename="evidence.bin"',
+    );
     res.setHeader('Cache-Control', 'no-store');
     res.send(await readFile(path.resolve('.local/uploads', f.storage_key)));
   }
@@ -888,8 +895,15 @@ export class AdminController {
         pool.query("SELECT * FROM outbox WHERE status<>'done'"),
         listMoneyOverview(),
       ]);
+    const assetRows = [];
+    for (const row of assets.rows) {
+      assetRows.push({
+        ...row,
+        evidence_files: await listAssetEvidenceFiles(pool, row.id),
+      });
+    }
     return {
-      assets: assets.rows,
+      assets: assetRows,
       events: events.rows,
       orders: orders.rows,
       incidents: incidents.rows,
@@ -918,24 +932,7 @@ export class AdminController {
       .strict()
       .parse(body);
     return mutate(user.id, 'review/' + id, idem(req), body, async (db) => {
-      const a = (await db.query('SELECT * FROM assets WHERE id=$1 FOR UPDATE', [id])).rows[0];
-      if (!a) throw new DomainError('NOT_FOUND', 404);
-      if (a.status !== 'pending_review') throw new DomainError('INVALID_STATE', 409);
-      await db.query(
-        'INSERT INTO reviews(id,asset_id,actor_id,decision,reason) VALUES($1,$2,$3,$4,$5)',
-        [randomUUID(), id, user.id, data.decision, data.reason],
-      );
-      await db.query('UPDATE assets SET relationship_status=$2,status=$3 WHERE id=$1', [
-        id,
-        data.decision === 'approve' ? 'reviewed' : 'rejected',
-        data.decision === 'approve' ? 'draft' : 'rejected',
-      ]);
-      await db.query('UPDATE asset_files SET scan_status=$2 WHERE asset_id=$1', [
-        id,
-        data.decision === 'approve' ? 'clean' : 'rejected',
-      ]);
-      await audit(db, user.id, 'asset.sandbox_reviewed', id, data);
-      return { reviewed: true, sandbox: true };
+      return reviewAssetRelationship(db, user.id, id, data.decision, data.reason);
     });
   }
   @Post('assets/:id/suspend') async suspend(

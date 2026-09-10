@@ -323,3 +323,9 @@ founder CLI **OPEN** (runbook R1–R5).
 Cierre PASS código/mocks: `docs/STRIPE_THIN_FEES_MULTI_V0_1.md`. Migración 032.
 `recoverMissedThinEvents`; match application fee/refund; worker multi-`acct_*`.
 Tests recon + typecheck/lint PASS. Reensayo founder sigue OPEN.
+
+## Asset relationship review v0.1 — 2026-09-10
+
+Cierre PASS código: `docs/ASSET_RELATIONSHIP_REVIEW_V0_1.md`. Preview evidencia en
+Admin Verificación; review exige fichero; tests `asset-relationship-review` PASS.
+Ensayo humano founder opcional para marcar gate operativo.

@@ -110,6 +110,44 @@ No marcar PASS hasta completar contra Dashboard/CLI. `LIVE_COMMERCE_ENABLED=fals
 | R4 | Conciliar Stripe con >500 BT importados (o forzar volumen test) | OPEN | Compare paginado |
 | R5 | Thin v2 recovery + fees/multi-account | OPEN | Código PASS (`docs/STRIPE_THIN_FEES_MULTI_V0_1.md`); falta evidencia CLI |
 
+### Guía paso a paso R1–R5 (sin pegar claves)
+
+1. **Prepara el entorno**  
+   - Copia `.env.example` → `.env` (solo tú, en tu máquina).  
+   - Pon `LIVE_COMMERCE_ENABLED=false`, `PAYMENTS_PROVIDER=stripe`, claves **test**.  
+   - Arranca `pnpm dev`. En otras terminales: `stripe listen` (snapshot) y thin (ver arriba).
+
+2. **R1 — País Connect**  
+   - Creador con `location` tipo `Vienna, AT` (o `Berlin, DE`).  
+   - Panel creador → Cobros → Account Link.  
+   - En Stripe Dashboard (test) la cuenta **nueva** debe mostrar país AT/DE.  
+   - Anota `acct_…` redactado. No esperes cambio en cuentas viejas.
+
+3. **R2 — Cobro + charge_ref**  
+   - Compra de prueba con tarjeta `4242…`.  
+   - Comprueba orden `fulfilled`/`paid`, licencia emitida.  
+   - En DB/admin: `payment_attempts.charge_ref` relleno y transfer ligado a la orden.  
+   - Si el transfer llegó antes, el relink debe corregirlo al llegar el webhook.
+
+4. **R3 — Reversión parcial**  
+   - Provoca un transfer reversal **parcial** en test (no full `reversed`).  
+   - En RightsNet: fila en `stripe_transfer_reversals` y el transfer **no** debe quedar solo como `reversed` total.
+
+5. **R4 — Conciliar >500**  
+   - Genera o importa volumen (o confía en el test automatizado de 501 BT).  
+   - Admin → Ledger → **Conciliar Stripe**.  
+   - No debe “olvidar” movimientos tras el 500.
+
+6. **R5 — Thin + fees + multi-cuenta**  
+   - Con thin listen activo: cambia requisitos/capability de un recipient y mira sync en panel.  
+   - Para recovery: deja de forward un momento y luego **Conciliar Stripe** (recupera thin).  
+   - Comprueba que fees de plataforma no quedan huérfanos si el pago local existe.  
+   - Si hay varios `acct_*`, el worker también importa sus BT (hasta 10).
+
+7. **Cerrar**  
+   - Marca cada fila R1–R5 PASS/FAIL en `docs/VERIFICATION.md` con fecha y “test mode”.  
+   - No actives `LIVE_COMMERCE_ENABLED`.
+
 ## Dónde mirar en RightsNet
 
 - **Panel creador → Cobros:** transfers, requisitos, listo para recibir, CTA Account Link.

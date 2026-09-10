@@ -221,6 +221,7 @@ export function Admin() {
               <thead>
                 <tr>
                   <th>Creador</th>
+                  <th>Evidencia</th>
                   <th>Identidad</th>
                   <th>Estado</th>
                   <th>Revisión</th>
@@ -234,6 +235,34 @@ export function Admin() {
                       <small>
                         {a.location} · Política v{a.policy_version}
                       </small>
+                    </td>
+                    <td>
+                      {a.evidence_files?.length ? (
+                        <div className="inline-actions" style={{ flexWrap: 'wrap', gap: 8 }}>
+                          {a.evidence_files.map((f) =>
+                            f.mime_type?.startsWith('image/') ? (
+                              <img
+                                key={f.id}
+                                src={'/api/files/' + f.id}
+                                alt={'Evidencia de ' + a.display_name}
+                                width={72}
+                                height={72}
+                                style={{
+                                  objectFit: 'cover',
+                                  borderRadius: 6,
+                                  border: '1px solid var(--border, #ccc)',
+                                }}
+                              />
+                            ) : (
+                              <a key={f.id} href={'/api/files/' + f.id} className="muted small">
+                                Archivo
+                              </a>
+                            ),
+                          )}
+                        </div>
+                      ) : (
+                        <span className="muted small">Sin evidencia</span>
+                      )}
                     </td>
                     <td>
                       <Badge value={a.identity_status} />
@@ -250,7 +279,7 @@ export function Admin() {
                               onClick={() =>
                                 setPending({
                                   path: 'admin/assets/' + a.id + '/review',
-                                  title: 'Aprobar revisión de prueba: ' + a.display_name,
+                                  title: 'Aprobar vínculo likeness: ' + a.display_name,
                                   body: { decision: 'approve' },
                                 })
                               }
@@ -263,7 +292,7 @@ export function Admin() {
                               onClick={() =>
                                 setPending({
                                   path: 'admin/assets/' + a.id + '/review',
-                                  title: 'Rechazar perfil',
+                                  title: 'Rechazar vínculo likeness: ' + a.display_name,
                                   body: { decision: 'reject' },
                                 })
                               }
@@ -295,6 +324,10 @@ export function Admin() {
               </tbody>
             </table>
           </div>
+          <p className="muted small">
+            Checklist: compara la evidencia con el creador antes de aprobar. Motivo obligatorio
+            (≥10 caracteres). Ver <code>docs/ASSET_RELATIONSHIP_REVIEW_V0_1.md</code>.
+          </p>
           <h2 className="subheading">Organizaciones</h2>
           <div className="table-wrap">
             <table>
@@ -800,8 +833,8 @@ export function Admin() {
               />
             </label>
             <p className="muted small">
-              Esta acción se registra con tu identidad y fecha. En sandbox, las verificaciones son
-              simuladas.
+              Confirma que miraste la evidencia. Esta acción se registra con tu identidad y fecha.
+              En sandbox, las verificaciones son simuladas (sin malware scan real).
             </p>
             <div className="inline-actions">
               <Button type="button" variant="outline" onClick={() => setPending(null)}>
