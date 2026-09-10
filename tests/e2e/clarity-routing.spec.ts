@@ -84,12 +84,23 @@ test('clarity: incomplete creator blocked from dashboard', async ({ page }) => {
 });
 
 test('clarity: non-admin cannot open ops; sandbox admin can', async ({ page }) => {
+  const pageErrors: string[] = [];
+  page.on('pageerror', (e) => pageErrors.push(e.message));
   await login(page, 'marca');
   await page.goto('/ops');
   await expect(page.locator('.error-panel')).toContainText(/reservada|permiso|equipo/i);
   await login(page, 'administración');
   await expect(page).toHaveURL(/\/ops/);
-  await expect(page.getByText(/Ops|Verificación|Pagos/i).first()).toBeVisible();
+  // Slot asChild con varios hijos rompía /ops (error boundary genérico).
+  await expect(page.getByRole('heading', { name: 'No hemos podido completar la acción' })).toHaveCount(
+    0,
+  );
+  await expect(page.getByRole('heading', { name: 'Confianza, por diseño.' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Rights Operations' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Existing Deal / OCR' })).toBeVisible();
+  await page.getByRole('button', { name: 'Pagos y licencias', exact: true }).click();
+  await expect(page.getByRole('columnheader', { name: 'Campaña' })).toBeVisible();
+  expect(pageErrors).toEqual([]);
 });
 
 test('clarity: login sandbox muestra Demo solo con DEMO_UI_ENABLED', async ({ page }) => {

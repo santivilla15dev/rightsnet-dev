@@ -547,5 +547,6 @@ Helpers `app_can_see_order` / `app_owns_connected_account`. Tests `db-rls` 9/9
 | Entrega | Resultado | Evidencia |
 | --- | --- | --- |
 | `tests/e2e/journeys.spec.ts` | **3/3 PASS** | onboarding 1–4; discover→pay→verify 5–10; REQUIRES_APPROVAL (~14 s, :3010/:4010) |
+| Regresión `/ops` admin | PASS | `clarity-routing` exige título Ops + pestaña Pagos (no error boundary) |
 
 **STOP.** Stack producto (`:3000` Supabase + Stripe test + `stripe listen`) listo; ensayo humano founder OPEN.
