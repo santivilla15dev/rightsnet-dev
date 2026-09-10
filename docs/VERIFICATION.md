@@ -386,3 +386,9 @@ Cierre PASS: `docs/DB_RLS_GRANTS_EXTERNAL_V0_1.md`. Migración 035 FORCE en
 Cierre PASS: `docs/DB_RLS_LICENSES_GENERATION_V0_1.md`. Migración 036 FORCE en
 `licenses` / `generation_auths` / `generation_records`. Tests `db-rls` 3/3 +
 rn-auth/report-output PASS.
+
+## DB RLS campaign children v0.1 — 2026-09-10
+
+Cierre PASS: `docs/DB_RLS_CAMPAIGN_CHILDREN_V0_1.md`. Migración 037 FORCE en
+`campaign_talent` / `campaign_evidence` / `campaign_deal_requests` /
+`campaign_passports`. Tests `db-rls` 4/4 + H1–H6 35/35 PASS.

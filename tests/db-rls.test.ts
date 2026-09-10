@@ -418,4 +418,190 @@ describe('DB RLS org pilot v0.1', () => {
       await migratePool.end();
     }
   });
+
+  it('aísla campaign_talent/evidence/deal_requests/passports por org de campaña', async () => {
+    const migrateUrl = migrateConnectionString();
+    const migratePool = new pg.Pool({ connectionString: migrateUrl, max: 1 });
+    const appUrl = new URL(migrateUrl);
+    appUrl.username = 'rightsnet_app';
+    appUrl.password = '';
+    const appPool = new pg.Pool({ connectionString: appUrl.toString(), max: 1 });
+
+    const userA = randomUUID();
+    const userB = randomUUID();
+    const grantor = randomUUID();
+    const orgA = randomUUID();
+    const orgB = randomUUID();
+    const campaignA = randomUUID();
+    const campaignB = randomUUID();
+    const creatorId = randomUUID();
+    const assetA = randomUUID();
+    const assetB = randomUUID();
+    const dealA = randomUUID();
+    const dealB = randomUUID();
+    const passA = randomUUID();
+    const passB = randomUUID();
+    const evidenceIdA = randomUUID();
+    const evidenceIdB = randomUUID();
+    const later = new Date(Date.now() + 86400000 * 7);
+
+    try {
+      await migratePool.query(`SELECT set_config('app.rls_bypass', '1', false)`);
+      const force = await migratePool.query(
+        `SELECT c.relname, c.relforcerowsecurity AS forced
+         FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+         WHERE n.nspname='public'
+           AND c.relname=ANY($1::text[])
+         ORDER BY c.relname`,
+        [['campaign_talent', 'campaign_evidence', 'campaign_deal_requests', 'campaign_passports']],
+      );
+      expect(force.rows.every((r) => r.forced === true)).toBe(true);
+
+      await migratePool.query(
+        `INSERT INTO users(id,email,display_name,role) VALUES
+          ($1,$2,'RLS CA','buyer'),
+          ($3,$4,'RLS CB','buyer'),
+          ($5,$6,'RLS CG','creator')`,
+        [
+          userA,
+          `rls-ca-${userA}@example.com`,
+          userB,
+          `rls-cb-${userB}@example.com`,
+          grantor,
+          `rls-cg-${grantor}@example.com`,
+        ],
+      );
+      await migratePool.query(
+        `INSERT INTO organizations(id,legal_name,country) VALUES ($1,'RLS Camp A','AT'),($2,'RLS Camp B','AT')`,
+        [orgA, orgB],
+      );
+      await migratePool.query(
+        `INSERT INTO organization_members(organization_id,user_id,role) VALUES ($1,$2,'owner'),($3,$4,'owner')`,
+        [orgA, userA, orgB, userB],
+      );
+      await migratePool.query(
+        `INSERT INTO campaigns(id,organization_id,name,creative_brief,created_by) VALUES
+          ($1,$2,'Camp A','brief',$3),
+          ($4,$5,'Camp B','brief',$6)`,
+        [campaignA, orgA, userA, campaignB, orgB, userB],
+      );
+      await migratePool.query(
+        `INSERT INTO creators(id,user_id,display_name,bio,location,portrait) VALUES ($1,$2,'G','b','AT','x')`,
+        [creatorId, grantor],
+      );
+      await migratePool.query(
+        `INSERT INTO assets(id,creator_id,status) VALUES ($1,$3,'published'),($2,$3,'published')`,
+        [assetA, assetB, creatorId],
+      );
+      await migratePool.query(
+        `INSERT INTO campaign_talent(campaign_id,asset_id,added_by) VALUES ($1,$2,$3),($4,$5,$6)`,
+        [campaignA, assetA, userA, campaignB, assetB, userB],
+      );
+      await migratePool.query(
+        `INSERT INTO campaign_evidence(campaign_id,kind,evidence_id,added_by) VALUES
+          ($1,'AUTH',$2,$3),($4,'AUTH',$5,$6)`,
+        [campaignA, evidenceIdA, userA, campaignB, evidenceIdB, userB],
+      );
+      await migratePool.query(
+        `INSERT INTO campaign_deal_requests(
+           id,campaign_id,organization_id,asset_id,status,created_by,updated_by)
+         VALUES
+           ($1,$2,$3,$4,'DRAFT',$5,$5),
+           ($6,$7,$8,$9,'DRAFT',$10,$10)`,
+        [dealA, campaignA, orgA, assetA, userA, dealB, campaignB, orgB, assetB, userB],
+      );
+      await migratePool.query(
+        `INSERT INTO campaign_passports(
+           id,campaign_id,organization_id,public_token,status,expires_at,created_by)
+         VALUES
+           ($1,$2,$3,$4,'ACTIVE',$5,$6),
+           ($7,$8,$9,$10,'ACTIVE',$5,$11)`,
+        [
+          passA,
+          campaignA,
+          orgA,
+          `tokA${passA.replace(/-/g, '').slice(0, 12)}`,
+          later.toISOString(),
+          userA,
+          passB,
+          campaignB,
+          orgB,
+          `tokB${passB.replace(/-/g, '').slice(0, 12)}`,
+          userB,
+        ],
+      );
+
+      const client = await appPool.connect();
+      try {
+        await client.query('BEGIN');
+        await client.query(`SELECT set_config('app.rls_bypass', '0', true)`);
+        await client.query(`SELECT set_config('app.current_user_id', $1, true)`, [userA]);
+        await client.query(`SELECT set_config('app.is_admin', '0', true)`);
+
+        expect(
+          (
+            await client.query(
+              'SELECT asset_id FROM campaign_talent WHERE campaign_id=ANY($1::uuid[]) ORDER BY asset_id',
+              [[campaignA, campaignB]],
+            )
+          ).rows.map((r) => r.asset_id),
+        ).toEqual([assetA]);
+        expect(
+          (
+            await client.query(
+              'SELECT evidence_id FROM campaign_evidence WHERE campaign_id=ANY($1::uuid[]) ORDER BY evidence_id',
+              [[campaignA, campaignB]],
+            )
+          ).rows.map((r) => r.evidence_id),
+        ).toEqual([evidenceIdA]);
+        expect(
+          (
+            await client.query(
+              'SELECT id FROM campaign_deal_requests WHERE id=ANY($1::uuid[]) ORDER BY id',
+              [[dealA, dealB]],
+            )
+          ).rows.map((r) => r.id),
+        ).toEqual([dealA]);
+        expect(
+          (
+            await client.query(
+              'SELECT id FROM campaign_passports WHERE id=ANY($1::uuid[]) ORDER BY id',
+              [[passA, passB]],
+            )
+          ).rows.map((r) => r.id),
+        ).toEqual([passA]);
+        await client.query('ROLLBACK');
+      } finally {
+        client.release();
+      }
+    } finally {
+      await migratePool.query(`SELECT set_config('app.rls_bypass', '1', false)`);
+      await migratePool.query('DELETE FROM campaign_passports WHERE id=ANY($1::uuid[])', [
+        [passA, passB],
+      ]);
+      await migratePool.query('DELETE FROM campaign_deal_requests WHERE id=ANY($1::uuid[])', [
+        [dealA, dealB],
+      ]);
+      await migratePool.query('DELETE FROM campaign_evidence WHERE campaign_id=ANY($1::uuid[])', [
+        [campaignA, campaignB],
+      ]);
+      await migratePool.query('DELETE FROM campaign_talent WHERE campaign_id=ANY($1::uuid[])', [
+        [campaignA, campaignB],
+      ]);
+      await migratePool.query('DELETE FROM assets WHERE id=ANY($1::uuid[])', [[assetA, assetB]]);
+      await migratePool.query('DELETE FROM creators WHERE id=$1', [creatorId]);
+      await migratePool.query('DELETE FROM campaigns WHERE id=ANY($1::uuid[])', [
+        [campaignA, campaignB],
+      ]);
+      await migratePool.query('DELETE FROM organization_members WHERE organization_id=ANY($1::uuid[])', [
+        [orgA, orgB],
+      ]);
+      await migratePool.query('DELETE FROM organizations WHERE id=ANY($1::uuid[])', [[orgA, orgB]]);
+      await migratePool.query('DELETE FROM users WHERE id=ANY($1::uuid[])', [
+        [userA, userB, grantor],
+      ]);
+      await appPool.end();
+      await migratePool.end();
+    }
+  });
 });
