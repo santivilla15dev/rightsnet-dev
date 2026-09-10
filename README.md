@@ -15,7 +15,7 @@ pnpm dev
 
 Abrir [RightsNet local](http://127.0.0.1:3000). API: `http://127.0.0.1:4000/v1/health`.
 
-`pnpm dev` inicia PostgreSQL local cuando no hay `DATABASE_URL`, aplica migraciones y fixtures idempotentes, y arranca Next.js, NestJS y el worker. Datos y claves locales en `.local/`, fuera de Git. Para otro path de PostgreSQL: `POSTGRES_BIN=/ruta/bin pnpm dev`.
+`pnpm dev` carga el `.env` del repo (si existe), inicia PostgreSQL local cuando no hay `DATABASE_URL` (o reutiliza el que ya escucha en 55432), aplica migraciones y fixtures idempotentes, y arranca Next.js, NestJS y el worker. Datos y claves locales en `.local/`, fuera de Git. Para otro path de PostgreSQL: `POSTGRES_BIN=/ruta/bin pnpm dev`.
 
 Con Docker o un servidor PostgreSQL existente:
 

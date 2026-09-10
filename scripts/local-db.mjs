@@ -23,8 +23,28 @@ if (!existsSync(data + '/PG_VERSION'))
     '--encoding=UTF8',
     '--locale=C',
   ]);
+/** True if something already answers on the local sandbox port (even if postmaster.pid is stale). */
+const alreadyUp = () => {
+  const r = spawnSync(
+    bin + '/psql',
+    [
+      '-h',
+      '127.0.0.1',
+      '-p',
+      '55432',
+      '-U',
+      'rightsnet',
+      '-d',
+      'postgres',
+      '-tAc',
+      'SELECT 1',
+    ],
+    { encoding: 'utf8' },
+  );
+  return r.status === 0 && r.stdout.trim() === '1';
+};
 const status = spawnSync(bin + '/pg_ctl', ['-D', data, 'status'], { stdio: 'ignore' });
-if (status.status !== 0)
+if (status.status !== 0 && !alreadyUp())
   run(bin + '/pg_ctl', [
     '-D',
     data,
