@@ -409,3 +409,9 @@ stripe checkout/money/refunds PASS.
 
 Cierre PASS: `docs/DB_RLS_PAYMENTS_REFUNDS_V0_1.md`. Migración 040 FORCE en
 `payment_attempts` / `refunds`. Tests `db-rls` 7/7 + checkout/refunds PASS.
+
+## DB RLS provider events + contract acceptances v0.1 — 2026-09-10
+
+Cierre PASS: `docs/DB_RLS_PROVIDER_ACCEPTANCES_V0_1.md`. Migración 041 FORCE en
+`contract_acceptances` (vía orden) y `provider_events` (bypass/admin).
+Tests `db-rls` 8/8 + stripe events/checkout PASS.

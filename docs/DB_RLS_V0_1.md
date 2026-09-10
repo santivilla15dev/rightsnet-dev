@@ -55,6 +55,7 @@ Campaign children FORCE: `docs/DB_RLS_CAMPAIGN_CHILDREN_V0_1.md` (**PASS**).
 Orders chain FORCE: `docs/DB_RLS_ORDERS_V0_1.md` (**PASS**).
 Ledger/outbox FORCE: `docs/DB_RLS_LEDGER_OUTBOX_V0_1.md` (**PASS**).
 Payments/refunds FORCE: `docs/DB_RLS_PAYMENTS_REFUNDS_V0_1.md` (**PASS**).
+Provider/acceptances FORCE: `docs/DB_RLS_PROVIDER_ACCEPTANCES_V0_1.md` (**PASS**).
 
 ## Cierre IMPLEMENT
 
