@@ -398,3 +398,9 @@ Cierre PASS: `docs/DB_RLS_CAMPAIGN_CHILDREN_V0_1.md`. Migración 037 FORCE en
 Cierre PASS: `docs/DB_RLS_ORDERS_V0_1.md`. Migración 038 FORCE en
 `requests` / `quotes` / `orders` (org o creador del asset; alineado con
 licenses). Tests `db-rls` 5/5 + rights-core/checkout PASS.
+
+## DB RLS ledger + outbox v0.1 — 2026-09-10
+
+Cierre PASS: `docs/DB_RLS_LEDGER_OUTBOX_V0_1.md`. Migración 039 FORCE en
+`outbox` / `journals` / `ledger_entries` (vía orden). Tests `db-rls` 6/6 +
+stripe checkout/money/refunds PASS.

@@ -53,6 +53,7 @@ Grants/external FORCE: `docs/DB_RLS_GRANTS_EXTERNAL_V0_1.md` (**PASS**).
 Licenses/generation FORCE: `docs/DB_RLS_LICENSES_GENERATION_V0_1.md` (**PASS**).
 Campaign children FORCE: `docs/DB_RLS_CAMPAIGN_CHILDREN_V0_1.md` (**PASS**).
 Orders chain FORCE: `docs/DB_RLS_ORDERS_V0_1.md` (**PASS**).
+Ledger/outbox FORCE: `docs/DB_RLS_LEDGER_OUTBOX_V0_1.md` (**PASS**).
 
 ## Cierre IMPLEMENT
 

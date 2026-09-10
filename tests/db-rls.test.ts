@@ -813,4 +813,201 @@ describe('DB RLS org pilot v0.1', () => {
       await migratePool.end();
     }
   });
+
+  it('aísla outbox/journals/ledger_entries por org de la orden', async () => {
+    const migrateUrl = migrateConnectionString();
+    const migratePool = new pg.Pool({ connectionString: migrateUrl, max: 1 });
+    const appUrl = new URL(migrateUrl);
+    appUrl.username = 'rightsnet_app';
+    appUrl.password = '';
+    const appPool = new pg.Pool({ connectionString: appUrl.toString(), max: 1 });
+
+    const userA = randomUUID();
+    const userB = randomUUID();
+    const grantor = randomUUID();
+    const orgA = randomUUID();
+    const orgB = randomUUID();
+    const creatorId = randomUUID();
+    const assetId = randomUUID();
+    const policyId = randomUUID();
+    const reqA = randomUUID();
+    const reqB = randomUUID();
+    const quoteA = randomUUID();
+    const quoteB = randomUUID();
+    const orderA = randomUUID();
+    const orderB = randomUUID();
+    const outA = randomUUID();
+    const outB = randomUUID();
+    const journalA = randomUUID();
+    const journalB = randomUUID();
+    const entryA1 = randomUUID();
+    const entryA2 = randomUUID();
+    const entryB1 = randomUUID();
+    const entryB2 = randomUUID();
+    const later = new Date(Date.now() + 86400000 * 30);
+
+    try {
+      await migratePool.query(`SELECT set_config('app.rls_bypass', '1', false)`);
+      const force = await migratePool.query(
+        `SELECT c.relname, c.relforcerowsecurity AS forced
+         FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+         WHERE n.nspname='public'
+           AND c.relname=ANY($1::text[])
+         ORDER BY c.relname`,
+        [['journals', 'ledger_entries', 'outbox']],
+      );
+      expect(force.rows.every((r) => r.forced === true)).toBe(true);
+
+      await migratePool.query(
+        `INSERT INTO users(id,email,display_name,role) VALUES
+          ($1,$2,'RLS FA','buyer'),
+          ($3,$4,'RLS FB','buyer'),
+          ($5,$6,'RLS FG','creator')`,
+        [
+          userA,
+          `rls-fa-${userA}@example.com`,
+          userB,
+          `rls-fb-${userB}@example.com`,
+          grantor,
+          `rls-fg-${grantor}@example.com`,
+        ],
+      );
+      await migratePool.query(
+        `INSERT INTO organizations(id,legal_name,country) VALUES ($1,'RLS Fin A','AT'),($2,'RLS Fin B','AT')`,
+        [orgA, orgB],
+      );
+      await migratePool.query(
+        `INSERT INTO organization_members(organization_id,user_id,role) VALUES ($1,$2,'owner'),($3,$4,'owner')`,
+        [orgA, userA, orgB, userB],
+      );
+      await migratePool.query(
+        `INSERT INTO creators(id,user_id,display_name,bio,location,portrait) VALUES ($1,$2,'G','b','AT','x')`,
+        [creatorId, grantor],
+      );
+      await migratePool.query(
+        `INSERT INTO assets(id,creator_id,status,relationship_status) VALUES($1,$2,'published','reviewed')`,
+        [assetId, creatorId],
+      );
+      await migratePool.query(
+        `INSERT INTO policies(id,asset_id,version,payload,sha256) VALUES($1,$2,1,'{}'::jsonb,'sha')`,
+        [policyId, assetId],
+      );
+      await migratePool.query(`UPDATE assets SET policy_id=$1 WHERE id=$2`, [policyId, assetId]);
+
+      const usage = JSON.stringify({});
+      await migratePool.query(
+        `INSERT INTO requests(
+           id,organization_id,asset_id,policy_id,usage,usage_hash,decision,reason_codes)
+         VALUES
+           ($1,$2,$3,$4,$5::jsonb,'uh','ALLOW','[]'::jsonb),
+           ($6,$7,$3,$4,$5::jsonb,'uh','ALLOW','[]'::jsonb)`,
+        [reqA, orgA, assetId, policyId, usage, reqB, orgB],
+      );
+      await migratePool.query(
+        `INSERT INTO quotes(id,request_id,scope,price,policy_hash,expires_at) VALUES
+           ($1,$2,'{}'::jsonb,'{"amount_minor":100,"currency":"EUR"}'::jsonb,'ph',$3),
+           ($4,$5,'{}'::jsonb,'{"amount_minor":100,"currency":"EUR"}'::jsonb,'ph',$3)`,
+        [quoteA, reqA, later.toISOString(), quoteB, reqB],
+      );
+      await migratePool.query(
+        `INSERT INTO orders(
+           id,quote_id,organization_id,asset_id,status,price,scope,policy_snapshot,
+           contract_text,contract_hash,expires_at)
+         VALUES
+           ($1,$2,$3,$4,'paid','{"amount_minor":100,"currency":"EUR"}'::jsonb,
+            '{}'::jsonb,'{}'::jsonb,'c','ch',$5),
+           ($6,$7,$8,$4,'paid','{"amount_minor":100,"currency":"EUR"}'::jsonb,
+            '{}'::jsonb,'{}'::jsonb,'c','ch',$5)`,
+        [orderA, quoteA, orgA, assetId, later.toISOString(), orderB, quoteB, orgB],
+      );
+      await migratePool.query(
+        `INSERT INTO outbox(id,order_id,kind,status) VALUES ($1,$2,'issue_license','pending'),($3,$4,'issue_license','pending')`,
+        [outA, orderA, outB, orderB],
+      );
+
+      await migratePool.query('BEGIN');
+      await migratePool.query(
+        `INSERT INTO journals(id,order_id,kind,currency) VALUES ($1,$2,'sale','EUR'),($3,$4,'sale','EUR')`,
+        [journalA, orderA, journalB, orderB],
+      );
+      await migratePool.query(
+        `INSERT INTO ledger_entries(id,journal_id,account,side,amount_minor) VALUES
+           ($1,$2,'cash','debit',100),
+           ($3,$2,'revenue','credit',100),
+           ($4,$5,'cash','debit',100),
+           ($6,$5,'revenue','credit',100)`,
+        [entryA1, journalA, entryA2, entryB1, journalB, entryB2],
+      );
+      await migratePool.query('COMMIT');
+
+      const client = await appPool.connect();
+      try {
+        await client.query('BEGIN');
+        await client.query(`SELECT set_config('app.rls_bypass', '0', true)`);
+        await client.query(`SELECT set_config('app.current_user_id', $1, true)`, [userA]);
+        await client.query(`SELECT set_config('app.is_admin', '0', true)`);
+
+        expect(
+          (
+            await client.query('SELECT id FROM outbox WHERE id=ANY($1::uuid[]) ORDER BY id', [
+              [outA, outB],
+            ])
+          ).rows.map((r) => r.id),
+        ).toEqual([outA]);
+        expect(
+          (
+            await client.query('SELECT id FROM journals WHERE id=ANY($1::uuid[]) ORDER BY id', [
+              [journalA, journalB],
+            ])
+          ).rows.map((r) => r.id),
+        ).toEqual([journalA]);
+        expect(
+          (
+            await client.query(
+              'SELECT id FROM ledger_entries WHERE id=ANY($1::uuid[]) ORDER BY id',
+              [[entryA1, entryA2, entryB1, entryB2]],
+            )
+          ).rows.map((r) => r.id),
+        ).toEqual([entryA1, entryA2].sort());
+        await client.query('ROLLBACK');
+      } finally {
+        client.release();
+      }
+    } finally {
+      await migratePool.query(`SELECT set_config('app.rls_bypass', '1', false)`);
+      await migratePool.query('DELETE FROM outbox WHERE id=ANY($1::uuid[])', [[outA, outB]]);
+      await migratePool.query('ALTER TABLE ledger_entries DISABLE TRIGGER immutable_evidence');
+      await migratePool.query('ALTER TABLE journals DISABLE TRIGGER immutable_evidence');
+      await migratePool.query('ALTER TABLE orders DISABLE TRIGGER prevent_order_delete');
+      await migratePool.query('ALTER TABLE quotes DISABLE TRIGGER immutable_evidence');
+      await migratePool.query('DELETE FROM ledger_entries WHERE id=ANY($1::uuid[])', [
+        [entryA1, entryA2, entryB1, entryB2],
+      ]);
+      await migratePool.query('DELETE FROM journals WHERE id=ANY($1::uuid[])', [
+        [journalA, journalB],
+      ]);
+      await migratePool.query('DELETE FROM orders WHERE id=ANY($1::uuid[])', [[orderA, orderB]]);
+      await migratePool.query('DELETE FROM quotes WHERE id=ANY($1::uuid[])', [[quoteA, quoteB]]);
+      await migratePool.query('ALTER TABLE quotes ENABLE TRIGGER immutable_evidence');
+      await migratePool.query('ALTER TABLE orders ENABLE TRIGGER prevent_order_delete');
+      await migratePool.query('ALTER TABLE journals ENABLE TRIGGER immutable_evidence');
+      await migratePool.query('ALTER TABLE ledger_entries ENABLE TRIGGER immutable_evidence');
+      await migratePool.query('DELETE FROM requests WHERE id=ANY($1::uuid[])', [[reqA, reqB]]);
+      await migratePool.query('UPDATE assets SET policy_id=NULL WHERE id=$1', [assetId]);
+      await migratePool.query('ALTER TABLE policies DISABLE TRIGGER immutable_evidence');
+      await migratePool.query('DELETE FROM policies WHERE id=$1', [policyId]);
+      await migratePool.query('ALTER TABLE policies ENABLE TRIGGER immutable_evidence');
+      await migratePool.query('DELETE FROM assets WHERE id=$1', [assetId]);
+      await migratePool.query('DELETE FROM creators WHERE id=$1', [creatorId]);
+      await migratePool.query('DELETE FROM organization_members WHERE organization_id=ANY($1::uuid[])', [
+        [orgA, orgB],
+      ]);
+      await migratePool.query('DELETE FROM organizations WHERE id=ANY($1::uuid[])', [[orgA, orgB]]);
+      await migratePool.query('DELETE FROM users WHERE id=ANY($1::uuid[])', [
+        [userA, userB, grantor],
+      ]);
+      await appPool.end();
+      await migratePool.end();
+    }
+  });
 });
