@@ -444,6 +444,12 @@ Cierre PASS andamiaje: `docs/STAGING_API_DOCKER_V0_1.md`.
 Cierre PASS: `docs/FOUNDER_PREP_NEXT_V0_1.md`. Prioridades founder;
 `product:smoke` WARN si falta worker.
 
+## Founder human trial v0.1 — 2026-09-10
+
+Cierre PASS runbook: `docs/FOUNDER_HUMAN_TRIAL_V0_1.md` ·
+`docs/runbooks/founder-human-trial.md`. Smoke local PASS; search seed 7.
+Ejecución del ensayo: OPEN (founder).
+
 ## DB roles / tenancy v0.1 — 2026-09-10
 
 Cierre PASS roles: `docs/DB_ROLES_TENANCY_V0_1.md`. Migración 033; `MIGRATE_DATABASE_URL`;

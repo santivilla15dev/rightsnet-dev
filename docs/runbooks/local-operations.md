@@ -72,6 +72,8 @@ Runbook: [`product-smoke-manual.md`](product-smoke-manual.md) ·
 
 Próximos pasos (prioridad founder): [`../FOUNDER_PREP_NEXT_V0_1.md`](../FOUNDER_PREP_NEXT_V0_1.md).
 
+Ensayo humano (marca/creador local): [`founder-human-trial.md`](founder-human-trial.md).
+
 Andamiaje staging (web Vercel EU + API aparte), sin deploy automático:
 
 [`staging-host-scaffold.md`](staging-host-scaffold.md).

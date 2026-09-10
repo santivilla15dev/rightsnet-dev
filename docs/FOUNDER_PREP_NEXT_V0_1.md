@@ -20,7 +20,7 @@ pnpm product:smoke
 
 | # | Qué | Por qué | Bloqueo |
 |---|-----|---------|---------|
-| 1 | **Ensayo humano** del flujo oficial (signup → discover → licencia test) | Valida producto real con tu cuenta Supabase | 30–60 min tuyos |
+| 1 | **Ensayo humano** del flujo oficial | Valida producto real con tu cuenta Supabase | Runbook: `docs/runbooks/founder-human-trial.md` |
 | 2 | **Host staging** (Vercel web + Fly/Docker API + Postgres EU) | URL compartible; scaffold ya escrito | Cuenta cloud + secretos |
 | 3 | **Textos legales / IVA** (asesoría) | Sustituir plantillas DEMO | Founder + counsel |
 | 4 | SMTP / email real | Tras outbox sandbox | Proveedor email |
