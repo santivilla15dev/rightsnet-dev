@@ -489,7 +489,7 @@ describe('Rights Core v0.1 acceptance matrix', () => {
     expect(rightsHash(changed)).not.toBe(baseHash);
     const p = beautyDePolicy({ approval_mode: 'MANUAL' });
     const approval = creatorApprovalFor(request, p);
-    const decision = evaluateRightsDecision({
+    const _decision = evaluateRightsDecision({
       policy: p,
       request: changed,
       context: validContext(changed, p, { creator_approval: approval }),

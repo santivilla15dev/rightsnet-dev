@@ -94,7 +94,7 @@ export function Company({ licensesOnly = false }: { licensesOnly?: boolean }) {
         }
         action={
           <Button asChild>
-            <Link href="/discover">
+            <Link href="/company/campaigns">
               <Plus size={16} />
               Nueva campaña
             </Link>
@@ -105,7 +105,7 @@ export function Company({ licensesOnly = false }: { licensesOnly?: boolean }) {
         <div className="stat">
           <span>
             <FolderOpen size={18} />
-            Campañas creadas
+            Solicitudes de compra
           </span>
           <b>{orders.length}</b>
           <small>Órdenes de tu workspace</small>

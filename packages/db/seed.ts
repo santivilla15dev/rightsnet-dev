@@ -56,7 +56,7 @@ async function patchCreatorPublicProfiles(db: DB) {
     )
   ).rows as { id: string; display_name: string }[];
   for (const row of missing) {
-    let base = slugifyName(row.display_name) || 'creator';
+    const base = slugifyName(row.display_name) || 'creator';
     let candidate = base;
     let n = 0;
     while (

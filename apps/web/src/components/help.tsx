@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { Search, ShieldCheck, FileCheck2, ArrowRight, Building2, Leaf } from 'lucide-react';
 import { Title, SandboxNote } from './common';

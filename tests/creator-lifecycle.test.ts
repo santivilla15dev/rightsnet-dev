@@ -5,7 +5,7 @@ import {
   creatorHomePath,
   getCreatorLifecycleState,
   getOnboardingProgress,
-} from '../apps/web/src/lib/creator-lifecycle.ts';
+} from '../apps/web/src/lib/creator-lifecycle.js';
 import type { Asset } from '../apps/web/src/lib/types.ts';
 
 const basePolicy = {

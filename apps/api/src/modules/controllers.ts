@@ -1,3 +1,7 @@
+import { getCampaignFlight, changeCampaignEvidence } from './campaign-flight.js';
+import { getCampaignClearance, updateCampaignUsage } from './campaign-clearance.js';
+import { talentInventory, campaignTalent, addCampaignTalent, removeCampaignTalent } from './talent-inventory.js';
+import { listCampaigns, getCampaign, createCampaign, updateCampaign } from './campaigns.js';
 import {
   Controller,
   Get,
@@ -606,6 +610,54 @@ export class AccountsController {
 }
 @Controller('v1')
 export class CommerceController {
+  @Get('campaigns/:id/flight') async campaignFlight(@Req() req: Request, @Param('id') id: string) {
+    return getCampaignFlight(await actor(req), id);
+  }
+  @Post('campaigns/:id/evidence') async campaignEvidence(@Req() req: Request, @Param('id') id: string, @Body() body: unknown) {
+    return changeCampaignEvidence(await actor(req), id, body, idem(req));
+  }
+  @Post('campaigns/:id/evidence/remove') async campaignEvidenceRemove(@Req() req: Request, @Param('id') id: string, @Body() body: unknown) {
+    return changeCampaignEvidence(await actor(req), id, body, idem(req), true);
+  }
+  @Get('talent-inventory') async inventory(@Req() req: Request, @Query() query: unknown) {
+    return talentInventory(await actor(req), query);
+  }
+  @Get('campaigns/:id/clearance') async campaignClearance(@Req() req: Request, @Param('id') id: string) {
+    return getCampaignClearance(await actor(req), id);
+  }
+  @Post('campaigns/:id/usage') async campaignUsage(@Req() req: Request, @Param('id') id: string, @Body() body: unknown) {
+    return updateCampaignUsage(await actor(req), id, body, idem(req));
+  }
+  @Get('campaigns/:id/talent') async talent(@Req() req: Request, @Param('id') id: string, @Query() query: unknown) {
+    return campaignTalent(await actor(req), id, query);
+  }
+  @Post('campaigns/:id/talent') async talentAdd(@Req() req: Request, @Param('id') id: string, @Body() body: unknown) {
+    return addCampaignTalent(await actor(req), id, body, idem(req));
+  }
+  @Post('campaigns/:id/talent/:assetId/remove') async talentRemove(@Req() req: Request, @Param('id') id: string, @Param('assetId') assetId: string, @Body() body: unknown) {
+    return removeCampaignTalent(await actor(req), id, assetId, body, idem(req));
+  }
+
+  @Get('campaigns') async campaigns(@Req() req: Request, @Query() query: unknown) {
+    return listCampaigns(await actor(req), query);
+  }
+  @Get('campaigns/:id') async campaign(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Query() query: unknown,
+  ) {
+    return getCampaign(await actor(req), id, query);
+  }
+  @Post('campaigns') async campaignCreate(@Req() req: Request, @Body() body: unknown) {
+    return createCampaign(await actor(req), body, idem(req));
+  }
+  @Post('campaigns/:id') async campaignUpdate(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ) {
+    return updateCampaign(await actor(req), id, body, idem(req));
+  }
   @Post('license-requests') async request(@Req() req: Request, @Body() body: unknown) {
     const user = await actor(req);
     return mutate(user.id, 'requests', idem(req), body, (db) => createRequest(db, user, body));

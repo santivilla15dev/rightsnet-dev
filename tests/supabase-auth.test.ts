@@ -351,7 +351,8 @@ describe.sequential('Auth Supabase v0.2', () => {
     };
     setSupabaseAuthPort(mockPort(store));
     const login = await supabaseLogin(email, 'password123');
-    const renewed = await supabaseRefresh(login.refresh_token);
+    expect(login.refresh_token).toBeTruthy();
+    const renewed = await supabaseRefresh(login.refresh_token!);
     expect(renewed.user.id).toBe(id);
     expect(renewed.user.role).toBe('buyer');
     expect(renewed.token).not.toBe(login.token);

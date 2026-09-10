@@ -13,7 +13,7 @@ import {
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { api, money, labels, date } from '@/lib/api';
-import type { Asset, LegacyPolicy, RightsPolicy, AnyPolicy, LicenseRequest, Order, ConnectStatus } from '@/lib/types';
+import type { Asset, RightsPolicy, AnyPolicy, LicenseRequest, Order, ConnectStatus } from '@/lib/types';
 import { isLegacyPolicy, isRightsPolicy } from '@/lib/policy';
 import {
   canAccessCreatorDashboard,

@@ -31,13 +31,7 @@ import {
   type AccountSpace,
 } from '@/lib/auth-redirect';
 
-function DemoBanner({
-  demo,
-  onExit,
-}: {
-  demo: DemoSession;
-  onExit: () => void;
-}) {
+function DemoBanner({ demo, onExit }: { demo: DemoSession; onExit: () => void }) {
   return (
     <div className="demo-banner" role="status">
       <div>
@@ -122,7 +116,9 @@ export function Shell({ children }: { children: ReactNode }) {
   const buyerLinks = [
     { href: '/discover', label: 'Descubrir', icon: Compass },
     { href: '/saved', label: 'Guardados', icon: Bookmark },
-    { href: '/company', label: 'Campañas', icon: LayoutDashboard },
+    { href: '/company/campaigns', label: 'Campañas', icon: LayoutDashboard },
+    { href: '/company/talent', label: 'Mi talento', icon: LayoutDashboard },
+    { href: '/company', label: 'Compras', icon: FileCheck2 },
     { href: '/company/licenses', label: 'Licencias', icon: FileCheck2 },
     { href: '/ops/rights', label: 'Derechos', icon: Scale },
   ];
@@ -225,8 +221,8 @@ export function Shell({ children }: { children: ReactNode }) {
           <div>
             <b>
               {isCreator
-                ? user?.display_name?.split(' · ')[0] ?? 'Creador'
-                : org?.legal_name?.split(' · ')[0] ?? 'Explorar'}
+                ? (user?.display_name?.split(' · ')[0] ?? 'Creador')
+                : (org?.legal_name?.split(' · ')[0] ?? 'Explorar')}
             </b>
             <small>
               {isCreator
@@ -280,6 +276,7 @@ export function Shell({ children }: { children: ReactNode }) {
                 'nav-item ' +
                 (path === l.href ||
                 (l.href === '/discover' && path.startsWith('/creators/')) ||
+                (l.href === '/company/campaigns' && path.startsWith('/company/campaigns/')) ||
                 (l.href.startsWith('/dashboard') && path === '/dashboard')
                   ? 'active'
                   : '')
@@ -307,7 +304,11 @@ export function Shell({ children }: { children: ReactNode }) {
           <>
             <div className="nav-label second">MARCA</div>
             <nav>
-              <Link href="/welcome?intent=buyer" className="nav-item" onClick={() => setOpen(false)}>
+              <Link
+                href="/welcome?intent=buyer"
+                className="nav-item"
+                onClick={() => setOpen(false)}
+              >
                 <Building2 size={19} />
                 Crear espacio marca
               </Link>
@@ -344,7 +345,11 @@ export function Shell({ children }: { children: ReactNode }) {
               <Menu size={22} />
             </button>
             <span className="breadcrumb">
-              {isCreator ? 'Creador' : isBuyer ? org?.legal_name?.split(' · ')[0] ?? 'Marca' : 'Workspace'}{' '}
+              {isCreator
+                ? 'Creador'
+                : isBuyer
+                  ? (org?.legal_name?.split(' · ')[0] ?? 'Marca')
+                  : 'Workspace'}{' '}
               <span>/</span>{' '}
               <b>
                 {path.startsWith('/ops') || path.startsWith('/admin')
@@ -353,11 +358,13 @@ export function Shell({ children }: { children: ReactNode }) {
                     ? 'Resumen'
                     : path.includes('licenses')
                       ? 'Licencias'
-                      : path.startsWith('/company')
-                        ? 'Campañas'
-                        : path.startsWith('/help')
-                          ? 'Guía'
-                          : 'Descubrir'}
+                      : path.startsWith('/company/talent')
+                        ? 'Mi talento'
+                        : path.startsWith('/company')
+                          ? 'Campañas'
+                          : path.startsWith('/help')
+                            ? 'Guía'
+                            : 'Descubrir'}
               </b>
             </span>
           </div>

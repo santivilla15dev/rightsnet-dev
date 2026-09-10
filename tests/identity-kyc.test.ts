@@ -51,7 +51,7 @@ function actorOf(id: string): Actor {
 
 function mockStripePort(): IdentityKycPort {
   return {
-    async createVerificationSession({ creatorId }) {
+    async createVerificationSession() {
       const id = 'vs_test_' + randomUUID().slice(0, 8);
       return {
         provider: 'stripe',
@@ -76,7 +76,8 @@ describe('Identity KYC v0.1', () => {
       returnUrl: 'http://localhost:3000/dashboard?identity=return',
     });
     expect(params.type).toBe('document');
-    expect(params.options?.document?.require_matching_selfie).toBe(true);
+    const document = params.options?.document;
+    expect(document && document.require_matching_selfie).toBe(true);
     expect(params.metadata?.rightsnet).toBe('identity_kyc_v0_1_1');
   });
 

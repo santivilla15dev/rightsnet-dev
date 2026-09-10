@@ -2,85 +2,85 @@
 
 Historia: una marca elige un creador, configura el uso, obtiene una decisión determinista, acepta el contrato, simula el pago y recibe un certificado firmado; el creador y administración gestionan derechos, solicitudes y operaciones.
 
-| Comprobación | Resultado | Evidencia |
-|---|---|---|
-| TypeScript estricto web/API/worker/dominio | PASS | `pnpm typecheck` |
-| ESLint | PASS | `pnpm lint` |
-| Pruebas dominio, PostgreSQL y adaptador Stripe | PASS | `pnpm test` — 127 tests (dominio, rights-core, auth supabase, integración, Stripe) |
-| Build optimizado Next.js 16.3.4 | PASS | `pnpm build` |
-| Navegador Chromium sobre build | 9 PASS | `pnpm test:e2e` — home + commerce + matriz §28 (~24 s, stack :3010/:4010) |
-| Escritorio y móvil sin overflow | PASS | Capturas 1440px / 390px y comprobación DOM |
-| Stripe Checkout + webhooks (local) | PASS | Mocks: snapshot, idempotencia, lifecycle, race `provider_ref`, mismatch permanente, fallos antiguos, duplicados |
-| Stripe Connect onboarding (local) | PASS | Mocks: Accounts v2 recipient, Account Links sin persistir URL, sync thin events, remediación `account_update`, thin requirements/capability |
-| Stripe Refunds (local) | PASS | Mocks: refund total con reverse_transfer/fee, pending→webhook, failed→review, bloqueo de emisión, licencia intacta |
-| Stripe Money (local) | PASS | Mocks: transfer vinculada, disputa sin revocar licencia, payout sin order_id, reversal idempotente |
-| Stripe conciliación externa (local) | PASS | Mocks: BT paginadas + cursor, fees/neto, cola de diferencias, recovery Events API, GET interno sin import |
-| Stripe externo (Dashboard / API keys) | PASS (modo test) | Ensayo autenticado 6 sep 2026 — ver sección siguiente |
-| Rights Core v0.1 motor puro | PASS | `tests/rights-core-acceptance.test.ts` (matriz); `packages/domain/src/rights-core/` |
-| Rights Core integración dual-path | PASS | `tests/rights-core-integration.test.ts` (8); migración `012`; seed Greta DE rights-policy |
-| Auth Supabase v0.1 (sin MFA) | PASS | `tests/supabase-auth.test.ts`; `docs/AUTH_SUPABASE_V0_1.md`; runbook `docs/runbooks/auth-supabase.md` |
-| Auth MFA v0.1 (TOTP) | PASS | `MFA_ENABLED`; `docs/AUTH_MFA_V0_1.md`; `tests/supabase-mfa.test.ts` |
-| Home pública + E2E §28 | PASS | `/` bare shell; `pnpm test:e2e` **9 PASS**; `docs/HOME_AND_E2E_V0_1.md` |
-| Marketplace UX v0.1 | PASS | Home producto + pasos licencia; `docs/MARKETPLACE_UX_V0_1.md` |
-| Identity KYC v0.1.1 | PASS | Port sandbox/stripe + selfie matching; `docs/IDENTITY_KYC_V0_1.md`; tests `identity-kyc.test.ts` |
-| Identity KYC live v0.1 | PASS | `IDENTITY_LIVE_ENABLED`; `docs/IDENTITY_KYC_LIVE_V0_1.md`; livemode gated |
-| Live commerce L1 (técnico) | PASS | `LIVE_COMMERCE_ENABLED`; `docs/LIVE_COMMERCE_V0_1.md`; CI flag off |
-| Creator publish Rights Core v0.1 | PASS | Editor AT/DE en `/dashboard`; `docs/CREATOR_PUBLISH_RIGHTS_CORE_V0_1.md` |
-| Launch gates AT–DE | Documentado | `docs/launch-gates.md` — gate técnico commerce PASS; legales pendientes |
-| Piloto live / APP_ENV=production | NO HABILITADO | Gates legales/ops pendientes; production sigue bloqueada |
+| Comprobación                                   | Resultado        | Evidencia                                                                                                                                   |
+| ---------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| TypeScript estricto web/API/worker/dominio     | PASS             | `pnpm typecheck`                                                                                                                            |
+| ESLint                                         | PASS             | `pnpm lint`                                                                                                                                 |
+| Pruebas dominio, PostgreSQL y adaptador Stripe | PASS             | `pnpm test` — 127 tests (dominio, rights-core, auth supabase, integración, Stripe)                                                          |
+| Build optimizado Next.js 16.3.4                | PASS             | `pnpm build`                                                                                                                                |
+| Navegador Chromium sobre build                 | 9 PASS           | `pnpm test:e2e` — home + commerce + matriz §28 (~24 s, stack :3010/:4010)                                                                   |
+| Escritorio y móvil sin overflow                | PASS             | Capturas 1440px / 390px y comprobación DOM                                                                                                  |
+| Stripe Checkout + webhooks (local)             | PASS             | Mocks: snapshot, idempotencia, lifecycle, race `provider_ref`, mismatch permanente, fallos antiguos, duplicados                             |
+| Stripe Connect onboarding (local)              | PASS             | Mocks: Accounts v2 recipient, Account Links sin persistir URL, sync thin events, remediación `account_update`, thin requirements/capability |
+| Stripe Refunds (local)                         | PASS             | Mocks: refund total con reverse_transfer/fee, pending→webhook, failed→review, bloqueo de emisión, licencia intacta                          |
+| Stripe Money (local)                           | PASS             | Mocks: transfer vinculada, disputa sin revocar licencia, payout sin order_id, reversal idempotente                                          |
+| Stripe conciliación externa (local)            | PASS             | Mocks: BT paginadas + cursor, fees/neto, cola de diferencias, recovery Events API, GET interno sin import                                   |
+| Stripe externo (Dashboard / API keys)          | PASS (modo test) | Ensayo autenticado 6 sep 2026 — ver sección siguiente                                                                                       |
+| Rights Core v0.1 motor puro                    | PASS             | `tests/rights-core-acceptance.test.ts` (matriz); `packages/domain/src/rights-core/`                                                         |
+| Rights Core integración dual-path              | PASS             | `tests/rights-core-integration.test.ts` (8); migración `012`; seed Greta DE rights-policy                                                   |
+| Auth Supabase v0.1 (sin MFA)                   | PASS             | `tests/supabase-auth.test.ts`; `docs/AUTH_SUPABASE_V0_1.md`; runbook `docs/runbooks/auth-supabase.md`                                       |
+| Auth MFA v0.1 (TOTP)                           | PASS             | `MFA_ENABLED`; `docs/AUTH_MFA_V0_1.md`; `tests/supabase-mfa.test.ts`                                                                        |
+| Home pública + E2E §28                         | PASS             | `/` bare shell; `pnpm test:e2e` **9 PASS**; `docs/HOME_AND_E2E_V0_1.md`                                                                     |
+| Marketplace UX v0.1                            | PASS             | Home producto + pasos licencia; `docs/MARKETPLACE_UX_V0_1.md`                                                                               |
+| Identity KYC v0.1.1                            | PASS             | Port sandbox/stripe + selfie matching; `docs/IDENTITY_KYC_V0_1.md`; tests `identity-kyc.test.ts`                                            |
+| Identity KYC live v0.1                         | PASS             | `IDENTITY_LIVE_ENABLED`; `docs/IDENTITY_KYC_LIVE_V0_1.md`; livemode gated                                                                   |
+| Live commerce L1 (técnico)                     | PASS             | `LIVE_COMMERCE_ENABLED`; `docs/LIVE_COMMERCE_V0_1.md`; CI flag off                                                                          |
+| Creator publish Rights Core v0.1               | PASS             | Editor AT/DE en `/dashboard`; `docs/CREATOR_PUBLISH_RIGHTS_CORE_V0_1.md`                                                                    |
+| Launch gates AT–DE                             | Documentado      | `docs/launch-gates.md` — gate técnico commerce PASS; legales pendientes                                                                     |
+| Piloto live / APP_ENV=production               | NO HABILITADO    | Gates legales/ops pendientes; production sigue bloqueada                                                                                    |
 
 ## Identity KYC v0.1 (7 sep 2026)
 
-| Entrega | Resultado | Evidencia |
-|---|---|---|
-| Spec `IDENTITY_KYC_V0_1` | PASS | `docs/IDENTITY_KYC_V0_1.md` |
-| Migración `013_identity_checks` | PASS | refs proveedor, sin blobs de documento |
-| Port sandbox + Stripe Identity | PASS | `apps/api/src/integrations/identity-kyc.ts` |
-| Session + webhook + simulate gated | PASS | `identity-kyc` module; webhook en `/v1/webhooks/stripe` |
-| Tests mocks | PASS | `tests/identity-kyc.test.ts` (3) |
-| MFA / live commerce | NO | STOP |
+| Entrega                            | Resultado | Evidencia                                               |
+| ---------------------------------- | --------- | ------------------------------------------------------- |
+| Spec `IDENTITY_KYC_V0_1`           | PASS      | `docs/IDENTITY_KYC_V0_1.md`                             |
+| Migración `013_identity_checks`    | PASS      | refs proveedor, sin blobs de documento                  |
+| Port sandbox + Stripe Identity     | PASS      | `apps/api/src/integrations/identity-kyc.ts`             |
+| Session + webhook + simulate gated | PASS      | `identity-kyc` module; webhook en `/v1/webhooks/stripe` |
+| Tests mocks                        | PASS      | `tests/identity-kyc.test.ts` (3)                        |
+| MFA / live commerce                | NO        | STOP                                                    |
 
 ## Identity KYC v0.1.1 selfie (7 sep 2026)
 
-| Entrega | Resultado | Evidencia |
-|---|---|---|
-| `require_matching_selfie` en create session | PASS | `stripeIdentityCreateParams` |
-| Copy UI documento + selfie | PASS | `creator-dashboard.tsx` |
-| Sin blobs biométricos / live gated | PASS | STOP docs + `IDENTITY_LIVE_ENABLED` + `assertConfiguration` |
-| MFA / live commerce | NO | STOP |
-| Identity live flag | PASS | `docs/IDENTITY_KYC_LIVE_V0_1.md` |
+| Entrega                                     | Resultado | Evidencia                                                   |
+| ------------------------------------------- | --------- | ----------------------------------------------------------- |
+| `require_matching_selfie` en create session | PASS      | `stripeIdentityCreateParams`                                |
+| Copy UI documento + selfie                  | PASS      | `creator-dashboard.tsx`                                     |
+| Sin blobs biométricos / live gated          | PASS      | STOP docs + `IDENTITY_LIVE_ENABLED` + `assertConfiguration` |
+| MFA / live commerce                         | NO        | STOP                                                        |
+| Identity live flag                          | PASS      | `docs/IDENTITY_KYC_LIVE_V0_1.md`                            |
 
 ## Identity KYC live v0.1
 
-| Entrega | Resultado | Evidencia |
-|---|---|---|
-| Spec `IDENTITY_KYC_LIVE_V0_1` | PASS | `docs/IDENTITY_KYC_LIVE_V0_1.md` |
-| `assertIdentityLivemodeAllowed` | PASS | create + webhook |
-| Flag off blocks livemode | PASS | `tests/identity-kyc.test.ts` |
-| MFA / live commerce | NO | Roadmap after STOP |
+| Entrega                         | Resultado | Evidencia                        |
+| ------------------------------- | --------- | -------------------------------- |
+| Spec `IDENTITY_KYC_LIVE_V0_1`   | PASS      | `docs/IDENTITY_KYC_LIVE_V0_1.md` |
+| `assertIdentityLivemodeAllowed` | PASS      | create + webhook                 |
+| Flag off blocks livemode        | PASS      | `tests/identity-kyc.test.ts`     |
+| MFA / live commerce             | NO        | Roadmap after STOP               |
 
 ## Live commerce L1 (gate técnico)
 
-| Entrega | Resultado | Evidencia |
-|---|---|---|
-| Spec `LIVE_COMMERCE_V0_1` | PASS | `docs/LIVE_COMMERCE_V0_1.md` |
-| `assertLiveCommerceAllowed` | PASS | checkout/Connect/refunds/money/recon |
-| Flag off blocks livemode | PASS | `tests/live-commerce.test.ts`, `tests/stripe-events.test.ts` |
-| Flag on accepts livemode mock | PASS | sin red Stripe |
-| `GET /v1/config` → `live_commerce` | PASS | `controllers.ts` |
-| `APP_ENV=production` | Aún bloqueado | `assertConfiguration` |
-| Clearance legal AT–DE | NO | `docs/launch-gates.md` |
+| Entrega                            | Resultado     | Evidencia                                                    |
+| ---------------------------------- | ------------- | ------------------------------------------------------------ |
+| Spec `LIVE_COMMERCE_V0_1`          | PASS          | `docs/LIVE_COMMERCE_V0_1.md`                                 |
+| `assertLiveCommerceAllowed`        | PASS          | checkout/Connect/refunds/money/recon                         |
+| Flag off blocks livemode           | PASS          | `tests/live-commerce.test.ts`, `tests/stripe-events.test.ts` |
+| Flag on accepts livemode mock      | PASS          | sin red Stripe                                               |
+| `GET /v1/config` → `live_commerce` | PASS          | `controllers.ts`                                             |
+| `APP_ENV=production`               | Aún bloqueado | `assertConfiguration`                                        |
+| Clearance legal AT–DE              | NO            | `docs/launch-gates.md`                                       |
 
 **STOP.** CI mantiene `LIVE_COMMERCE_ENABLED=false`. Sin voz/agents/API pública. Sin afirmar piloto legal listo.
 
 ## Creator publish Rights Core v0.1 (7 sep 2026)
 
-| Entrega | Resultado | Evidencia |
-|---|---|---|
-| Editor AT/DE en `/dashboard` | PASS | `creator-dashboard.tsx` |
-| Default policy cuando `RIGHTS_CORE_PURCHASES` | PASS | `GET /v1/creator` |
-| Legacy ES editor intacto | PASS | perfiles `rightsnet.policy/0.1` |
-| Live / remap ES→AT | NO | STOP |
+| Entrega                                       | Resultado | Evidencia                       |
+| --------------------------------------------- | --------- | ------------------------------- |
+| Editor AT/DE en `/dashboard`                  | PASS      | `creator-dashboard.tsx`         |
+| Default policy cuando `RIGHTS_CORE_PURCHASES` | PASS      | `GET /v1/creator`               |
+| Legacy ES editor intacto                      | PASS      | perfiles `rightsnet.policy/0.1` |
+| Live / remap ES→AT                            | NO        | STOP                            |
 
 **STOP (publish).** Remap ES→AT fuera de alcance. Live commerce: ver gate L1 en esta misma verificación.
 
@@ -88,24 +88,24 @@ Historia: una marca elige un creador, configura el uso, obtiene una decisión de
 
 Hito de implementación del motor determinista **sin** cablear compras ni migrar políticas ES→AT.
 
-| Entrega | Resultado | Evidencia |
-|---|---|---|
-| Schemas Zod `rights-policy` / `license-request` / `license-decision` / `rights-passport` 0.1 | PASS | `packages/domain/src/rights-core/schemas.ts` |
-| Canonicalización + hash nuevos (legacy intacto) | PASS | `rightsCanonical` / `rightsHash`; `canonical`/`hash` legacy sin cambio |
-| Evaluador puro + approvals + passport allowlist + issuance gate | PASS | `evaluate.ts`, `approvals.ts`, `passport.ts`, `issuance.ts` |
-| Matriz de aceptación RIGHTS_CORE_V0_1 | PASS | 37 casos en `tests/rights-core-acceptance.test.ts` |
+| Entrega                                                                                      | Resultado | Evidencia                                                              |
+| -------------------------------------------------------------------------------------------- | --------- | ---------------------------------------------------------------------- |
+| Schemas Zod `rights-policy` / `license-request` / `license-decision` / `rights-passport` 0.1 | PASS      | `packages/domain/src/rights-core/schemas.ts`                           |
+| Canonicalización + hash nuevos (legacy intacto)                                              | PASS      | `rightsCanonical` / `rightsHash`; `canonical`/`hash` legacy sin cambio |
+| Evaluador puro + approvals + passport allowlist + issuance gate                              | PASS      | `evaluate.ts`, `approvals.ts`, `passport.ts`, `issuance.ts`            |
+| Matriz de aceptación RIGHTS_CORE_V0_1                                                        | PASS      | 37 casos en `tests/rights-core-acceptance.test.ts`                     |
 
 ## Rights Core integración dual-path (7 sep 2026)
 
-| Entrega | Resultado | Evidencia |
-|---|---|---|
-| Migración 012 (INCOMPLETE, safety, approvals hashes, consent terms) | PASS | `packages/db/migrations/012_rights_core_integration.sql` |
-| Dual-path createRequest / approve (re-eval) / quote / order / issue | PASS | `licensing.ts`, `payments.ts` `assertOrderIssuable` |
-| Flag `RIGHTS_CORE_PURCHASES` + seed Greta DE | PASS | `.env.example`; `seedRightsCoreFixture` |
-| Passport público allowlist | PASS | `GET /v1/assets/:id/passport` → `projectPublicPassport` |
-| Tests integración | PASS | 8 casos; suite total **122** tests |
-| UI dual-path (descubrimiento + ficha) | PASS | `creator-detail` / `discover` / `policy.ts`; Greta DE + Lucía ES |
-| Auth / live / ES→AT masivo | NO | STOP explícito (Auth abierta como hito siguiente) |
+| Entrega                                                             | Resultado | Evidencia                                                        |
+| ------------------------------------------------------------------- | --------- | ---------------------------------------------------------------- |
+| Migración 012 (INCOMPLETE, safety, approvals hashes, consent terms) | PASS      | `packages/db/migrations/012_rights_core_integration.sql`         |
+| Dual-path createRequest / approve (re-eval) / quote / order / issue | PASS      | `licensing.ts`, `payments.ts` `assertOrderIssuable`              |
+| Flag `RIGHTS_CORE_PURCHASES` + seed Greta DE                        | PASS      | `.env.example`; `seedRightsCoreFixture`                          |
+| Passport público allowlist                                          | PASS      | `GET /v1/assets/:id/passport` → `projectPublicPassport`          |
+| Tests integración                                                   | PASS      | 8 casos; suite total **122** tests                               |
+| UI dual-path (descubrimiento + ficha)                               | PASS      | `creator-detail` / `discover` / `policy.ts`; Greta DE + Lucía ES |
+| Auth / live / ES→AT masivo                                          | NO        | STOP explícito (Auth abierta como hito siguiente)                |
 
 **STOP (histórico).** Tras decisión explícita se abrió Auth Supabase v0.1 — ver sección siguiente.
 
@@ -113,45 +113,44 @@ Hito de implementación del motor determinista **sin** cablear compras ni migrar
 
 Login / refresh / provisioning con mocks. Default local sigue `AUTH_PROVIDER=sandbox`.
 
-| Entrega | Resultado | Evidencia |
-|---|---|---|
-| Spec `AUTH_SUPABASE_V0_1` | PASS | `docs/AUTH_SUPABASE_V0_1.md` |
-| Port inyectable + login/refresh/provision | PASS | `apps/api/src/integrations/supabase-auth.ts` |
-| Rutas API + actor dual-path | PASS | `auth/supabase/login`, `refresh`; `actor()` vía JWT |
-| Proxy cookies access + refresh | PASS | `apps/web/src/app/api/[...path]/route.ts` |
-| UI email/password si `auth=supabase` | PASS | `login.tsx` lee `GET /config` |
-| Tests mocks | PASS | `tests/supabase-auth.test.ts` |
-| Runbook proyecto real | PASS | `docs/runbooks/auth-supabase.md` |
-| MFA / live commerce / OAuth | NO | STOP explícito |
+| Entrega                                   | Resultado | Evidencia                                           |
+| ----------------------------------------- | --------- | --------------------------------------------------- |
+| Spec `AUTH_SUPABASE_V0_1`                 | PASS      | `docs/AUTH_SUPABASE_V0_1.md`                        |
+| Port inyectable + login/refresh/provision | PASS      | `apps/api/src/integrations/supabase-auth.ts`        |
+| Rutas API + actor dual-path               | PASS      | `auth/supabase/login`, `refresh`; `actor()` vía JWT |
+| Proxy cookies access + refresh            | PASS      | `apps/web/src/app/api/[...path]/route.ts`           |
+| UI email/password si `auth=supabase`      | PASS      | `login.tsx` lee `GET /config`                       |
+| Tests mocks                               | PASS      | `tests/supabase-auth.test.ts`                       |
+| Runbook proyecto real                     | PASS      | `docs/runbooks/auth-supabase.md`                    |
+| MFA / live commerce / OAuth               | NO        | STOP explícito                                      |
 
 **STOP.** No MFA, no live commerce, no remap ES→AT. Siguiente gate de producto solo tras decisión explícita.
 
 ## Home pública + E2E §28 (7 sep 2026)
 
-| Entrega | Resultado | Evidencia |
-|---|---|---|
-| Landing `/` + hub demo sandbox | PASS | `home.tsx` + shell bare |
-| Marketplace solo `/discover` | PASS | catch-all `page.tsx` |
-| E2E fuerza sandbox (:3010/:4010) | PASS | `scripts/e2e-server.mjs` + `WEB_ORIGINS` |
-| Matriz journeys 1–10 | PASS | `tests/e2e/journeys.spec.ts` + commerce |
-| Vitest con AUTH sandbox | PASS | `vitest.config.ts` fuerza `AUTH_PROVIDER=sandbox` |
-| Playwright | PASS | **9** tests |
-| MFA / live / generador IA | NO | STOP (J10 = `/verify` only) |
+| Entrega                          | Resultado | Evidencia                                         |
+| -------------------------------- | --------- | ------------------------------------------------- |
+| Landing `/` + hub demo sandbox   | PASS      | `home.tsx` + shell bare                           |
+| Marketplace solo `/discover`     | PASS      | catch-all `page.tsx`                              |
+| E2E fuerza sandbox (:3010/:4010) | PASS      | `scripts/e2e-server.mjs` + `WEB_ORIGINS`          |
+| Matriz journeys 1–10             | PASS      | `tests/e2e/journeys.spec.ts` + commerce           |
+| Vitest con AUTH sandbox          | PASS      | `vitest.config.ts` fuerza `AUTH_PROVIDER=sandbox` |
+| Playwright                       | PASS      | **9** tests                                       |
+| MFA / live / generador IA        | NO        | STOP (J10 = `/verify` only)                       |
 
 **STOP.** No MFA, no live commerce, no remap ES→AT. Siguiente gate solo tras decisión explícita.
 
 ## Marketplace UX v0.1 (7 sep 2026)
 
-| Entrega | Resultado | Evidencia |
-|---|---|---|
-| Home sin hub demo / sin Auth banner | PASS | `home.tsx` → Cómo funciona |
-| Login demo secundaria / supabase producto | PASS | `login.tsx` |
-| Pasos 1–3 en ficha + copy discover/order | PASS | `creator-detail` / `discover` / `company` |
-| E2E home actualizado | PASS | `tests/e2e/home.spec.ts` |
-| Signup público / MFA / live | NO | STOP |
+| Entrega                                   | Resultado | Evidencia                                 |
+| ----------------------------------------- | --------- | ----------------------------------------- |
+| Home sin hub demo / sin Auth banner       | PASS      | `home.tsx` → Cómo funciona                |
+| Login demo secundaria / supabase producto | PASS      | `login.tsx`                               |
+| Pasos 1–3 en ficha + copy discover/order  | PASS      | `creator-detail` / `discover` / `company` |
+| E2E home actualizado                      | PASS      | `tests/e2e/home.spec.ts`                  |
+| Signup público / MFA / live               | NO        | STOP                                      |
 
 **STOP.** No MFA, no live commerce, no remap ES→AT.
-
 
 ## Revisión posterior a los cambios de Cursor
 
@@ -169,23 +168,23 @@ Revisión de código y pruebas repetidas en esta tarea; no se ha repetido el ens
 
 Acreditación operativa local con `PAYMENTS_PROVIDER=stripe`, claves `sk_test_…`, `stripe listen` (snapshot + thin) y Dashboard test. IDs redactados.
 
-| Caso | Resultado | Evidencia |
-|---|---|---|
-| Platform setup marketplace (Cliente → Tú → Destinatario) | PASS | Connect platform setup completado |
-| Connect creador (Accounts v2 recipient + Account Link) | PASS | Lucía `acct_…`; `transfers_status=active`; thin sync UI |
-| Checkout hosted €650 campaña «zara» | PASS | `cs_test_…` → orden `6330abc6-…` `fulfilled` → licencia `479a931e-…` |
-| Webhook snapshot firma | PASS (tras fix) | Antes: todos `← [400]` por `rawBody` vacío; después `← [200]`. Fulfillment inicial vía recovery Events API |
-| Licencia pública | PASS | `/verify/Igo65BWYhPp4i9UxZ7yuUYfOdZQukmMW` — `signature_valid`, `NOT_YET_VALID` hasta `starts_at` 2026-09-09 |
-| Conciliar Stripe (cierre paso 6) | PASS* | Run `96261f8d…`; import OK; **0 críticas**; avisos no críticos (CLI/funding) ack |
-| Refund total test | PASS | Orden → `refunded`; refund `re_3UClNM…` `succeeded` €650; licencia **sigue `issued`** (sin auto-revocación) |
-| Idempotencia `events resend` | PASS | Mismo `evt_…` → HTTP 200; sin nuevos `provider_events` ni journals |
-| Eventos desordenados / retraso (#5) | PASS | Resend post-flujo de evento secundario; sin doble ledger |
-| Expirar Checkout sin pagar (#7) | PASS | Orden `7295138c…` · sesión `cs_test_a1Pfx…` → intento `expired`; 0 licencias |
-| Pago nuevo + payout connected (#9) | PASS | Orden `21884812…` fulfilled + transfer; `po_1UCmK1…` en `acct_1UClG2…`; `payout_records` **sin** `order_id` |
-| Disputa CLI `stripe trigger` | PASS (skip) | Fixture USD → ack 200 sin insertar (MVP solo EUR); licencia intacta |
-| Disputa EUR (orden viva) | PASS | Orden `18caba7b…` · `du_1UCn0k…` €650; licencia `issued`; review admin → `acknowledged`, `license_changed: false` |
-| `charge_ref` en intentos | HECHO | Migración `010`; matching recon/disputas por `ch_…` |
-| **Paso 6 cerrado** | **HECHO (test mode)** | Checklist runbook 0–10 + disputa EUR. `LIVE_COMMERCE_ENABLED` sigue false |
+| Caso                                                     | Resultado             | Evidencia                                                                                                         |
+| -------------------------------------------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Platform setup marketplace (Cliente → Tú → Destinatario) | PASS                  | Connect platform setup completado                                                                                 |
+| Connect creador (Accounts v2 recipient + Account Link)   | PASS                  | Lucía `acct_…`; `transfers_status=active`; thin sync UI                                                           |
+| Checkout hosted €650 campaña «zara»                      | PASS                  | `cs_test_…` → orden `6330abc6-…` `fulfilled` → licencia `479a931e-…`                                              |
+| Webhook snapshot firma                                   | PASS (tras fix)       | Antes: todos `← [400]` por `rawBody` vacío; después `← [200]`. Fulfillment inicial vía recovery Events API        |
+| Licencia pública                                         | PASS                  | `/verify/Igo65BWYhPp4i9UxZ7yuUYfOdZQukmMW` — `signature_valid`, `NOT_YET_VALID` hasta `starts_at` 2026-09-09      |
+| Conciliar Stripe (cierre paso 6)                         | PASS*                 | Run `96261f8d…`; import OK; **0 críticas**; avisos no críticos (CLI/funding) ack                                  |
+| Refund total test                                        | PASS                  | Orden → `refunded`; refund `re_3UClNM…` `succeeded` €650; licencia **sigue `issued`** (sin auto-revocación)       |
+| Idempotencia `events resend`                             | PASS                  | Mismo `evt_…` → HTTP 200; sin nuevos `provider_events` ni journals                                                |
+| Eventos desordenados / retraso (#5)                      | PASS                  | Resend post-flujo de evento secundario; sin doble ledger                                                          |
+| Expirar Checkout sin pagar (#7)                          | PASS                  | Orden `7295138c…` · sesión `cs_test_a1Pfx…` → intento `expired`; 0 licencias                                      |
+| Pago nuevo + payout connected (#9)                       | PASS                  | Orden `21884812…` fulfilled + transfer; `po_1UCmK1…` en `acct_1UClG2…`; `payout_records` **sin** `order_id`       |
+| Disputa CLI `stripe trigger`                             | PASS (skip)           | Fixture USD → ack 200 sin insertar (MVP solo EUR); licencia intacta                                               |
+| Disputa EUR (orden viva)                                 | PASS                  | Orden `18caba7b…` · `du_1UCn0k…` €650; licencia `issued`; review admin → `acknowledged`, `license_changed: false` |
+| `charge_ref` en intentos                                 | HECHO                 | Migración `010`; matching recon/disputas por `ch_…`                                                               |
+| **Paso 6 cerrado**                                       | **HECHO (test mode)** | Checklist runbook 0–10 + disputa EUR. `LIVE_COMMERCE_ENABLED` sigue false                                         |
 
 ### Correcciones aplicadas en el ensayo
 
@@ -227,3 +226,60 @@ Las pruebas no usaron identidades, tarjetas ni licencias reales. El fixture de o
 ## Límites de esta evidencia
 
 El resultado no acredita KYC, suficiencia contractual, impuestos, antimalware, MFA real, backup/restore ni despliegue cloud. El ensayo Stripe **modo test** (paso 6) sí acredita Checkout/Connect/refund/payout/disputa/conciliación frente a Dashboard/CLI; **no** sustituye un cobro live ni cierra gates de piloto. Tampoco se ha ejecutado una prueba de carga de 20 usuarios ni una auditoría de seguridad independiente. Los workflows CI están preparados; la ejecución remota exige publicar el repositorio.
+
+## Campaigns H1 — cierre 9 septiembre 2026
+
+Ver especificación, orden de hitos y límites en `docs/CAMPAIGNS_V0_1.md`.
+
+| Comprobación                                                                              | Resultado                                                                                        |
+| ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Migración 026 campaigns, local + test, reejecución idempotente                            | PASS; local también aplicó 023–025 pendientes                                                    |
+| Tests H1: persistencia, aislamiento, roles, revisión concurrente, reintentos y validación | 5/5 PASS                                                                                         |
+| Typecheck / lint                                                                          | PASS (correcciones menores previas, sin cambiar contratos)                                       |
+| Build Next + ejecución API/web sandbox + E2E H1                                           | PASS; 1 recorrido desktop/móvil                                                                  |
+| Manual crear → editar → recargar → actividad                                              | PASS, brief y revisión 2 conservados                                                             |
+| Regresión completa final                                                                  | 219 PASS / 5 FAIL; original HEAD 5530635: 214 PASS / mismos 5 FAIL                               |
+| E2E global inicial                                                                        | 18 PASS / 4 FAIL; fallo nuevo de campaña corregido y retestado; 3 timeouts existentes pendientes |
+
+Capturas nuevas: `screenshots/campaigns-desktop.png` y `screenshots/campaigns-mobile.png`.
+No se sobreescriben capturas históricas. No se acredita PASS global, readiness legal
+ni producción. Campaña = borrador de planificación; derechos sin evaluar. **STOP H1**.
+
+## Campaign Talent / Rights Inventory H2 — 2026-09-09
+
+Cierre funcional PASS y STOP H2: docs/TALENT_INVENTORY_V0_1.md.
+Migración 027 local/test aplicada y reaplicación idempotente. H1/H2: 14/14 tests y
+2/2 E2E PASS; typecheck/lint/build PASS. Verificación manual de inventario, filtros,
+scopes y expansión; capturas desktop/mobile en docs/screenshots/talent-inventory-*.
+Suite global 228 PASS / 5 FAIL: mismos casos previos que H1 (creator-lifecycle x2,
+generation-read-verify x1, rights-operations x2). No PASS global, sin repetir E2E legacy.
+No se abre H3 ni cambia ningún gate live o contrato PASS.
+
+## Campaign Clearance H3 — 2026-09-09
+
+Cierre funcional PASS y STOP H3: `docs/CAMPAIGN_CLEARANCE_V0_1.md`. Migración 028
+local/test aplicada y reaplicación idempotente. H1–H3: 20/20 tests focalizados y 3/3 E2E
+PASS; typecheck/lint/build/diff-check PASS. Verificación manual del uso estructurado,
+disclaimer, score y motivos; capturas desktop/mobile en `docs/screenshots/campaign-clearance-*`.
+
+Suite global sobre DB compartida: 233 PASS / 6 FAIL. Cinco fallos conocidos (creator-lifecycle
+x2, generation-read-verify x1, rights-operations x2) y rn-auth-list x1 reproducido también
+de forma aislada sobre la misma DB compartida. Corrección H4: Vitest exige TEST_DATABASE_URL;
+el uso de DATABASE_URL no cambió la base de pruebas. Baseline H4 realmente nuevo: 207 PASS /
+32 FAIL, registrado antes de código H4. Sin PASS global. Ningún
+gate live, contrato PASS o autoridad ejecutable cambia. **STOP H3** histórico; H4 cerrado
+abajo.
+
+## Campaign Flight H4 — 2026-09-10
+
+Cierre funcional PASS y STOP H4: `docs/CAMPAIGN_FLIGHT_V0_1.md`. Migración 029 local/test
+aplicada y reaplicación idempotente (`campaign_evidence`). H1–H4: 28/28 tests focalizados
+y 4/4 E2E PASS; typecheck/lint/build/diff-check PASS. UI Producción/Outputs/Aprobaciones/
+Licencias; vínculos AUTH/OUTPUT explícitos sin mint/consume; `media_verified=false`.
+Capturas desktop/mobile en `docs/screenshots/campaign-flight-*`.
+
+Suite global post-código (DB compartida): 214 PASS / 33 FAIL. Baseline limpio pre-código
+H4: 207 PASS / 32 FAIL (`work/h4-baseline-clean.log`). Fallos fuera de módulos Campaigns
+(Stripe mock, integration, creator-lifecycle, rights-grants/ops, etc.). Sin PASS global.
+Ningún gate live o autoridad ejecutable cambia. H5 Deal Builder: SPECIFY PASS
+(`docs/CAMPAIGN_DEAL_BUILDER_V0_1.md`); IMPLEMENT no abierto.

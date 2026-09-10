@@ -4336,3 +4336,19 @@ textarea {
   margin: 12px 0;
   font-weight: 500 !important;
 }
+
+.campaign-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 24px 0; }
+.campaign-brief { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.campaign-editor { display: grid; gap: 12px; margin-top: 20px; }
+.campaign-editor label { margin-bottom: 0; }
+.campaign-editor textarea { width: 100%; }
+
+.talent-workspace { display: grid; gap: 18px; min-width: 0; overflow-wrap: anywhere; }
+.talent-filters { display: flex; flex-wrap: wrap; gap: 16px; align-items: end; }
+.talent-filters label { flex: 1 1 160px; margin: 0; }
+.talent-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 18px; }
+.talent-grant { border-top: 1px solid var(--line); margin: 16px 0; padding-top: 12px; }
+.talent-grant summary { cursor: pointer; padding: 10px 0; }
+.talent-grant dt { font-weight: 600; margin-top: 10px; }
+.talent-grant dd { margin: 0; }

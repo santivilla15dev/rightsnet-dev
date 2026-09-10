@@ -2,6 +2,7 @@ export * from './schemas.js';
 export * from './rights-grant.js';
 export * from './rn-auth.js';
 export * from './generation-record.js';
+export * from './campaign-clearance.js';
 export * from './canonical.js';
 export * from './approvals.js';
 export * from './evaluate.js';

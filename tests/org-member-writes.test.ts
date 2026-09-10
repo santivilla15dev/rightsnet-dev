@@ -10,7 +10,6 @@ import {
   confirmExternalAgreement,
   createExternalAgreement,
 } from '../apps/api/src/modules/external-agreements.js';
-import { DomainError } from '../packages/domain/src/index.js';
 
 describe('Org-member L3 writes (owner confirm)', () => {
   let admin: Actor;

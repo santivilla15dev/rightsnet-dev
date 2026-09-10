@@ -81,3 +81,33 @@ Austria and Germany are the proposed commercial pilot scope, not a claim of lega
 Keep live commerce gated until the documented launch conditions are met.
 
 Doc truth-sync (stale “not started” claims): `docs/DOC_TRUTH_SYNC_V0_1.md` — **PASS**.
+Backlog abierto (pendiente para agentes): `docs/BACKLOG_OPEN_WORK.md`.
+
+Campaigns H1: entidad de planificación por organización + brief + revisiones + actividad
+implementadas y verificadas; `docs/CAMPAIGNS_V0_1.md`. DRAFT / NOT_EVALUATED, sin
+autoridad ni conexiones inferidas a históricos. Tests H1 PASS; regresión global tiene
+fallos previos documentados. **STOP H1** histórico; continuación H2 autorizada y cerrada abajo.
+
+Campaign Talent H2: My Talent / Rights Inventory privado, filtros temporales/origen y
+vínculos explícitos de talento/grant a campañas. Migración 027; docs/TALENT_INVENTORY_V0_1.md.
+H2 funcional PASS; 14 tests focalizados + 2 E2E H1/H2 PASS, typecheck/lint/build PASS.
+Regresión global 228 PASS / mismos 5 fallos previos. No concede autoridad ni evalúa
+clearance; contratos PASS preservados. **STOP H2** histórico; continuación H3–H4 cerrada abajo.
+
+Campaign Clearance H3: uso estructurado + score/status determinista por grant seleccionado,
+sin unión de contratos ni RN-AUTH; `docs/CAMPAIGN_CLEARANCE_V0_1.md`. H3 funcional PASS:
+20 tests focalizados y 3 E2E H1–H3 PASS, typecheck/lint/build PASS. Solo aplica a talento
+humano real; un personaje íntegramente ficticio no requiere este flujo. Regresión global
+233 PASS / 6 FAIL, todos fuera de H3 y documentados. **STOP H3** histórico; continuación H4
+autorizada y cerrada abajo.
+
+Campaign Flight H4: preflight/postflight + vínculos explícitos AUTH/OUTPUT a RN-AUTH y
+GenerationRecord existentes, sin mint/consume ni inspección de media; migración 029;
+`docs/CAMPAIGN_FLIGHT_V0_1.md`. H4 funcional PASS: 28 tests focalizados H1–H4 y 4 E2E
+PASS, typecheck/lint/build PASS. Regresión global 214 PASS / 33 FAIL (baseline limpio
+pre-H4 207/32), fallos fuera de Campaigns y documentados. No concede autoridad ejecutable
+ni clearance legal. **STOP H4**.
+
+Campaign Deal Builder H5: SPECIFY **PASS** (`docs/CAMPAIGN_DEAL_BUILDER_V0_1.md`) —
+propuesta estructurada de gaps/solicitud humana sin autoactivar permisos; IMPLEMENT
+pendiente. H6 Passport propuesto, no implementado.

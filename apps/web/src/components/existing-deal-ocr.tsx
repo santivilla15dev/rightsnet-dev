@@ -51,7 +51,7 @@ export function ExistingDealOcrIngest() {
     () => (user?.organizations ?? []).filter((o) => o.role === 'owner'),
     [user],
   );
-  const [organizationId, setOrganizationId] = useState(DEMO_ORGANIZATIONS[0].id);
+  const [organizationId, setOrganizationId] = useState<string>(DEMO_ORGANIZATIONS[0].id);
   const [assetId, setAssetId] = useState(DEMO_ASSET_ID);
   const [title, setTitle] = useState('Contrato Existing Deal');
   const [agreement, setAgreement] = useState<AgreementRow | null>(null);

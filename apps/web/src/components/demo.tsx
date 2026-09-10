@@ -43,7 +43,6 @@ export function Demo() {
         role: 'creator',
       }, '/onboarding');
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- one-shot deep link
   }, [authMode, search]);
 
   async function enter(

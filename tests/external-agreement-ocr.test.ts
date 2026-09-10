@@ -15,7 +15,6 @@ import {
   sandboxExtractProposedRights,
   uploadExternalAgreementFile,
 } from '../apps/api/src/modules/external-agreement-ocr.js';
-import { DomainError } from '../packages/domain/src/index.js';
 
 /** Minimal valid PNG (1x1) — magic bytes checked by upload. */
 const PNG_1X1 = Buffer.from(

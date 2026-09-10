@@ -91,7 +91,6 @@ export function AccountSecurity() {
             ) : (
               <form onSubmit={(ev) => void confirmEnroll(ev)}>
                 <p className="muted">Escanea el QR en tu app (Authy, 1Password, Google Authenticator).</p>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={enroll.qr_code}
                   alt="QR MFA"

@@ -1,3 +1,5 @@
+import { MyTalent } from '@/components/talent-inventory';
+import { Campaigns } from '@/components/campaigns';
 import { Suspense } from 'react';
 import { notFound, redirect } from 'next/navigation';
 import { Home } from '@/components/home';
@@ -66,6 +68,10 @@ export default async function Page({ params }: { params: Promise<{ path?: string
   if (route === 'application') return <Application />;
   if (route === 'company/setup') return <CompanySetup />;
   if (route === 'company/ready') return <CompanyReady />;
+  if (route === 'company/talent') return <MyTalent />;
+  if (route === 'company/campaigns') return <Campaigns />;
+  if (path.length === 3 && path[0] === 'company' && path[1] === 'campaigns')
+    return <Campaigns key={path[2]} id={path[2]} />;
   if (route === 'company') return <Company />;
   if (route === 'company/licenses') return <Company licensesOnly />;
   if (route === 'dashboard') return <CreatorDashboard />;
