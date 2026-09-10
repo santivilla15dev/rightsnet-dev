@@ -374,3 +374,9 @@ flight, deal builder y passport con `campaignRlsActor` + `withRlsActor` /
 Cierre PASS: `docs/DB_RLS_OPS_WIRING_V0_1.md`. `assertOps*` + overview/campaign-query
 + Existing Deal mutates con `opsRlsActor`. Tests ops / org-member / writes / `db-rls`
 12/12 PASS.
+
+## DB RLS grants + external agreements v0.1 — 2026-09-10
+
+Cierre PASS: `docs/DB_RLS_GRANTS_EXTERNAL_V0_1.md`. Migración 035 FORCE en
+`rights_grants` / `external_agreements` (org member o grantor). Tests `db-rls` 2/2
++ talent/ops focalizados PASS.
