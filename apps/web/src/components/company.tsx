@@ -655,7 +655,8 @@ export function OrderDetail({ id, paymentPage = false }: { id: string; paymentPa
             <b>{money(o.price.total_minor)}</b>
           </div>
           <p className="muted small">
-            La comisión está incluida en el total. Fiscalidad pendiente · DEMO sin derechos reales.
+            La comisión está incluida en el total. Plantilla contractual provisional · no constituye
+            clearance legal ni licencia fuera del alcance acordado en RightsNet.
           </p>
           {error ? (
             <p role="alert" className="inline-error">

@@ -1,7 +1,8 @@
 # Auth Supabase — runbook (email + Google/Apple)
 
 Para **uso de producto**: `AUTH_PROVIDER=supabase` + keys.  
-Agents/E2E: `AUTH_PROVIDER=sandbox` (Playwright fuerza sandbox).
+`DEMO_UI_ENABLED=false` (default): sin `/demo` ni banner en la web.  
+Agents/E2E: `AUTH_PROVIDER=sandbox` + `DEMO_UI_ENABLED=true` (Playwright).
 
 ## Prerequisites
 

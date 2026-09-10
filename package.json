@@ -17,7 +17,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json && pnpm --filter @rightsnet/web typecheck",
     "build": "pnpm typecheck && pnpm --filter @rightsnet/web build",
     "test": "vitest run",
-    "test:e2e": "AUTH_PROVIDER=sandbox PAYMENTS_PROVIDER=sandbox playwright test",
+    "test:e2e": "AUTH_PROVIDER=sandbox PAYMENTS_PROVIDER=sandbox DEMO_UI_ENABLED=true playwright test",
     "check": "pnpm typecheck && pnpm test",
     "lint": "eslint apps packages tests",
     "api": "tsx apps/api/src/main.ts",

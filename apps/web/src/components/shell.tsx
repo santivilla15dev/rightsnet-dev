@@ -54,10 +54,26 @@ export function Shell({ children }: { children: ReactNode }) {
     router = useRouter(),
     [open, setOpen] = useState(false),
     [demo, setDemo] = useState<DemoSession | null>(null),
+    [demoUi, setDemoUi] = useState(false),
     [space, setSpace] = useState<AccountSpace | null>(null);
 
   useEffect(() => {
-    setDemo(getDemoSession());
+    void api<{ demo_ui?: boolean }>('config')
+      .then((cfg) => {
+        const enabled = !!cfg.demo_ui;
+        setDemoUi(enabled);
+        if (!enabled) {
+          clearDemoSession();
+          setDemo(null);
+          return;
+        }
+        setDemo(getDemoSession());
+      })
+      .catch(() => {
+        clearDemoSession();
+        setDemo(null);
+        setDemoUi(false);
+      });
     setSpace(getPreferredSpace());
   }, [path, user]);
 
@@ -162,7 +178,7 @@ export function Shell({ children }: { children: ReactNode }) {
       path === '/application';
     return (
       <div className={'home-shell' + (isAuthSurface ? ' login-shell' : '')}>
-        {demo ? <DemoBanner demo={demo} onExit={() => void exitDemo()} /> : null}
+        {demoUi && demo ? <DemoBanner demo={demo} onExit={() => void exitDemo()} /> : null}
         <header className="home-topbar">
           <Link href="/" className="wordmark">
             <span className="brand-icon">
@@ -171,10 +187,6 @@ export function Shell({ children }: { children: ReactNode }) {
             RightsNet<span className="brand-dot">.</span>
           </Link>
           <div className="home-topbar-actions">
-            <span className="sandbox-pill">
-              <span />
-              Entorno de prueba
-            </span>
             {path === '/login' ||
             path === '/signup' ||
             path === '/welcome' ||
@@ -333,12 +345,12 @@ export function Shell({ children }: { children: ReactNode }) {
             <ArrowUpRight size={15} />
           </Link>
           <div className="sidebar-footer">
-            <span className="status-dot" /> Sandbox local <span>v0.1</span>
+            <span className="status-dot" /> RightsNet <span>v0.1</span>
           </div>
         </div>
       </aside>
       <div className="main-shell">
-        {demo ? <DemoBanner demo={demo} onExit={() => void exitDemo()} /> : null}
+        {demoUi && demo ? <DemoBanner demo={demo} onExit={() => void exitDemo()} /> : null}
         <header className="topbar">
           <div className="topbar-left">
             <button className="mobile-menu" aria-label="Abrir menú" onClick={() => setOpen(true)}>
@@ -374,10 +386,6 @@ export function Shell({ children }: { children: ReactNode }) {
                 Licenciatario: {org.legal_name}
               </span>
             ) : null}
-            <span className="sandbox-pill">
-              <span />
-              Entorno de prueba
-            </span>
             <Link className="profile-switch" href="/login">
               <span className="avatar-small">{user?.display_name?.slice(0, 1) ?? 'G'}</span>
               <span>{user?.display_name?.split(' · ')[0] ?? 'Entrar'}</span>

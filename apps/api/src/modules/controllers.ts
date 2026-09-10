@@ -183,6 +183,7 @@ export class PublicController {
       rights_core_purchases: config.rightsCorePurchases,
       platform_api_enabled: config.platformApiEnabled,
       live_commerce: config.liveCommerceEnabled,
+      demo_ui: config.demoUiEnabled,
     };
   }
   @Get('search') search(@Query() q: Record<string, unknown>) {

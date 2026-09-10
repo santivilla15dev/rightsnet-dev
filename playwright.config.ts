@@ -7,6 +7,7 @@ const sandboxEnv = {
   IDENTITY_PROVIDER: 'sandbox',
   APP_ENV: process.env.APP_ENV ?? 'sandbox',
   LIVE_COMMERCE_ENABLED: 'false',
+  DEMO_UI_ENABLED: 'true',
   API_PORT: '4010',
   API_URL: 'http://127.0.0.1:4010',
   WEB_URL: 'http://127.0.0.1:3010',

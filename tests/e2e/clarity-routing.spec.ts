@@ -92,13 +92,15 @@ test('clarity: non-admin cannot open ops; sandbox admin can', async ({ page }) =
   await expect(page.getByText(/Ops|Verificación|Pagos/i).first()).toBeVisible();
 });
 
-test('clarity: login has no persona switcher', async ({ page }) => {
+test('clarity: login sandbox muestra Demo solo con DEMO_UI_ENABLED', async ({ page }) => {
   await page.goto('/login');
   await expect(page.getByRole('button', { name: 'Explorar como marca' })).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Bienvenido de nuevo' })).toBeVisible();
+  // E2E server sets DEMO_UI_ENABLED=true
   await expect(page.getByRole('link', { name: 'Ir a Demo' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Continuar con Google' })).toHaveCount(0);
   await expect(page.getByRole('link', { name: 'Crear cuenta' })).toBeVisible();
+  await expect(page.getByText('Entorno de prueba')).toHaveCount(0);
 });
 
 test('clarity: home does not link product CTAs to demo', async ({ page }) => {

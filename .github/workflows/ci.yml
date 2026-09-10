@@ -19,6 +19,7 @@ jobs:
       TEST_DATABASE_URL: postgresql://rightsnet:test-password@127.0.0.1:5432/rightsnet_test
       APP_ENV: sandbox
       LIVE_COMMERCE_ENABLED: 'false'
+      DEMO_UI_ENABLED: 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

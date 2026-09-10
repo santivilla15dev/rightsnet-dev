@@ -96,6 +96,11 @@ export const config = {
       : process.env.NOTIFY_PROVIDER === 'email_outbox'
         ? 'email_outbox'
         : 'sandbox') as 'sandbox' | 'log' | 'email' | 'email_outbox',
+  /**
+   * Persona switcher UI (`/demo`) + demo banner. Off by default (product web).
+   * CI/E2E sets true with AUTH_PROVIDER=sandbox. docs/DEMO_UI_GATE_V0_1.md
+   */
+  demoUiEnabled: process.env.DEMO_UI_ENABLED === 'true',
   port: Number(process.env.API_PORT ?? 4000),
 };
 export function assertConfiguration() {

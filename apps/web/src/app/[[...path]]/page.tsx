@@ -27,6 +27,7 @@ import { ForgotPassword } from '@/components/forgot-password';
 import { ResetPassword } from '@/components/reset-password';
 import { Help } from '@/components/help';
 import { Demo } from '@/components/demo';
+import { DemoUiGate } from '@/components/demo-ui-gate';
 import { Onboarding } from '@/components/onboarding';
 import { Application } from '@/components/application';
 import { Loading } from '@/components/common';
@@ -57,7 +58,9 @@ export default async function Page({ params }: { params: Promise<{ path?: string
   if (route === 'demo')
     return (
       <Suspense fallback={<Loading />}>
-        <Demo />
+        <DemoUiGate>
+          <Demo />
+        </DemoUiGate>
       </Suspense>
     );
   if (route === 'onboarding')

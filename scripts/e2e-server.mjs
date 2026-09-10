@@ -9,6 +9,7 @@ process.env.AUTH_PROVIDER = 'sandbox';
 process.env.PAYMENTS_PROVIDER = 'sandbox';
 process.env.APP_ENV = process.env.APP_ENV ?? 'sandbox';
 process.env.LIVE_COMMERCE_ENABLED = 'false';
+process.env.DEMO_UI_ENABLED = 'true';
 process.env.API_PORT = process.env.E2E_API_PORT ?? '4010';
 process.env.API_URL = process.env.E2E_API_URL ?? 'http://127.0.0.1:4010';
 process.env.WEB_URL = process.env.E2E_WEB_URL ?? 'http://127.0.0.1:3010';

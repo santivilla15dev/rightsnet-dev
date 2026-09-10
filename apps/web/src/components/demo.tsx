@@ -29,10 +29,16 @@ export function Demo() {
     [error, setError] = useState('');
 
   useEffect(() => {
-    void api<{ auth?: string }>('config')
-      .then((cfg) => setAuthMode(cfg.auth ?? 'sandbox'))
-      .catch(() => setAuthMode('sandbox'));
-  }, []);
+    void api<{ auth?: string; demo_ui?: boolean }>('config')
+      .then((cfg) => {
+        if (!cfg.demo_ui) {
+          router.replace('/login');
+          return;
+        }
+        setAuthMode(cfg.auth ?? 'sandbox');
+      })
+      .catch(() => router.replace('/login'));
+  }, [router]);
 
   useEffect(() => {
     const flow = search.get('flow');

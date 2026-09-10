@@ -22,6 +22,7 @@ export function Login() {
     router = useRouter(),
     [busy, setBusy] = useState(false),
     [authMode, setAuthMode] = useState<AuthMode | null>(null),
+    [demoUi, setDemoUi] = useState(false),
     [email, setEmail] = useState(''),
     [password, setPassword] = useState(''),
     [mfaCode, setMfaCode] = useState(''),
@@ -29,9 +30,15 @@ export function Login() {
     [resolvingContinue, setResolvingContinue] = useState(false);
 
   useEffect(() => {
-    void api<{ auth?: string }>('config')
-      .then((cfg) => setAuthMode(cfg.auth ?? 'sandbox'))
-      .catch(() => setAuthMode('sandbox'));
+    void api<{ auth?: string; demo_ui?: boolean }>('config')
+      .then((cfg) => {
+        setAuthMode(cfg.auth ?? 'sandbox');
+        setDemoUi(!!cfg.demo_ui);
+      })
+      .catch(() => {
+        setAuthMode('sandbox');
+        setDemoUi(false);
+      });
   }, []);
 
   async function continueSession() {
@@ -230,15 +237,22 @@ export function Login() {
         ) : (
           <section className="login-sandbox-notice panel" style={{ padding: '1.25rem' }}>
             <p>
-              Modo prueba CI: el acceso con correo y OAuth no está activo (
-              <code>AUTH_PROVIDER=sandbox</code>).
+              El acceso con correo y OAuth requiere <code>AUTH_PROVIDER=supabase</code> (uso de
+              producto). Ver <code>docs/runbooks/auth-supabase.md</code>.
             </p>
-            <Button asChild className="full-width" style={{ marginTop: '1rem' }}>
-              <Link href="/demo">
-                Ir a Demo
-                <ArrowRight size={16} />
-              </Link>
-            </Button>
+            {demoUi ? (
+              <Button asChild className="full-width" style={{ marginTop: '1rem' }}>
+                <Link href="/demo">
+                  Ir a Demo
+                  <ArrowRight size={16} />
+                </Link>
+              </Button>
+            ) : (
+              <p className="login-demo-note" style={{ marginTop: '1rem' }}>
+                El selector de personas (<code>/demo</code>) está desactivado (
+                <code>DEMO_UI_ENABLED=false</code>). Solo para CI/E2E internos.
+              </p>
+            )}
           </section>
         )}
         <p className="login-demo-note">
