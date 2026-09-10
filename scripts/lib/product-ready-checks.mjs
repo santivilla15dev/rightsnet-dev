@@ -97,8 +97,13 @@ export function evaluateProductReady(env, opts = {}) {
     });
     findings.push({
       id: 'api.config.demo_ui',
-      ok: cfg.demo_ui !== true,
-      detail: `API config.demo_ui=${String(cfg.demo_ui)}`,
+      ok: cfg.demo_ui === false,
+      detail:
+        cfg.demo_ui === false
+          ? 'API config.demo_ui=false'
+          : cfg.demo_ui === true
+            ? 'API config.demo_ui=true — apaga DEMO_UI_ENABLED y reinicia'
+            : 'API sin campo demo_ui — reinicia pnpm api tras el último pull',
     });
     findings.push({
       id: 'api.config.live_commerce',

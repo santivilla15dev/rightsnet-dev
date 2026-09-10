@@ -418,6 +418,11 @@ sin etiqueta «Sandbox:»; AuthRequired → login producto.
 Cierre PASS: `docs/PRODUCT_READY_LOCAL_V0_1.md`. `pnpm product:ready`
 valida `.env` founder; tests product-ready. Live/staging cloud OPEN.
 
+## Staging host scaffold v0.1 — 2026-09-10
+
+Cierre PASS andamiaje: `docs/STAGING_HOST_SCAFFOLD_V0_1.md`.
+`.env.staging.example` + `apps/web/vercel.json` + runbook. Deploy OPEN.
+
 ## DB roles / tenancy v0.1 — 2026-09-10
 
 Cierre PASS roles: `docs/DB_ROLES_TENANCY_V0_1.md`. Migración 033; `MIGRATE_DATABASE_URL`;

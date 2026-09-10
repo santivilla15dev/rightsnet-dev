@@ -79,4 +79,27 @@ describe('Product ready local v0.1', () => {
       rmSync(dir, { recursive: true, force: true });
     }
   });
+
+  it('exige demo_ui explícito false cuando hay config API', () => {
+    const env = {
+      APP_ENV: 'sandbox',
+      LIVE_COMMERCE_ENABLED: 'false',
+      DEMO_UI_ENABLED: 'false',
+      IDENTITY_LIVE_ENABLED: 'false',
+      AUTH_PROVIDER: 'supabase',
+      SUPABASE_URL: 'https://example.supabase.co',
+      SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.aaaaaaaa',
+      NEXT_PUBLIC_SUPABASE_URL: 'https://example.supabase.co',
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.bbbbbbbb',
+    };
+    const stale = evaluateProductReady(env, {
+      config: { auth: 'supabase', live_commerce: false },
+    });
+    expect(stale.find((f) => f.id === 'api.config.demo_ui')?.ok).toBe(false);
+
+    const fresh = evaluateProductReady(env, {
+      config: { auth: 'supabase', demo_ui: false, live_commerce: false },
+    });
+    expect(allOk(fresh)).toBe(true);
+  });
 });

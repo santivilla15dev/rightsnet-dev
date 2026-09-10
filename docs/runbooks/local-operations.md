@@ -60,6 +60,10 @@ pnpm product:ready
 
 Runbook: [`product-ready-local.md`](product-ready-local.md).
 
+Andamiaje staging (web Vercel EU + API aparte), sin deploy automático:
+
+[`staging-host-scaffold.md`](staging-host-scaffold.md).
+
 Ejemplo manual adicional:
 
 ```bash

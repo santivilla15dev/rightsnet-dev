@@ -85,7 +85,7 @@ El founder elige **uno**. Cada fila es un posible SPECIFY → STOP.
 | Baja / infra | ~~Rate limiting distribuido~~ | **PASS** puerto memory+redis opt-in (`docs/RATE_LIMIT_DISTRIBUTED_V0_1.md`); CI memory |
 | Baja / infra | ~~Backups / PITR / restore~~ | Ensayo local dump/restore **PASS** (`docs/BACKUP_RESTORE_V0_1.md`); PITR cloud OPEN |
 | Baja / infra | ~~Despliegue staging y seguridad~~ | Higiene + CI + health smoke **PASS**; host cloud staging OPEN |
-| Baja / cloud | Host staging real | Founder elige plataforma; prep: higiene + `pnpm staging:health` PASS |
+| Baja / cloud | Host staging real | Scaffold **PASS** (`docs/STAGING_HOST_SCAFFOLD_V0_1.md`); deploy cloud OPEN (founder) |
 | Media / UX | ~~Demo UI en producto~~ | **PASS** gate + tono copy; ready local **PASS** (`docs/PRODUCT_READY_LOCAL_V0_1.md`) |
 | Baja / cloud | SMTP / email real | Tras outbox; SES/SendGrid u otro — no en CI |
 | Baja / cloud | KMS remoto / WORM / PITR managed | Tras decisión de host cloud |

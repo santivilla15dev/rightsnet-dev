@@ -164,6 +164,8 @@ Product copy sandbox tone v0.1: `docs/PRODUCT_COPY_SANDBOX_TONE_V0_1.md` —
 SPECIFY **PASS**; IMPLEMENT **PASS** (notas UI sin etiqueta «Sandbox:»).
 Product ready local v0.1: `docs/PRODUCT_READY_LOCAL_V0_1.md` — SPECIFY **PASS**;
 IMPLEMENT **PASS** (`pnpm product:ready`; no live/production).
+Staging host scaffold v0.1: `docs/STAGING_HOST_SCAFFOLD_V0_1.md` — SPECIFY **PASS**;
+IMPLEMENT **PASS** (runbook + `.env.staging.example` + vercel.json; deploy OPEN).
 DB roles v0.1: `docs/DB_ROLES_TENANCY_V0_1.md`. **PASS** migrator≠`rightsnet_app`.
 DB RLS org pilot v0.1: `docs/DB_RLS_V0_1.md` — SPECIFY **PASS**; IMPLEMENT **PASS**
 (FORCE en organizations/members/campaigns; bypass runtime por defecto; cableado
