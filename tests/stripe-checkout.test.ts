@@ -282,6 +282,32 @@ describe.sequential('Stripe checkout adapter (mocked provider)', () => {
     ).rejects.toMatchObject({ code: 'PAYMENT_UNCONFIRMED', status: 409 });
   });
 
+  it('quarantines foreign Checkout sessions without RightsNet metadata', async () => {
+    const store = new Map<string, Stripe.Checkout.Session>();
+    setStripeCheckoutPortForTests(mockPort(store));
+    const session = {
+      id: 'cs_test_foreign_usd',
+      object: 'checkout.session',
+      livemode: false,
+      mode: 'payment',
+      status: 'complete',
+      payment_status: 'paid',
+      amount_total: 3000,
+      currency: 'usd',
+      metadata: {},
+      payment_intent: null,
+    } as unknown as Stripe.Checkout.Session;
+    store.set(session.id, session);
+    const eventId = 'evt_foreign_' + randomUUID();
+    await ingestStripeCheckoutEvent(stripeEvent('checkout.session.completed', session, eventId));
+    expect(
+      (await pool.query('SELECT status,error FROM provider_events WHERE event_id=$1', [eventId]))
+        .rows[0],
+    ).toEqual({ status: 'failed', error: 'PAYMENT_MISMATCH' });
+    // Second ingest is a no-op (idempotent quarantine).
+    await ingestStripeCheckoutEvent(stripeEvent('checkout.session.completed', session, eventId));
+  });
+
   it('acknowledges permanent mismatches without infinite retry pressure', async () => {
     const store = new Map<string, Stripe.Checkout.Session>();
     setStripeCheckoutPortForTests(mockPort(store));

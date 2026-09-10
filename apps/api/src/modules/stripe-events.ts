@@ -112,8 +112,23 @@ export async function ingestStripeCheckoutEvent(event: Stripe.Event) {
   );
   const attemptId = session.metadata?.attempt_id,
     orderId = session.metadata?.order_id;
-  if (!attemptId || !orderId || !uuid.test(attemptId) || !uuid.test(orderId))
-    throw new DomainError('PAYMENT_MISMATCH', 409);
+  // Foreign / non-RightsNet Checkout (empty metadata, other currency sandboxes, etc.):
+  // permanent mismatch — acknowledge so webhooks and event recovery do not retry forever.
+  if (!attemptId || !orderId || !uuid.test(attemptId) || !uuid.test(orderId)) {
+    await pool.query(
+      "INSERT INTO provider_events(id,provider,event_id,payload,status,error) VALUES($1,'stripe',$2,$3,'failed','PAYMENT_MISMATCH') ON CONFLICT(provider,event_id) DO NOTHING",
+      [
+        randomUUID(),
+        event.id,
+        JSON.stringify({
+          session_id: session.id,
+          reason: 'missing_or_invalid_order_metadata',
+          currency: session.currency ?? null,
+        }),
+      ],
+    );
+    return;
+  }
   let chargeId: string | null = null;
   await transaction(async (db) => {
     const attempt = (

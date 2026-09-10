@@ -662,15 +662,28 @@ export async function recoverMissedEvents(runId: string, options: { maxPages?: n
         if (isMoneyMovementEvent(event)) await ingestMoneyMovementEvent(event);
         recovered++;
       } catch (error) {
+        const code = error instanceof DomainError ? error.code : 'unknown';
         await insertDiff({
           runId,
           environment,
           accountRef: PLATFORM,
           kind: 'event_recovery_failed',
           providerRef: event.id,
-          detail: `No se pudo reingestar ${event.type}: ${error instanceof DomainError ? error.code : 'unknown'}`,
+          detail: `No se pudo reingestar ${event.type}: ${code}`,
         });
-        // Keep the page pending: retryable failures must not fall behind the watermark.
+        // Permanent identity/currency mismatches: quarantine the event so recovery can advance.
+        // Retriable gaps (PAYMENT_UNCONFIRMED, live-commerce gate, etc.) keep the watermark.
+        if (error instanceof DomainError && error.code === 'PAYMENT_MISMATCH') {
+          await pool.query(
+            "INSERT INTO provider_events(id,provider,event_id,payload,status,error) VALUES($1,'stripe',$2,$3,'failed','PAYMENT_MISMATCH') ON CONFLICT(provider,event_id) DO NOTHING",
+            [
+              randomUUID(),
+              event.id,
+              JSON.stringify({ recovery: true, type: event.type, code }),
+            ],
+          );
+          return;
+        }
         throw error;
       }
     },
@@ -849,7 +862,18 @@ export async function processExternalReconciliation() {
   ).rowCount;
   if (recent) return { skipped: true as const };
 
-  const platform = await runExternalReconciliation({ recoverEvents: true });
+  let platform:
+    | Awaited<ReturnType<typeof runExternalReconciliation>>
+    | { account_ref: string; status: 'failed'; error: string };
+  try {
+    platform = await runExternalReconciliation({ recoverEvents: true });
+  } catch (error) {
+    platform = {
+      account_ref: PLATFORM,
+      status: 'failed',
+      error: error instanceof Error ? error.message : 'unknown',
+    };
+  }
   const accounts = (
     await pool.query(
       `SELECT DISTINCT ON (stripe_account_id) stripe_account_id

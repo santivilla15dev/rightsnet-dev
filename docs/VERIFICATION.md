@@ -166,6 +166,9 @@ Revisión de código y pruebas repetidas en esta tarea; no se ha repetido el ens
 **Avance 2026-09-10:** R1 PASS (Connect `Berlin, DE` → `identity.country=DE`);
 R2 PASS (Checkout+`charge_ref`+transfer+`RN-LIC-2026-000005`);
 R3 PASS (reversión parcial `trr_…` 5000, transfer sigue `paid`). R4/R5 OPEN.
+**Fix worker 2026-09-10:** spam `Worker cycle failed PAYMENT_MISMATCH` por recovery de
+`checkout.session.completed` ajeno (USD, sin metadata). Soft-quarantine + catch en
+`processExternalReconciliation`. Tests checkout/recon focalizados PASS (23).
 Gaps código cerrados: compare >500, reversión parcial, relink transfer↔`charge_ref`,
 thin v2 recovery paginada, fees + multi connected (`docs/STRIPE_THIN_FEES_MULTI_V0_1.md`).
 

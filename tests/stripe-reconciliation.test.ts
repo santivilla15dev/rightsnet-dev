@@ -391,6 +391,54 @@ describe('Stripe external reconciliation (paso 5)', () => {
     ).toBe(0);
   });
 
+  it('quarantines permanent PAYMENT_MISMATCH so event recovery can advance', async () => {
+    const { setStripeMoneyPortForTests } = await import(
+      '../apps/api/src/integrations/stripe.js'
+    );
+    setStripeMoneyPortForTests({
+      retrieveTransfer: async () =>
+        ({
+          id: 'tr_usd_foreign',
+          object: 'transfer',
+          livemode: false,
+          amount: 1000,
+          currency: 'usd',
+          destination: 'acct_x',
+          reversed: false,
+          source_transaction: null,
+          metadata: {},
+        }) as Stripe.Transfer,
+      retrieveDispute: async () => {
+        throw new Error('unused');
+      },
+      retrievePayout: async () => {
+        throw new Error('unused');
+      },
+    });
+    try {
+      const runId = await newRun();
+      const evtId = 'evt_usd_transfer_' + randomUUID().slice(0, 8);
+      eventStore.push({
+        id: evtId,
+        created: Math.floor(Date.now() / 1000),
+        type: 'transfer.created',
+        livemode: false,
+        data: { object: { id: 'tr_usd_foreign' } },
+      } as Stripe.Event);
+      await expect(recoverMissedEvents(runId)).resolves.toMatchObject({ complete: true });
+      expect(
+        (await pool.query('SELECT status,error FROM provider_events WHERE event_id=$1', [evtId]))
+          .rows[0],
+      ).toEqual({ status: 'failed', error: 'PAYMENT_MISMATCH' });
+      expect(
+        (await pool.query("SELECT cursor_ref FROM reconciliation_cursors WHERE kind='events'"))
+          .rows[0].cursor_ref,
+      ).toBe(evtId);
+    } finally {
+      setStripeMoneyPortForTests(null);
+    }
+  });
+
   it('importa balance transactions con cursor durable y fees/neto', async () => {
     const paid = await fulfilledStripeOrder();
     balanceStore.push({
@@ -651,12 +699,12 @@ describe('Stripe external reconciliation (paso 5)', () => {
     });
 
     const now = Date.now();
-    for (let i = 0; i < 3; i++) {
-      const id = `evt_thin_page_${i}`;
+    const thinIds = [0, 1, 2].map((i) => `evt_thin_page_${i}_${randomUUID().slice(0, 8)}`);
+    for (const id of thinIds) {
       thinListStore.push({
         id,
         type: 'v2.core.account[configuration.recipient].capability_status_updated',
-        created: new Date(now - i * 1000).toISOString(),
+        created: new Date(now - thinIds.indexOf(id) * 1000).toISOString(),
         livemode: false,
         related_object: { id: acct },
       });
@@ -682,8 +730,11 @@ describe('Stripe external reconciliation (paso 5)', () => {
     expect(synced.transfers_status).toBe('active');
     expect(synced.requirements_due).toBe(false);
     expect(
-      (await pool.query("SELECT count(*)::int AS n FROM provider_events WHERE event_id LIKE 'evt_thin_page_%'"))
-        .rows[0].n,
+      (
+        await pool.query('SELECT count(*)::int AS n FROM provider_events WHERE event_id = ANY($1::text[])', [
+          thinIds,
+        ])
+      ).rows[0].n,
     ).toBe(3);
   });
 
@@ -752,16 +803,17 @@ describe('Stripe external reconciliation (paso 5)', () => {
        VALUES($1,$2,'test',$3,'active',false)`,
       [randomUUID(), creatorRow.id, acct],
     );
+    const payoutId = 'po_conn_' + randomUUID().slice(0, 8);
     connectedBalanceStore.set(acct, [
       {
-        id: 'txn_conn_po',
+        id: 'txn_conn_po_' + randomUUID().slice(0, 8),
         livemode: false,
         type: 'payout',
         amount: -5000,
         fee: 0,
         net: -5000,
         currency: 'eur',
-        source: 'po_conn_1',
+        source: payoutId,
         description: acct,
         available_on: Math.floor(Date.now() / 1000),
         created: Math.floor(Date.now() / 1000),
@@ -770,8 +822,8 @@ describe('Stripe external reconciliation (paso 5)', () => {
     await pool.query(
       `INSERT INTO payout_records(
          id,connected_account_ref,provider_payout_id,environment,amount_minor,currency,status)
-       VALUES($1,$2,'po_conn_1','test',5000,'EUR','paid')`,
-      [randomUUID(), acct],
+       VALUES($1,$2,$3,'test',5000,'EUR','paid')`,
+      [randomUUID(), acct, payoutId],
     );
 
     const result = await processExternalReconciliation();
@@ -786,8 +838,8 @@ describe('Stripe external reconciliation (paso 5)', () => {
     expect(
       (
         await pool.query(
-          `SELECT 1 FROM stripe_balance_transactions WHERE account_ref=$1 AND provider_ref='txn_conn_po'`,
-          [acct],
+          `SELECT 1 FROM stripe_balance_transactions WHERE account_ref=$1 AND source_ref=$2`,
+          [acct, payoutId],
         )
       ).rowCount,
     ).toBe(1);
