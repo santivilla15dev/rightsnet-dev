@@ -32,7 +32,7 @@ Piloto comercial propuesto: **Austria + Alemania** (constitución §5). No impli
 | Auditoría resistente a admin | PASS v0.1 | Trigger + JSONL hash-chain `docs/AUDIT_ARCHIVE_V0_1.md`; WORM cloud OPEN |
 | Notificaciones y alertas | Pendiente | Email / métricas / cola |
 | Rate limiting distribuido | PASS v0.1 | Memory default; Redis opt-in `docs/RATE_LIMIT_DISTRIBUTED_V0_1.md` |
-| Backups/PITR/restore | Pendiente | Ensayar restore DB + ficheros + claves |
+| Backups/PITR/restore | Ensayo local PASS | `pnpm db:backup-drill` + runbook; PITR cloud OPEN |
 | Despliegue staging y seguridad | Pendiente | Región, secretos, HTTPS, CI remoto |
 | Prueba Stripe test end-to-end | Ensayo previo PASS; reensayo OPEN | Runbook R1–R5; gaps código PASS (incl. thin/fees). Flag live off por defecto |
 | Primera licencia/payout **real** | No iniciado | Solo después de cerrar gates legales + KYC ops + Connect live readiness |

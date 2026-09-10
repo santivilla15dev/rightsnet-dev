@@ -24,7 +24,16 @@ Guardar crea una versión y devuelve el asset a borrador. Consentir esa versión
 
 ## Backups de desarrollo
 
-Ejemplo manual, no sustituye a PITR ni constituye prueba de restore:
+Ensayo documentado (dump → restore en DB temporal → smoke):
+
+```bash
+pnpm db:backup-drill
+```
+
+Runbook: [`backup-restore-drill.md`](backup-restore-drill.md) · alcance
+`docs/BACKUP_RESTORE_V0_1.md`. No sustituye PITR cloud.
+
+Ejemplo manual adicional:
 
 ```bash
 mkdir -p .local/backups

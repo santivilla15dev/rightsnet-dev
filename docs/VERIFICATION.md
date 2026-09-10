@@ -376,6 +376,11 @@ RESP opt-in; middleware API. Tests rate-limit 3/3. CI memory.
 Cierre PASS: `docs/AUDIT_ARCHIVE_V0_1.md`. Append JSONL con hash-chain desde
 `audit()`; verify admin. Tests audit-archive 2/2. WORM cloud OPEN.
 
+## Backup/restore drill v0.1 — 2026-09-10
+
+Cierre PASS local: `docs/BACKUP_RESTORE_V0_1.md`. `pnpm db:backup-drill`
+dump→restore smoke PASS. PITR cloud OPEN.
+
 ## DB roles / tenancy v0.1 — 2026-09-10
 
 Cierre PASS roles: `docs/DB_ROLES_TENANCY_V0_1.md`. Migración 033; `MIGRATE_DATABASE_URL`;

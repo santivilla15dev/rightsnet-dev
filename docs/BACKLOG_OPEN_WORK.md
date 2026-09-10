@@ -83,7 +83,7 @@ El founder elige **uno**. Cada fila es un posible SPECIFY → STOP.
 | Baja / infra | ~~Auditoría resistente a admin~~ | Trigger DB + archivo hash-chain **PASS** (`docs/AUDIT_ARCHIVE_V0_1.md`); WORM cloud OPEN |
 | Baja / infra | Notificaciones y alertas | Email / métricas / cola |
 | Baja / infra | ~~Rate limiting distribuido~~ | **PASS** puerto memory+redis opt-in (`docs/RATE_LIMIT_DISTRIBUTED_V0_1.md`); CI memory |
-| Baja / infra | Backups / PITR / restore | Ensayar restore DB + ficheros + claves |
+| Baja / infra | ~~Backups / PITR / restore~~ | Ensayo local dump/restore **PASS** (`docs/BACKUP_RESTORE_V0_1.md`); PITR cloud OPEN |
 | Baja / infra | Despliegue staging y seguridad | Región, secretos, HTTPS, CI remoto |
 
 Plantillas legales cableadas en producto: solo cuando §3 entregue textos aprobados (hito aparte).
