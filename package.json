@@ -10,6 +10,7 @@
     "dev": "node scripts/dev.mjs",
     "db:start": "node scripts/local-db.mjs",
     "db:backup-drill": "node scripts/backup-restore-drill.mjs",
+    "staging:security": "node scripts/staging-security-checklist.mjs",
     "db:migrate": "tsx packages/db/migrate.ts",
     "db:seed": "tsx packages/db/seed.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json && pnpm --filter @rightsnet/web typecheck",

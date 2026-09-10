@@ -33,6 +33,17 @@ pnpm db:backup-drill
 Runbook: [`backup-restore-drill.md`](backup-restore-drill.md) · alcance
 `docs/BACKUP_RESTORE_V0_1.md`. No sustituye PITR cloud.
 
+## Staging / seguridad (higiene)
+
+Antes de un host staging:
+
+```bash
+pnpm staging:security
+```
+
+Runbook: [`staging-security-checklist.md`](staging-security-checklist.md) ·
+`docs/STAGING_DEPLOY_SECURITY_V0_1.md`. No acredita despliegue cloud.
+
 Ejemplo manual adicional:
 
 ```bash

@@ -386,6 +386,12 @@ dump→restore smoke PASS. PITR cloud OPEN.
 Cierre PASS sandbox: `docs/NOTIFICATIONS_V0_1.md`. Alertas ops en pago/
 licencia/outbox.dead; admin recent. Tests notifications 3/3. Email OPEN.
 
+## Staging deploy security v0.1 — 2026-09-10
+
+Cierre PASS higiene: `docs/STAGING_DEPLOY_SECURITY_V0_1.md`.
+`pnpm staging:security` Hygiene PASS; tests staging-security 3/3.
+Host cloud staging OPEN.
+
 ## DB roles / tenancy v0.1 — 2026-09-10
 
 Cierre PASS roles: `docs/DB_ROLES_TENANCY_V0_1.md`. Migración 033; `MIGRATE_DATABASE_URL`;

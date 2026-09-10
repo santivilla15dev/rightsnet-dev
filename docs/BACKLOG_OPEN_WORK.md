@@ -84,7 +84,7 @@ El founder elige **uno**. Cada fila es un posible SPECIFY → STOP.
 | Baja / infra | ~~Notificaciones y alertas~~ | Sandbox JSONL + hooks ops **PASS** (`docs/NOTIFICATIONS_V0_1.md`); email real OPEN |
 | Baja / infra | ~~Rate limiting distribuido~~ | **PASS** puerto memory+redis opt-in (`docs/RATE_LIMIT_DISTRIBUTED_V0_1.md`); CI memory |
 | Baja / infra | ~~Backups / PITR / restore~~ | Ensayo local dump/restore **PASS** (`docs/BACKUP_RESTORE_V0_1.md`); PITR cloud OPEN |
-| Baja / infra | Despliegue staging y seguridad | Región, secretos, HTTPS, CI remoto |
+| Baja / infra | ~~Despliegue staging y seguridad~~ | Higiene repo + runbook **PASS** (`docs/STAGING_DEPLOY_SECURITY_V0_1.md`); host cloud staging OPEN |
 
 Plantillas legales cableadas en producto: solo cuando §3 entregue textos aprobados (hito aparte).
 
