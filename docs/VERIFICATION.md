@@ -404,3 +404,8 @@ licenses). Tests `db-rls` 5/5 + rights-core/checkout PASS.
 Cierre PASS: `docs/DB_RLS_LEDGER_OUTBOX_V0_1.md`. Migración 039 FORCE en
 `outbox` / `journals` / `ledger_entries` (vía orden). Tests `db-rls` 6/6 +
 stripe checkout/money/refunds PASS.
+
+## DB RLS payment attempts + refunds v0.1 — 2026-09-10
+
+Cierre PASS: `docs/DB_RLS_PAYMENTS_REFUNDS_V0_1.md`. Migración 040 FORCE en
+`payment_attempts` / `refunds`. Tests `db-rls` 7/7 + checkout/refunds PASS.

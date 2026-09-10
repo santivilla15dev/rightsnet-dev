@@ -146,4 +146,5 @@ H2–H6 **PASS** `docs/DB_RLS_CAMPAIGN_H2_H6_WIRING_V0_1.md`; Rights Ops **PASS*
 `docs/DB_RLS_LICENSES_GENERATION_V0_1.md`; campaign children **PASS**
 `docs/DB_RLS_CAMPAIGN_CHILDREN_V0_1.md`; orders chain **PASS**
 `docs/DB_RLS_ORDERS_V0_1.md`; ledger/outbox **PASS**
-`docs/DB_RLS_LEDGER_OUTBOX_V0_1.md`; payment_attempts/refunds OPEN).
+`docs/DB_RLS_LEDGER_OUTBOX_V0_1.md`; payment_attempts/refunds **PASS**
+`docs/DB_RLS_PAYMENTS_REFUNDS_V0_1.md`; provider_events/contract_acceptances OPEN).
