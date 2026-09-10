@@ -107,8 +107,10 @@ No marcar PASS hasta completar contra Dashboard/CLI. `LIVE_COMMERCE_ENABLED=fals
 | R1 | Crear recipient **nuevo** con location `…, AT` o `…, DE` → identity country correcto en Dashboard | OPEN | No reescribe `acct_` antiguos |
 | R2 | Checkout + webhook → `charge_ref` + transfer destination vinculados a orden | OPEN | Relink tardío si transfer llega antes |
 | R3 | Refund parcial / transfer reversal parcial (`reversed=false` + fila reversal) | OPEN | Status transfer no debe ser `reversed` completo |
-| R4 | Conciliar Stripe con >500 BT importados (o forzar volumen test) | OPEN | Compare paginado |
+| R4 | Conciliar Stripe con >500 BT importados (o forzar volumen test) | OPEN* | Compare paginado; *test automatizado “>500 BT” PASS 2026-09-10 |
 | R5 | Thin v2 recovery + fees/multi-account | OPEN | Código PASS (`docs/STRIPE_THIN_FEES_MULTI_V0_1.md`); falta evidencia CLI |
+
+**Infra smoke 2026-09-10 (no cierra R1–R5):** `stripe listen` + `whsec` MATCH; `stripe trigger checkout.session.completed` → eventos auxiliares `← [200]`; `checkout.session.completed` huérfano `← [409]` (esperado sin orden local). Firma OK. Falta compra real con orden RightsNet para R2.
 
 ### Guía paso a paso R1–R5 (sin pegar claves)
 
