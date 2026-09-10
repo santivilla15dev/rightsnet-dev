@@ -1,6 +1,6 @@
 # H6 — Campaign Passport
 
-2026-09-10. SPECIFY PASS; implementación pendiente. Continuación autorizada tras STOP H5.
+2026-09-10. SPECIFY PASS; IMPLEMENT PASS (cierre abajo). Continuación autorizada tras STOP H5.
 
 ## Alcance y contratos
 
@@ -107,3 +107,19 @@ email ni portal licensor en la misma entrega.
 El token compartido es un secreto de lectura. Allowlist sin enforcement de identidad
 en v0.1 reduce el valor de la allowlist a registro + UX; H6.1 puede añadir magic link
 o auth de destinatario. RLS y gates live siguen pendientes. No afirmar clearance AT–DE.
+
+## Cierre H6 — 2026-09-10
+
+SPECIFY → IMPLEMENT → MIGRATE → TEST → RUN → VERIFY → DOCUMENT → **STOP H6**.
+
+- Migración 031 + `campaign_passport_seq`; reaplicación idempotente.
+- API privada list/issue/revoke; pública `GET /v1/public/campaign-passports/:token`
+  (404 genérico si inválido/revocado/caducado). Allowlist obligatoria; caducidad ≤30d;
+  máx. 10 ACTIVE; reevaluación live de clearance/flight; flags authority/media/legal
+  siempre false en superficie pública.
+- UI pestaña Passport + `/verify/campaign-passport/:token` y `/verify/RN-PAS-…`.
+- Tests: 35/35 focalizados H1–H6 (3 nuevos); E2E 6/6 PASS; typecheck/lint PASS.
+- Capturas: `docs/screenshots/campaign-passport-desktop.png` y
+  `campaign-passport-mobile.png`.
+
+**STOP H6.** No notificaciones email ni portal licensor en esta entrega.

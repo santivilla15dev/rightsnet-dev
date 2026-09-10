@@ -113,6 +113,7 @@ humana sin autoactivar permisos; migración 030; `docs/CAMPAIGN_DEAL_BUILDER_V0_
 H5 funcional PASS: 32 tests focalizados H1–H5 y 5 E2E PASS, typecheck/lint PASS.
 No muta grants ni concede autoridad. **STOP H5**.
 
-Campaign Passport H6: SPECIFY **PASS** (`docs/CAMPAIGN_PASSPORT_V0_1.md`) — vista
-compartible con allowlist, caducidad y revocación, sin promesa legal; IMPLEMENT
-pendiente.
+Campaign Passport H6: resumen técnico compartible con allowlist, caducidad y
+revocación (`RN-PAS-…`); migración 031; `docs/CAMPAIGN_PASSPORT_V0_1.md`. H6
+funcional PASS: 35 tests focalizados H1–H6 y 6 E2E PASS, typecheck/lint PASS.
+Sin autoridad ejecutable ni clearance legal. **STOP H6**.

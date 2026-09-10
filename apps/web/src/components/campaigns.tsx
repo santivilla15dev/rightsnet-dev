@@ -9,6 +9,7 @@ import { Button } from './ui/button';
 import { CampaignClearance } from './campaign-clearance';
 import { CampaignFlight } from './campaign-flight';
 import { CampaignDealBuilder } from './campaign-deal-builder';
+import { CampaignPassportPanel } from './campaign-passport';
 import { CampaignTalent } from './talent-inventory';
 
 type Campaign = {
@@ -171,6 +172,7 @@ export function Campaigns({ id }: { id?: string }) {
                     ['outputs', 'Outputs'],
                     ['approvals', 'Aprobaciones'],
                     ['licenses', 'Licencias'],
+                    ['passport', 'Passport'],
                     ['activity', 'Actividad'],
                   ] as const
                 ).map(([key, label]) => (
@@ -239,6 +241,14 @@ export function Campaigns({ id }: { id?: string }) {
                   }}
                 />
               ) : null}
+              {tab === 'passport' ? (
+                <CampaignPassportPanel
+                  id={id}
+                  onChanged={async () => {
+                    setCampaign(await api<Campaign>('campaigns/' + id));
+                  }}
+                />
+              ) : null}
               {tab === 'activity' ? (
                 <section className="panel">
                   <h2>Actividad de campaña</h2>
@@ -251,21 +261,25 @@ export function Campaigns({ id }: { id?: string }) {
                             ? 'Vínculo de evidencia retirado'
                             : event.action === 'campaign.usage_updated'
                               ? 'Uso actualizado'
-                              : event.action === 'campaign.deal_request_created'
-                                ? 'Solicitud creada'
-                                : event.action === 'campaign.deal_request_updated'
-                                  ? 'Solicitud actualizada'
-                                  : event.action === 'campaign.deal_request_sent'
-                                    ? 'Solicitud enviada'
-                                    : event.action === 'campaign.deal_request_withdrawn'
-                                      ? 'Solicitud retirada'
-                                      : event.action === 'campaign.created'
-                                        ? 'Campaña creada'
-                                        : event.action === 'campaign.talent_added'
-                                          ? 'Talento añadido'
-                                          : event.action === 'campaign.talent_removed'
-                                            ? 'Talento retirado'
-                                            : 'Campaña actualizada'}{' '}
+                              : event.action === 'campaign.passport_issued'
+                                ? 'Passport emitido'
+                                : event.action === 'campaign.passport_revoked'
+                                  ? 'Passport revocado'
+                                  : event.action === 'campaign.deal_request_created'
+                                    ? 'Solicitud creada'
+                                    : event.action === 'campaign.deal_request_updated'
+                                      ? 'Solicitud actualizada'
+                                      : event.action === 'campaign.deal_request_sent'
+                                        ? 'Solicitud enviada'
+                                        : event.action === 'campaign.deal_request_withdrawn'
+                                          ? 'Solicitud retirada'
+                                          : event.action === 'campaign.created'
+                                            ? 'Campaña creada'
+                                            : event.action === 'campaign.talent_added'
+                                              ? 'Talento añadido'
+                                              : event.action === 'campaign.talent_removed'
+                                                ? 'Talento retirado'
+                                                : 'Campaña actualizada'}{' '}
                         · revisión {event.details.revision} ·{' '}
                         {new Date(event.created_at).toLocaleString('es-ES')}
                       </li>

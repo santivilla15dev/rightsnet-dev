@@ -6,6 +6,12 @@ import {
   sendDealRequest,
   withdrawDealRequest,
 } from './campaign-deal-builder.js';
+import {
+  listCampaignPassports,
+  issueCampaignPassport,
+  revokeCampaignPassport,
+  publicVerifyCampaignPassport,
+} from './campaign-passport.js';
 import { talentInventory, campaignTalent, addCampaignTalent, removeCampaignTalent } from './talent-inventory.js';
 import { listCampaigns, getCampaign, createCampaign, updateCampaign } from './campaigns.js';
 import {
@@ -151,6 +157,7 @@ const tokenSchema = z
   .string()
   .regex(/^(?:[A-Za-z0-9_-]{32}|RN-LIC-\d{4}-\d{6})$/);
 const generationTokenSchema = z.string().regex(/^RN-GEN-\d{4}-\d{6}$/);
+const passportTokenSchema = z.string().regex(/^RN-PAS-\d{4}-\d{6}$/);
 const idem = (req: Request) =>
   typeof req.headers['idempotency-key'] === 'string' ? req.headers['idempotency-key'] : undefined;
 @Controller('v1')
@@ -215,6 +222,14 @@ export class PublicController {
     generationTokenSchema.parse(token);
     res.setHeader('Cache-Control', 'no-store');
     return publicVerifyGeneration(token);
+  }
+  @Get('public/campaign-passports/:token') async verifyCampaignPassport(
+    @Param('token') token: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    passportTokenSchema.parse(token);
+    res.setHeader('Cache-Control', 'no-store');
+    return publicVerifyCampaignPassport(token);
   }
   @Get('public/signing-key') key() {
     const { kid, pem } = signingKeys();
@@ -637,6 +652,20 @@ export class CommerceController {
     @Body() body: unknown,
   ) {
     return withdrawDealRequest(await actor(req), id, requestId, body, idem(req));
+  }
+  @Get('campaigns/:id/passports') async campaignPassports(@Req() req: Request, @Param('id') id: string) {
+    return listCampaignPassports(await actor(req), id);
+  }
+  @Post('campaigns/:id/passports') async campaignPassportIssue(@Req() req: Request, @Param('id') id: string, @Body() body: unknown) {
+    return issueCampaignPassport(await actor(req), id, body, idem(req));
+  }
+  @Post('campaigns/:id/passports/:passportId/revoke') async campaignPassportRevoke(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Param('passportId') passportId: string,
+    @Body() body: unknown,
+  ) {
+    return revokeCampaignPassport(await actor(req), id, passportId, body, idem(req));
   }
   @Get('campaigns/:id/flight') async campaignFlight(@Req() req: Request, @Param('id') id: string) {
     return getCampaignFlight(await actor(req), id);
