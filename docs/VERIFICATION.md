@@ -450,6 +450,9 @@ Cierre PASS runbook: `docs/FOUNDER_HUMAN_TRIAL_V0_1.md` ·
 `docs/runbooks/founder-human-trial.md`. Smoke local PASS; search seed 7.
 `pnpm product:trial-preflight`. Ejecución del ensayo: OPEN (founder).
 
+Regresión UI sandbox (mismo día): Playwright `home` + `clarity-routing`
+**13/13 PASS** (DEMO_UI on en :3010; no sustituye ensayo Supabase).
+
 ## DB roles / tenancy v0.1 — 2026-09-10
 
 Cierre PASS roles: `docs/DB_ROLES_TENANCY_V0_1.md`. Migración 033; `MIGRATE_DATABASE_URL`;
