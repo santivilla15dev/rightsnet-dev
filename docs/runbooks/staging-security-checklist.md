@@ -33,7 +33,7 @@ Imprimida por el mismo comando. Resumen:
 5. `APP_ENV` ≠ `production` (`assertConfiguration` bloquea production).
 6. Flags live off salvo ensayo aislado documentado.
 7. CI verde en el commit desplegado.
-8. Health checks alcanzables.
+8. `pnpm staging:health` contra las URLs HTTPS del host.
 9. Claves de firma persistentes fuera del contenedor efímero.
 10. Plan de backup/restore; PITR cloud OPEN.
 

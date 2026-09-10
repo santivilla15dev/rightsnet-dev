@@ -181,7 +181,7 @@ export const HUMAN_STAGING_CHECKLIST = [
   'APP_ENV=sandbox (o staging distinto de production; production sigue bloqueado en código)',
   'LIVE_COMMERCE_ENABLED=false; IDENTITY_LIVE_ENABLED=false salvo ensayo Identity live aislado',
   'CI remoto verde en el commit desplegado (.github/workflows/ci.yml)',
-  'Health: GET /api/health (web) y readiness API documentados',
+  'Health: `pnpm staging:health` contra WEB_URL/API_URL (docs/STAGING_HEALTH_SMOKE_V0_1.md)',
   'Firma: claves fuera del contenedor efímero; rotación local o KMS cuando exista',
   'Backup: plan dump + restore drill; PITR cloud sigue OPEN',
 ];

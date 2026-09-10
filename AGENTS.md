@@ -156,6 +156,8 @@ Staging deploy security v0.1: `docs/STAGING_DEPLOY_SECURITY_V0_1.md` —
 SPECIFY **PASS**; IMPLEMENT **PASS** (higiene repo + runbook + CI step; cloud host OPEN).
 Notifications email outbox v0.1: `docs/NOTIFICATIONS_EMAIL_OUTBOX_V0_1.md` —
 SPECIFY **PASS**; IMPLEMENT **PASS** (`email_outbox` local; SMTP OPEN).
+Staging health smoke v0.1: `docs/STAGING_HEALTH_SMOKE_V0_1.md` — SPECIFY **PASS**;
+IMPLEMENT **PASS** (`pnpm staging:health`; host cloud OPEN).
 DB roles v0.1: `docs/DB_ROLES_TENANCY_V0_1.md`. **PASS** migrator≠`rightsnet_app`.
 DB RLS org pilot v0.1: `docs/DB_RLS_V0_1.md` — SPECIFY **PASS**; IMPLEMENT **PASS**
 (FORCE en organizations/members/campaigns; bypass runtime por defecto; cableado

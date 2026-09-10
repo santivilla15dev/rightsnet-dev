@@ -84,8 +84,8 @@ El founder elige **uno**. Cada fila es un posible SPECIFY → STOP.
 | Baja / infra | ~~Notificaciones y alertas~~ | Sandbox JSONL + hooks ops **PASS** (`docs/NOTIFICATIONS_V0_1.md`); email outbox sandbox **PASS** (`docs/NOTIFICATIONS_EMAIL_OUTBOX_V0_1.md`); SMTP real OPEN |
 | Baja / infra | ~~Rate limiting distribuido~~ | **PASS** puerto memory+redis opt-in (`docs/RATE_LIMIT_DISTRIBUTED_V0_1.md`); CI memory |
 | Baja / infra | ~~Backups / PITR / restore~~ | Ensayo local dump/restore **PASS** (`docs/BACKUP_RESTORE_V0_1.md`); PITR cloud OPEN |
-| Baja / infra | ~~Despliegue staging y seguridad~~ | Higiene + CI **PASS** (`docs/STAGING_DEPLOY_SECURITY_V0_1.md`); host cloud staging OPEN |
-| Baja / cloud | Host staging real | Founder elige plataforma (Vercel/Fly/…); secretos + HTTPS EU |
+| Baja / infra | ~~Despliegue staging y seguridad~~ | Higiene + CI + health smoke **PASS**; host cloud staging OPEN |
+| Baja / cloud | Host staging real | Founder elige plataforma; prep: higiene + `pnpm staging:health` PASS |
 | Baja / cloud | SMTP / email real | Tras outbox; SES/SendGrid u otro — no en CI |
 | Baja / cloud | KMS remoto / WORM / PITR managed | Tras decisión de host cloud |
 | Media / riesgo | `DB_RLS_BYPASS_DEFAULT=false` | Solo ensayo aislado; rompe API sin `withRlsActor` completo |

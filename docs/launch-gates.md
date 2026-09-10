@@ -33,7 +33,7 @@ Piloto comercial propuesto: **Austria + Alemania** (constitución §5). No impli
 | Notificaciones y alertas | PASS sandbox + email_outbox | JSONL + outbox local; SMTP OPEN `docs/NOTIFICATIONS_*` |
 | Rate limiting distribuido | PASS v0.1 | Memory default; Redis opt-in `docs/RATE_LIMIT_DISTRIBUTED_V0_1.md` |
 | Backups/PITR/restore | Ensayo local PASS | `pnpm db:backup-drill` + runbook; PITR cloud OPEN |
-| Despliegue staging y seguridad | PASS higiene + CI | `pnpm staging:security` en CI; host cloud OPEN `docs/STAGING_DEPLOY_SECURITY_V0_1.md` |
+| Despliegue staging y seguridad | PASS higiene + CI + health smoke | `staging:security` + `staging:health`; host cloud OPEN |
 | Prueba Stripe test end-to-end | Ensayo previo PASS; reensayo OPEN | Runbook R1–R5; gaps código PASS (incl. thin/fees). Flag live off por defecto |
 | Primera licencia/payout **real** | No iniciado | Solo después de cerrar gates legales + KYC ops + Connect live readiness |
 

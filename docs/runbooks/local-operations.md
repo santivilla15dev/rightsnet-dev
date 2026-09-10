@@ -44,6 +44,14 @@ pnpm staging:security
 Runbook: [`staging-security-checklist.md`](staging-security-checklist.md) ·
 `docs/STAGING_DEPLOY_SECURITY_V0_1.md`. No acredita despliegue cloud.
 
+Tras API/web arriba:
+
+```bash
+pnpm staging:health
+```
+
+Runbook: [`staging-health-smoke.md`](staging-health-smoke.md).
+
 Ejemplo manual adicional:
 
 ```bash

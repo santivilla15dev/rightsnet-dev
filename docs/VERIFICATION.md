@@ -398,6 +398,11 @@ Cierre PASS sandbox: `docs/NOTIFICATIONS_EMAIL_OUTBOX_V0_1.md`.
 `NOTIFY_PROVIDER=email_outbox` encola a JSONL; admin email-outbox.
 Tests notifications 4/4. SMTP OPEN.
 
+## Staging health smoke v0.1 — 2026-09-10
+
+Cierre PASS: `docs/STAGING_HEALTH_SMOKE_V0_1.md`. `pnpm staging:health`
+valida API/web; tests staging-health 3/3. Host cloud OPEN.
+
 ## DB roles / tenancy v0.1 — 2026-09-10
 
 Cierre PASS roles: `docs/DB_ROLES_TENANCY_V0_1.md`. Migración 033; `MIGRATE_DATABASE_URL`;
