@@ -107,8 +107,8 @@ No marcar PASS hasta completar contra Dashboard/CLI. `LIVE_COMMERCE_ENABLED=fals
 | R1 | Crear recipient **nuevo** con location `…, AT` o `…, DE` → identity country correcto en Dashboard | **PASS** 2026-09-10 | Creador `Berlin, DE` → `resolve=de` → Stripe `identity.country=DE` (`acct_…` nuevo; script `scripts/r1-connect-country.ts`) |
 | R2 | Checkout + webhook → `charge_ref` + transfer destination vinculados a orden | **PASS** 2026-09-10 | Orden `efeff10f…` · `ch_3UE5Zc…` · `tr_3UE5Zc…` · licencia `RN-LIC-2026-000005`; `checkout.session.completed` 200. Nota: carrera `transfer.created` duplicada → 500 (fix ON CONFLICT en mismo día). |
 | R3 | Refund parcial / transfer reversal parcial (`reversed=false` + fila reversal) | **PASS** 2026-09-10 | `tr_3UE5Zc…` status **paid**; `trr_1UE5h0…` amount 5000; webhook `transfer.reversed` 200 |
-| R4 | Conciliar Stripe con >500 BT importados (o forzar volumen test) | OPEN* | Compare paginado; *test automatizado “>500 BT” PASS 2026-09-10. **2026-09-10 fix:** recovery ya no se atasca en Checkout ajenos (p.ej. USD sin metadata RightsNet) — cuarentena `PAYMENT_MISMATCH` + worker no propaga el error. Reinicia `pnpm dev` y vuelve a **Conciliar Stripe**. |
-| R5 | Thin v2 recovery + fees/multi-account | OPEN | Código PASS (`docs/STRIPE_THIN_FEES_MULTI_V0_1.md`); falta evidencia CLI |
+| R4 | Conciliar Stripe con >500 BT importados (o forzar volumen test) | OPEN* | Compare paginado; *test “>500 BT” PASS. Live local ~35 BT. Tras fix thin RFC3339, Conciliar ya completa (`done`, sin spam worker). |
+| R5 | Thin v2 recovery + fees/multi-account | **PASS*** 2026-09-10 | Código PASS; live: `created[gte]` RFC3339 fix; run platform `done` + `recovered_events=24` + cursor `thin_events`. *fees/multi = mocks. |
 
 **Infra smoke 2026-09-10 (no cierra R1–R5):** `stripe listen` + `whsec` MATCH; `stripe trigger checkout.session.completed` → eventos auxiliares `← [200]`; `checkout.session.completed` huérfano `← [409]` (esperado sin orden local). Firma OK. Falta compra real con orden RightsNet para R2.
 

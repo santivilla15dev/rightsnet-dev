@@ -114,7 +114,7 @@ export type StripeThinPort = {
     livemode?: boolean;
     related_object?: { id?: string; type?: string; url?: string } | null;
   }>;
-  /** V2 page-token pagination (not starting_after). */
+  /** V2 page-token pagination (not starting_after). `created.gte` is unix seconds; live adapter converts to RFC3339. */
   listEvents: (params: {
     limit?: number;
     page?: string | null;
@@ -328,10 +328,15 @@ export function stripeThinPort(): StripeThinPort {
       };
     },
     listEvents: async ({ limit, page, created, types }) => {
+      // V2 Events API expects RFC 3339 timestamps, not unix seconds (v1 style).
+      const createdFilter =
+        created?.gte !== undefined
+          ? { gte: new Date(created.gte * 1000).toISOString() }
+          : undefined;
       const result = await client.v2.core.events.list({
         limit: limit ?? 100,
         types,
-        created,
+        created: createdFilter,
         ...(page ? { page } : {}),
       } as Parameters<typeof client.v2.core.events.list>[0] & { page?: string });
       let nextPage: string | null = null;

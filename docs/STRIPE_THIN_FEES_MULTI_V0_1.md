@@ -28,3 +28,7 @@ Migración 032 (`thin_events` cursor). `listEvents` en thin port +
 `recoverMissedThinEvents`. Compare `application_fee` / `application_fee_refund`.
 Worker `processExternalReconciliation` barre hasta 10 `acct_*`. Tests en
 `tests/stripe-reconciliation.test.ts`.
+
+**Nota 2026-09-10:** `GET /v2/core/events` exige `created[gte]` en **RFC 3339**
+(ISO), no unix seconds. El adaptador thin convierte el unix interno del cursor
+antes de llamar a Stripe.

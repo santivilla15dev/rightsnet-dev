@@ -861,6 +861,17 @@ export async function processExternalReconciliation() {
     )
   ).rowCount;
   if (recent) return { skipped: true as const };
+  // Avoid hammering Stripe when the last platform run failed (bad params, rate limit, etc.).
+  const recentFail = (
+    await pool.query(
+      `SELECT 1 FROM reconciliation_runs
+       WHERE account_ref=$1 AND status='failed'
+         AND started_at > now() - interval '60 seconds'
+       LIMIT 1`,
+      [PLATFORM],
+    )
+  ).rowCount;
+  if (recentFail) return { skipped: true as const };
 
   let platform:
     | Awaited<ReturnType<typeof runExternalReconciliation>>

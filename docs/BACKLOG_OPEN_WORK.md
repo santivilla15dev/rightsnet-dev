@@ -75,7 +75,7 @@ El founder elige **uno**. Cada fila es un posible SPECIFY → STOP.
 |--------------------|------|---------|
 | Alta (piloto AT) | ~~Connect país sesgado a test **ES**~~ | **PASS** código: `docs/CONNECT_COUNTRY_AT_DE_V0_1.md` (cuentas nuevas) |
 | Media | ~~Review humana relación con activo~~ | **PASS** código v0.1: `docs/ASSET_RELATIONSHIP_REVIEW_V0_1.md` (preview + tests); ensayo humano founder opcional |
-| Media | Stripe test **reensayo** + gaps money/recon | Gaps código **PASS**; reensayo founder OPEN — checklist `docs/runbooks/stripe-reensayo-checklist.md` |
+| Media | Stripe test **reensayo** + gaps money/recon | Gaps código **PASS**; R1–R3+R5 PASS*; R4 OPEN* (volumen BT) — `docs/runbooks/stripe-reensayo-checklist.md` |
 | Media | ~~Storage real + malware scan~~ | **PASS** v0.1 sandbox: `docs/STORAGE_SCAN_V0_1.md` (puertos local+EICAR); S3/ClamAV reales abiertos |
 | Media | ~~Roles DB / RLS~~ | Roles **PASS** `docs/DB_ROLES_TENANCY_V0_1.md`; RLS org pilot **PASS** `docs/DB_RLS_V0_1.md` (bypass default; más tablas / `withRlsActor` en rutas OPEN) |
 | Baja / infra | KMS / rotación remota | Hoy Ed25519 local |
