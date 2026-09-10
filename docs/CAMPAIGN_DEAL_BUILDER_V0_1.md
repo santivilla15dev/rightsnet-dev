@@ -128,4 +128,4 @@ SPECIFY → IMPLEMENT → MIGRATE → TEST → RUN → VERIFY → DOCUMENT → *
   y `campaign-deal-builder-mobile.png`.
 
 No notificaciones externas ni e-sign. **STOP H5** antes de Campaign Passport (H6).
-H6 permanece propuesto, no implementado.
+H6 SPECIFY PASS: `docs/CAMPAIGN_PASSPORT_V0_1.md` (IMPLEMENT pendiente).

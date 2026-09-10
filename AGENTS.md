@@ -111,5 +111,8 @@ ni clearance legal. **STOP H4**.
 Campaign Deal Builder H5: gaps estructurados + borrador/envío/retiro de solicitud
 humana sin autoactivar permisos; migración 030; `docs/CAMPAIGN_DEAL_BUILDER_V0_1.md`.
 H5 funcional PASS: 32 tests focalizados H1–H5 y 5 E2E PASS, typecheck/lint PASS.
-No muta grants ni concede autoridad. **STOP H5**; H6 Passport propuesto, no
-implementado.
+No muta grants ni concede autoridad. **STOP H5**.
+
+Campaign Passport H6: SPECIFY **PASS** (`docs/CAMPAIGN_PASSPORT_V0_1.md`) — vista
+compartible con allowlist, caducidad y revocación, sin promesa legal; IMPLEMENT
+pendiente.
