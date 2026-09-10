@@ -5,7 +5,7 @@ import path from 'node:path';
 
 // Carga .env del repo para que AUTH_PROVIDER / DATABASE_URL / Supabase no dependan de `source .env`.
 const envPath = path.resolve(process.cwd(), '.env');
-if (existsSync(envPath)) loadEnv({ path: envPath, override: false });
+if (existsSync(envPath)) loadEnv({ path: envPath, override: true });
 
 const run = (cmd, args) =>
   new Promise((resolve, reject) => {
