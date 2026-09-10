@@ -94,6 +94,11 @@ export function runStagingSecurityChecks(root) {
     ok: !/APP_ENV:\s*production/.test(ci),
     detail: 'CI no fija APP_ENV: production',
   });
+  findings.push({
+    id: 'ci.staging_security_step',
+    ok: /pnpm staging:security/.test(ci),
+    detail: 'CI ejecuta pnpm staging:security',
+  });
 
   const liveKeys = scanTrackedForLiveStripeKeys(root);
   findings.push({

@@ -29,4 +29,5 @@ Higiene repo + runbook PASS; despliegue cloud staging real sigue OPEN.
 ## Cierre IMPLEMENT
 
 Script + runbook + tests staging-security PASS. `pnpm staging:security`
-Hygiene PASS en sandbox local 2026-09-10. Cloud host OPEN.
+Hygiene PASS en sandbox local 2026-09-10. CI ejecuta el mismo check.
+Cloud host OPEN.

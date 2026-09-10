@@ -389,8 +389,14 @@ licencia/outbox.dead; admin recent. Tests notifications 3/3. Email OPEN.
 ## Staging deploy security v0.1 — 2026-09-10
 
 Cierre PASS higiene: `docs/STAGING_DEPLOY_SECURITY_V0_1.md`.
-`pnpm staging:security` Hygiene PASS; tests staging-security 3/3.
+`pnpm staging:security` Hygiene PASS; tests staging-security; paso en CI.
 Host cloud staging OPEN.
+
+## Notifications email outbox v0.1 — 2026-09-10
+
+Cierre PASS sandbox: `docs/NOTIFICATIONS_EMAIL_OUTBOX_V0_1.md`.
+`NOTIFY_PROVIDER=email_outbox` encola a JSONL; admin email-outbox.
+Tests notifications 4/4. SMTP OPEN.
 
 ## DB roles / tenancy v0.1 — 2026-09-10
 

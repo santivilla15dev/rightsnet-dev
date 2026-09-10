@@ -962,6 +962,18 @@ export class AdminController {
       items: await notificationPort().listRecent(limit),
     };
   }
+  @Get('notifications/email-outbox') async emailOutbox(@Req() req: Request) {
+    admin(await actor(req));
+    const limitRaw = typeof req.query.limit === 'string' ? Number(req.query.limit) : 50;
+    const limit = Number.isFinite(limitRaw) ? Math.min(Math.max(1, Math.floor(limitRaw)), 200) : 50;
+    const port = notificationPort();
+    const items = port.listEmailOutbox ? await port.listEmailOutbox(limit) : [];
+    return {
+      provider: process.env.NOTIFY_PROVIDER ?? 'sandbox',
+      note: 'sandbox_queued rows are never transmitted (no SMTP)',
+      items,
+    };
+  }
   @Post('signing-keys/rotate') @HttpCode(200) async rotateSigningKeys(
     @Req() req: Request,
     @Body() body: unknown,

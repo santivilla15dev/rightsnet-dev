@@ -25,7 +25,8 @@ Email/SMS real, cola Redis, preferencias de usuario, UI web de inbox.
 
 ## STOP
 
-Puerto + hooks + tests PASS; email real OPEN.
+Puerto + hooks + tests PASS; email outbox sandbox PASS
+(`docs/NOTIFICATIONS_EMAIL_OUTBOX_V0_1.md`); SMTP real OPEN.
 
 ## Cierre IMPLEMENT
 

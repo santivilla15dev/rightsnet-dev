@@ -30,10 +30,8 @@ Piloto comercial propuesto: **Austria + Alemania** (constitución §5). No impli
 | Roles DB y RLS | FORCE commerce+campaigns PASS | Bypass default on; `DB_RLS_BYPASS_DEFAULT=false` OPEN |
 | KMS/rotación | Rotación local PASS | `docs/SIGNING_KEY_ROTATION_V0_1.md`; KMS remoto OPEN |
 | Auditoría resistente a admin | PASS v0.1 | Trigger + JSONL hash-chain `docs/AUDIT_ARCHIVE_V0_1.md`; WORM cloud OPEN |
-| Notificaciones y alertas | PASS sandbox v0.1 | JSONL + admin list; email/SMS OPEN `docs/NOTIFICATIONS_V0_1.md` |
-| Rate limiting distribuido | PASS v0.1 | Memory default; Redis opt-in `docs/RATE_LIMIT_DISTRIBUTED_V0_1.md` |
-| Backups/PITR/restore | Ensayo local PASS | `pnpm db:backup-drill` + runbook; PITR cloud OPEN |
-| Despliegue staging y seguridad | PASS higiene v0.1 | `pnpm staging:security` + runbook; host cloud OPEN `docs/STAGING_DEPLOY_SECURITY_V0_1.md` |
+| Notificaciones y alertas | PASS sandbox + email_outbox | JSONL + outbox local; SMTP OPEN `docs/NOTIFICATIONS_*` |
+| Despliegue staging y seguridad | PASS higiene + CI | `pnpm staging:security` en CI; host cloud OPEN `docs/STAGING_DEPLOY_SECURITY_V0_1.md` |
 | Prueba Stripe test end-to-end | Ensayo previo PASS; reensayo OPEN | Runbook R1–R5; gaps código PASS (incl. thin/fees). Flag live off por defecto |
 | Primera licencia/payout **real** | No iniciado | Solo después de cerrar gates legales + KYC ops + Connect live readiness |
 
