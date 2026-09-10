@@ -10,8 +10,8 @@ activarlos en CI.
 
 ## Alcance v0.1
 
-1. `STORAGE_PROVIDER=s3` → `ObjectStorePort` vía `@aws-sdk/client-s3`
-   (compatible MinIO/R2 con `S3_ENDPOINT`).
+1. `STORAGE_PROVIDER=s3` → `ObjectStorePort` SigV4 + fetch (MinIO/R2 con
+   `S3_ENDPOINT`; sin AWS SDK).
 2. `MALWARE_SCAN_PROVIDER=clamav` → escaneo INSTREAM a `clamd`
    (`CLAMAV_HOST` / `CLAMAV_PORT`).
 3. Defaults CI/local siguen `local` + `sandbox`.
@@ -20,8 +20,8 @@ activarlos en CI.
 
 ## Fuera de alcance
 
-URLs firmadas, multipart, ClamAV en CI, cambiar defaults del repo,
-live commerce.
+Multipart upload. Presigned GET: `docs/STORAGE_PRESIGNED_V0_1.md`.
+ClamAV en CI, cambiar defaults del repo, live commerce.
 
 ## STOP
 

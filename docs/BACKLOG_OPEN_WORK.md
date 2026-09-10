@@ -77,7 +77,7 @@ El founder elige **uno**. Cada fila es un posible SPECIFY → STOP.
 | Alta (piloto AT) | ~~Connect país sesgado a test **ES**~~ | **PASS** código: `docs/CONNECT_COUNTRY_AT_DE_V0_1.md` (cuentas nuevas) |
 | Media | ~~Review humana relación con activo~~ | **PASS** código v0.1: `docs/ASSET_RELATIONSHIP_REVIEW_V0_1.md` (preview + tests); ensayo humano founder opcional |
 | Media | ~~Stripe test **reensayo** + gaps money/recon~~ | **PASS*** R1–R5 2026-09-10 — `docs/runbooks/stripe-reensayo-checklist.md` |
-| Media | ~~Storage real + malware scan~~ | Sandbox **PASS** + S3/ClamAV opt-in **PASS** (`docs/STORAGE_S3_CLAMAV_V0_1.md`); firmadas/multipart OPEN |
+| Media | ~~Storage real + malware scan~~ | Sandbox + S3/ClamAV + presign GET **PASS**; multipart OPEN |
 | Media | ~~Roles DB / RLS~~ | FORCE commerce + campaigns + Stripe money **PASS** (`docs/DB_RLS_*`); bypass default on; `DB_RLS_BYPASS_DEFAULT=false` OPEN |
 | Baja / infra | KMS / rotación remota | Hoy Ed25519 local |
 | Baja / infra | Auditoría resistente a admin | Triggers append-only; archivo retenido pendiente |

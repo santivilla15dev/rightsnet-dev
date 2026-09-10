@@ -7,6 +7,8 @@ export type ObjectStorePort = {
   put: (key: string, bytes: Buffer) => Promise<void>;
   get: (key: string) => Promise<Buffer>;
   delete?: (key: string) => Promise<void>;
+  /** Optional short-lived GET URL (S3). Local store omits this. */
+  presignGet?: (key: string, expiresSeconds?: number) => Promise<string>;
 };
 
 export type S3StoreConfig = {
@@ -17,6 +19,7 @@ export type S3StoreConfig = {
   endpoint?: string;
   forcePathStyle?: boolean;
   fetchImpl?: typeof fetch;
+  now?: () => Date;
 };
 
 let testPort: ObjectStorePort | null = null;
@@ -70,9 +73,14 @@ function signingKey(secret: string, day: string, region: string) {
   return hmac(kService, 'aws4_request');
 }
 
-/** S3-compatible put/get/delete (AWS / MinIO / R2) with SigV4 — no AWS SDK. */
+function encodeRfc3986(s: string) {
+  return encodeURIComponent(s).replace(/[!'()*]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`);
+}
+
+/** S3-compatible put/get/delete + presignGet (AWS / MinIO / R2) with SigV4. */
 export function s3Store(cfg: S3StoreConfig): ObjectStorePort {
   const fetchImpl = cfg.fetchImpl ?? fetch;
+  const now = cfg.now ?? (() => new Date());
   const endpointHost = cfg.endpoint
     ? new URL(cfg.endpoint).host
     : `s3.${cfg.region}.amazonaws.com`;
@@ -93,7 +101,7 @@ export function s3Store(cfg: S3StoreConfig): ObjectStorePort {
   async function signed(method: string, key: string, body?: Buffer) {
     const url = objectUrl(key);
     const u = new URL(url);
-    const { amz, day } = amzDate();
+    const { amz, day } = amzDate(now());
     const payloadHash = sha256Hex(body ?? Buffer.alloc(0));
     const canonicalHeaders =
       `host:${u.host}\n` + `x-amz-content-sha256:${payloadHash}\n` + `x-amz-date:${amz}\n`;
@@ -144,6 +152,38 @@ export function s3Store(cfg: S3StoreConfig): ObjectStorePort {
       const req = await signed('DELETE', key);
       const res = await fetchImpl(req.url, { method: 'DELETE', headers: req.headers });
       if (!res.ok && res.status !== 404) throw new Error(`S3_DELETE_FAILED ${res.status}`);
+    },
+    presignGet: async (key, expiresSeconds = 300) => {
+      const expires = Math.min(Math.max(1, Math.floor(expiresSeconds)), 3600);
+      const url = objectUrl(key);
+      const u = new URL(url);
+      const { amz, day } = amzDate(now());
+      const scope = `${day}/${cfg.region}/s3/aws4_request`;
+      const credential = `${cfg.accessKeyId}/${scope}`;
+      const params: Record<string, string> = {
+        'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',
+        'X-Amz-Credential': credential,
+        'X-Amz-Date': amz,
+        'X-Amz-Expires': String(expires),
+        'X-Amz-SignedHeaders': 'host',
+      };
+      const canonicalQuery = Object.keys(params)
+        .sort()
+        .map((k) => `${encodeRfc3986(k)}=${encodeRfc3986(params[k]!)}`)
+        .join('&');
+      const canonicalRequest = [
+        'GET',
+        u.pathname,
+        canonicalQuery,
+        `host:${u.host}\n`,
+        'host',
+        'UNSIGNED-PAYLOAD',
+      ].join('\n');
+      const stringToSign = ['AWS4-HMAC-SHA256', amz, scope, sha256Hex(canonicalRequest)].join('\n');
+      const signature = createHmac('sha256', signingKey(cfg.secretAccessKey, day, cfg.region))
+        .update(stringToSign, 'utf8')
+        .digest('hex');
+      return `${url}?${canonicalQuery}&X-Amz-Signature=${signature}`;
     },
   };
 }

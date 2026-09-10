@@ -122,4 +122,24 @@ describe('Storage S3 + ClamAV v0.1', () => {
     expect(config.malwareScanProvider).toBe('sandbox');
     assertConfiguration();
   });
+
+  it('s3Store.presignGet emite URL SigV4 query-string con caducidad', async () => {
+    const fixed = new Date('2026-09-10T12:00:00.000Z');
+    const store = s3Store({
+      bucket: 'rn-test',
+      region: 'eu-central-1',
+      accessKeyId: 'AKIA_TEST',
+      secretAccessKey: 'secret_test',
+      endpoint: 'https://s3.test.local',
+      forcePathStyle: true,
+      now: () => fixed,
+    });
+    const url = await store.presignGet!('evidence/abc', 120);
+    expect(url).toContain('https://s3.test.local/rn-test/evidence/abc?');
+    expect(url).toContain('X-Amz-Algorithm=AWS4-HMAC-SHA256');
+    expect(url).toContain('X-Amz-Expires=120');
+    expect(url).toContain('X-Amz-Date=20260910T120000Z');
+    expect(url).toMatch(/X-Amz-Signature=[0-9a-f]{64}/);
+    expect(objectStorePort().presignGet).toBeUndefined();
+  });
 });

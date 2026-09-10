@@ -138,6 +138,8 @@ Asset relationship review v0.1: preview evidencia admin + tests;
 Storage + scan v0.1: `docs/STORAGE_SCAN_V0_1.md`. **PASS** sandbox (local + EICAR).
 Storage S3 + ClamAV v0.1: `docs/STORAGE_S3_CLAMAV_V0_1.md` — SPECIFY **PASS**;
 IMPLEMENT **PASS** (opt-in; CI defaults local/sandbox).
+Storage presigned GET v0.1: `docs/STORAGE_PRESIGNED_V0_1.md` — SPECIFY **PASS**;
+IMPLEMENT **PASS** (`files/:id` → 302 con S3).
 DB roles v0.1: `docs/DB_ROLES_TENANCY_V0_1.md`. **PASS** migrator≠`rightsnet_app`.
 DB RLS org pilot v0.1: `docs/DB_RLS_V0_1.md` — SPECIFY **PASS**; IMPLEMENT **PASS**
 (FORCE en organizations/members/campaigns; bypass runtime por defecto; cableado

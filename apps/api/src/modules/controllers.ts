@@ -614,6 +614,12 @@ export class AccountsController {
     ).rows[0];
     if (!f || (f.user_id !== user.id && user.role !== 'admin'))
       throw new DomainError('NOT_FOUND', 404);
+    const store = objectStorePort();
+    if (store.presignGet) {
+      const url = await store.presignGet(String(f.storage_key), 300);
+      res.setHeader('Cache-Control', 'no-store');
+      return res.redirect(302, url);
+    }
     const mime = typeof f.mime_type === 'string' && f.mime_type ? f.mime_type : 'application/octet-stream';
     res.setHeader('Content-Type', mime);
     res.setHeader(
@@ -623,7 +629,7 @@ export class AccountsController {
         : 'attachment; filename="evidence.bin"',
     );
     res.setHeader('Cache-Control', 'no-store');
-    res.send(await objectStorePort().get(f.storage_key));
+    res.send(await store.get(f.storage_key));
   }
   @Get('favorites') async favorites(@Req() req: Request) {
     const user = await actor(req);
