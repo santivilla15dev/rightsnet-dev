@@ -165,9 +165,9 @@ Revisión de código y pruebas repetidas en esta tarea; no se ha repetido el ens
 **Pendiente:** reensayo externo founder R1–R5 (`docs/runbooks/stripe-test-mode.md`).
 **Avance 2026-09-10:** R1 PASS (Connect `Berlin, DE` → `identity.country=DE`);
 R2 PASS (Checkout+`charge_ref`+transfer+`RN-LIC-2026-000005`);
-R3 PASS (reversión parcial `trr_…` 5000, transfer sigue `paid`). R4 OPEN* (test >500 PASS;
-live BT bajos). R5 **PASS*** (thin recovery live: run platform `done`, `recovered_events=24`,
-cursor `thin_events`; fees/multi mocks).
+R3 PASS (reversión parcial `trr_…` 5000, transfer sigue `paid`). R4 **PASS*** (test 501 BT +
+Conciliar platform `done` `3eb77948…`). R5 **PASS*** (thin recovery live: `recovered_events=24`,
+cursor `thin_events`; fees/multi mocks). Reensayo R1–R5 **cerrado** en test mode 2026-09-10.
 **Fix worker 2026-09-10:** spam `Worker cycle failed PAYMENT_MISMATCH` por recovery de
 `checkout.session.completed` ajeno (USD, sin metadata). Soft-quarantine + catch en
 `processExternalReconciliation`. Tests checkout/recon focalizados PASS (23).
@@ -326,7 +326,7 @@ cuentas nuevas. Tests `stripe-connect` PASS.
 
 Implementación parcial PASS mocks: `docs/STRIPE_MONEY_RECON_GAPS_V0_1.md`. Compare
 paginado >500; reversión parcial; relink huérfanos al setear `charge_ref`. Reensayo
-founder CLI: R1+R2+R3 **PASS** 2026-09-10; R5 **PASS*** (thin recovery live); R4 OPEN*.
+founder CLI: R1–R5 **PASS*** 2026-09-10 (test mode; R4 volumen vía test 501 BT).
 
 ## Thin v2 recovery + fees / multi-account — 2026-09-10
 
