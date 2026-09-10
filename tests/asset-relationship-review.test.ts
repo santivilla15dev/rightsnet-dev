@@ -18,14 +18,22 @@ let policyHash: string;
 let creatorRowId: string;
 const uploadDir = path.resolve('.local/uploads');
 
-async function addEvidence(targetAssetId: string) {
+async function addEvidence(targetAssetId: string, status: 'pending' | 'clean' | 'rejected' = 'clean') {
   const fileId = randomUUID();
   const jpeg = Buffer.from([0xff, 0xd8, 0xff, 0xd9]);
   await mkdir(uploadDir, { recursive: true, mode: 0o700 });
   await writeFile(path.join(uploadDir, fileId), jpeg, { mode: 0o600, flag: 'wx' });
   await pool.query(
-    "INSERT INTO asset_files(id,asset_id,storage_key,sha256,mime_type,size_bytes,scan_status) VALUES($1,$2,$3,$4,'image/jpeg',$5,'pending')",
-    [fileId, targetAssetId, fileId, createHash('sha256').update(jpeg).digest('hex'), jpeg.length],
+    'INSERT INTO asset_files(id,asset_id,storage_key,sha256,mime_type,size_bytes,scan_status) VALUES($1,$2,$3,$4,$5,$6,$7)',
+    [
+      fileId,
+      targetAssetId,
+      fileId,
+      createHash('sha256').update(jpeg).digest('hex'),
+      'image/jpeg',
+      jpeg.length,
+      status,
+    ],
   );
   return fileId;
 }
@@ -41,7 +49,12 @@ beforeAll(async () => {
   await management.end();
   await migrate();
   await seed();
-  creator = (await pool.query('SELECT * FROM users WHERE id=$1', [demoIds.other])).rows[0];
+  const userId = randomUUID();
+  await pool.query(
+    "INSERT INTO users(id,email,display_name,role) VALUES($1,$2,'Review Fixture User','buyer')",
+    [userId, `review-${userId.slice(0, 8)}@example.test`],
+  );
+  creator = (await pool.query('SELECT * FROM users WHERE id=$1', [userId])).rows[0];
   admin = (await pool.query('SELECT * FROM users WHERE id=$1', [demoIds.admin])).rows[0];
   const created = await transaction((db) =>
     createCreator(db, creator, {
@@ -92,7 +105,22 @@ describe('Asset relationship human review v0.1', () => {
       ),
     ).rejects.toMatchObject({ code: 'EVIDENCE_REQUIRED' });
 
-    const fileId = await addEvidence(assetId);
+    const dirty = await addEvidence(assetId, 'pending');
+    await expect(
+      transaction((db) =>
+        reviewAssetRelationship(
+          db,
+          admin.id,
+          assetId,
+          'approve',
+          'Apruebo con evidencia aún pendiente de scan',
+        ),
+      ),
+    ).rejects.toMatchObject({ code: 'EVIDENCE_REQUIRED' });
+    await pool.query('DELETE FROM asset_files WHERE id=$1', [dirty]);
+    await rm(path.join(uploadDir, dirty), { force: true });
+
+    const fileId = await addEvidence(assetId, 'clean');
     const approved = await transaction((db) =>
       reviewAssetRelationship(
         db,

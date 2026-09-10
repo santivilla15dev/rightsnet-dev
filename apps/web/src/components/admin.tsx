@@ -834,7 +834,7 @@ export function Admin() {
             </label>
             <p className="muted small">
               Confirma que miraste la evidencia. Esta acción se registra con tu identidad y fecha.
-              En sandbox, las verificaciones son simuladas (sin malware scan real).
+              El scan malware sandbox corre al subir el archivo (no en este botón).
             </p>
             <div className="inline-actions">
               <Button type="button" variant="outline" onClick={() => setPending(null)}>

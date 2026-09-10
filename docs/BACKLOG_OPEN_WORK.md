@@ -75,9 +75,9 @@ El founder elige **uno**. Cada fila es un posible SPECIFY → STOP.
 |--------------------|------|---------|
 | Alta (piloto AT) | ~~Connect país sesgado a test **ES**~~ | **PASS** código: `docs/CONNECT_COUNTRY_AT_DE_V0_1.md` (cuentas nuevas) |
 | Media | ~~Review humana relación con activo~~ | **PASS** código v0.1: `docs/ASSET_RELATIONSHIP_REVIEW_V0_1.md` (preview + tests); ensayo humano founder opcional |
-| Media | Stripe test **reensayo** + gaps money/recon | Gaps código **PASS** (`STRIPE_MONEY_RECON_GAPS` + `STRIPE_THIN_FEES_MULTI`); reensayo founder OPEN (runbook R1–R5) |
-| Media | Storage real + malware scan | Hoy disco privado local |
-| Media | Roles DB / RLS | Migrator separado; ensayar tenancy |
+| Media | Stripe test **reensayo** + gaps money/recon | Gaps código **PASS**; reensayo founder OPEN — checklist `docs/runbooks/stripe-reensayo-checklist.md` |
+| Media | ~~Storage real + malware scan~~ | **PASS** v0.1 sandbox: `docs/STORAGE_SCAN_V0_1.md` (puertos local+EICAR); S3/ClamAV reales abiertos |
+| Media | ~~Roles DB / RLS~~ | **PASS** v0.1 roles: `docs/DB_ROLES_TENANCY_V0_1.md` (migrator≠app); RLS pleno abierto |
 | Baja / infra | KMS / rotación remota | Hoy Ed25519 local |
 | Baja / infra | Auditoría resistente a admin | Triggers append-only; archivo retenido pendiente |
 | Baja / infra | Notificaciones y alertas | Email / métricas / cola |

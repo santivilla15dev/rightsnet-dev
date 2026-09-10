@@ -3,7 +3,6 @@
  * L3 live: optional HTTP OCR provider via ocr-live-client.
  */
 import { createHash, randomUUID } from 'node:crypto';
-import { mkdir, writeFile, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { z } from 'zod';
 import { pool, audit, type DB } from '../../../../packages/db/index.js';
@@ -18,6 +17,8 @@ import {
   liveOcrExtractProposedRights,
   type LiveOcrDeps,
 } from './adapters/ocr-live-client.js';
+import { objectStorePort } from './adapters/object-store.js';
+import { malwareScannerPort } from './adapters/malware-scanner.js';
 
 export const AGREEMENT_FILE_MAX_BYTES = 10 * 1024 * 1024;
 export const AGREEMENT_FILE_MIMES = ['application/pdf', 'image/jpeg', 'image/png'] as const;
@@ -46,8 +47,8 @@ function assertMagic(mime: (typeof AGREEMENT_FILE_MIMES)[number], buffer: Buffer
   }
 }
 
-function uploadsDir() {
-  return path.resolve('.local/uploads/agreements');
+function agreementStorageKey(fileId: string) {
+  return path.posix.join('agreements', fileId);
 }
 
 /** Sandbox stub: suggest reviewable proposed_rights without network OCR. Never creates Grant. */
@@ -137,23 +138,24 @@ export async function uploadExternalAgreementFile(
 
   const fid = randomUUID();
   const sha256 = createHash('sha256').update(buffer).digest('hex');
-  const dir = uploadsDir();
-  await mkdir(dir, { recursive: true, mode: 0o700 });
-  await writeFile(path.join(dir, fid), buffer, { mode: 0o600, flag: 'wx' });
+  const storageKey = agreementStorageKey(fid);
+  const scan = await malwareScannerPort().scan(buffer, { mime_type: data.mime_type });
+  await objectStorePort().put(storageKey, buffer);
 
   const row = (
     await db.query(
       `INSERT INTO external_agreement_files(
          id, agreement_id, storage_key, sha256, mime_type, size_bytes, scan_status, original_filename
-       ) VALUES ($1,$2,$3,$4,$5,$6,'clean',$7)
+       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
        RETURNING id, agreement_id, sha256, mime_type, size_bytes, scan_status, original_filename, created_at`,
       [
         fid,
         agreementId,
-        fid,
+        storageKey,
         sha256,
         data.mime_type,
         buffer.length,
+        scan,
         data.original_filename ?? null,
       ],
     )
@@ -212,8 +214,14 @@ export async function extractExternalAgreement(
   if (!file) {
     throw new DomainError('FILE_REQUIRED', 422, 'Adjunta un archivo antes de extract.');
   }
-  if (file.scan_status === 'rejected') {
-    throw new DomainError('FILE_REJECTED', 409, 'El archivo fue rechazado; no se puede extraer.');
+  if (file.scan_status !== 'clean') {
+    throw new DomainError(
+      'FILE_REJECTED',
+      409,
+      file.scan_status === 'rejected'
+        ? 'El archivo fue rechazado; no se puede extraer.'
+        : 'El archivo aún no tiene scan limpio; no se puede extraer.',
+    );
   }
 
   const mode = opts.mode;
@@ -227,7 +235,7 @@ export async function extractExternalAgreement(
   let proposed: ExternalProposedRights;
   try {
     if (mode === 'live') {
-      const buffer = await readFile(path.join(uploadsDir(), file.storage_key));
+      const buffer = await objectStorePort().get(file.storage_key);
       const liveFn = extractOpts.liveOcrFn ?? liveOcrExtractProposedRights;
       proposed = await liveFn(
         {

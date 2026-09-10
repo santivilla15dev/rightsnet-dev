@@ -52,3 +52,26 @@ const db = spawnSync(
 );
 if (!db.stdout.trim())
   run(bin + '/createdb', ['-h', '127.0.0.1', '-p', '55432', '-U', 'rightsnet', 'rightsnet']);
+
+// App DML role (DDL stays with rightsnet). Idempotent for re-runs.
+run(bin + '/psql', [
+  '-h',
+  '127.0.0.1',
+  '-p',
+  '55432',
+  '-U',
+  'rightsnet',
+  '-d',
+  'rightsnet',
+  '-v',
+  'ON_ERROR_STOP=1',
+  '-c',
+  `DO $$ BEGIN
+     IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'rightsnet_app') THEN
+       CREATE ROLE rightsnet_app LOGIN;
+     END IF;
+   END $$;
+   GRANT CONNECT ON DATABASE rightsnet TO rightsnet_app;
+   GRANT USAGE ON SCHEMA public TO rightsnet_app;
+   REVOKE CREATE ON SCHEMA public FROM rightsnet_app;`,
+]);

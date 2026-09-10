@@ -17,10 +17,17 @@ export async function reviewAssetRelationship(
   if (!a) throw new DomainError('NOT_FOUND', 404);
   if (a.status !== 'pending_review') throw new DomainError('INVALID_STATE', 409);
   const files = (
-    await db.query('SELECT id FROM asset_files WHERE asset_id=$1', [assetId])
+    await db.query(
+      "SELECT id FROM asset_files WHERE asset_id=$1 AND scan_status='clean'",
+      [assetId],
+    )
   ).rows;
   if (!files.length)
-    throw new DomainError('EVIDENCE_REQUIRED', 422, 'No hay evidencia para revisar.');
+    throw new DomainError(
+      'EVIDENCE_REQUIRED',
+      422,
+      'No hay evidencia con scan limpio para revisar.',
+    );
 
   await db.query(
     'INSERT INTO reviews(id,asset_id,actor_id,decision,reason) VALUES($1,$2,$3,$4,$5)',
@@ -31,10 +38,7 @@ export async function reviewAssetRelationship(
     decision === 'approve' ? 'reviewed' : 'rejected',
     decision === 'approve' ? 'draft' : 'rejected',
   ]);
-  await db.query('UPDATE asset_files SET scan_status=$2 WHERE asset_id=$1', [
-    assetId,
-    decision === 'approve' ? 'clean' : 'rejected',
-  ]);
+  // Malware scan_status is set at upload time; human review does not rewrite it.
   await audit(db, actorId, 'asset.sandbox_reviewed', assetId, {
     decision,
     reason,

@@ -29,8 +29,6 @@ import {
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { randomUUID, createHash } from 'node:crypto';
-import { mkdir, writeFile, readFile } from 'node:fs/promises';
-import path from 'node:path';
 import { z } from 'zod';
 import { pool, audit } from '../../../../packages/db/index.js';
 import {
@@ -39,6 +37,8 @@ import {
   defaultPolicy,
   beautyDePolicy,
 } from '../../../../packages/domain/src/index.js';
+import { objectStorePort } from './adapters/object-store.js';
+import { malwareScannerPort } from './adapters/malware-scanner.js';
 import { actor, admin, demoLogin, assertOpsReadAccess, assertOpsWriteAccess } from '../common/auth.js';
 import { mutate } from '../common/idempotency.js';
 import { config } from '../common/config.js';
@@ -529,11 +529,18 @@ export class AccountsController {
       if (a.status === 'suspended') throw new DomainError('ASSET_SUSPENDED', 409);
       if (!(await db.query('SELECT 1 FROM consents WHERE policy_id=$1', [a.policy_id])).rowCount)
         throw new DomainError('CONSENT_REQUIRED');
-      if (!(await db.query('SELECT 1 FROM asset_files WHERE asset_id=$1', [id])).rowCount)
+      if (
+        !(
+          await db.query(
+            "SELECT 1 FROM asset_files WHERE asset_id=$1 AND scan_status='clean' LIMIT 1",
+            [id],
+          )
+        ).rowCount
+      )
         throw new DomainError(
           'EVIDENCE_REQUIRED',
           422,
-          'Sube una imagen de prueba para revisar el vínculo.',
+          'Sube una imagen limpia (scan OK) para revisar el vínculo.',
         );
       await db.query("UPDATE assets SET status='pending_review' WHERE id=$1", [id]);
       await audit(db, user.id, 'asset.submitted', id);
@@ -568,21 +575,20 @@ export class AccountsController {
         ? buffer.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))
         : buffer[0] === 255 && buffer[1] === 216 && buffer[2] === 255;
     if (!valid) throw new DomainError('INVALID_IMAGE');
+    const scan = await malwareScannerPort().scan(buffer, { mime_type: data.mime_type });
     return mutate(
       user.id,
       'upload/' + id,
       idem(req),
-      { hash: createHash('sha256').update(buffer).digest('hex') },
+      { hash: createHash('sha256').update(buffer).digest('hex'), scan },
       async (db) => {
         const a = await ownedAsset(db, id, user);
         if (!['draft', 'rejected'].includes(a.status))
           throw new DomainError('EDIT_DRAFT_REQUIRED', 409);
-        const fid = randomUUID(),
-          storage = path.resolve('.local/uploads');
-        await mkdir(storage, { recursive: true, mode: 0o700 });
-        await writeFile(path.join(storage, fid), buffer, { mode: 0o600, flag: 'wx' });
+        const fid = randomUUID();
+        await objectStorePort().put(fid, buffer);
         await db.query(
-          "INSERT INTO asset_files(id,asset_id,storage_key,sha256,mime_type,size_bytes,scan_status) VALUES($1,$2,$3,$4,$5,$6,'pending')",
+          'INSERT INTO asset_files(id,asset_id,storage_key,sha256,mime_type,size_bytes,scan_status) VALUES($1,$2,$3,$4,$5,$6,$7)',
           [
             fid,
             id,
@@ -590,10 +596,11 @@ export class AccountsController {
             createHash('sha256').update(buffer).digest('hex'),
             data.mime_type,
             buffer.length,
+            scan,
           ],
         );
         await db.query("UPDATE assets SET relationship_status='pending' WHERE id=$1", [id]);
-        return { id: fid, scan_status: 'pending', sandbox: true };
+        return { id: fid, scan_status: scan, sandbox: true };
       },
     );
   }
@@ -616,7 +623,7 @@ export class AccountsController {
         : 'attachment; filename="evidence.bin"',
     );
     res.setHeader('Cache-Control', 'no-store');
-    res.send(await readFile(path.resolve('.local/uploads', f.storage_key)));
+    res.send(await objectStorePort().get(f.storage_key));
   }
   @Get('favorites') async favorites(@Req() req: Request) {
     const user = await actor(req);

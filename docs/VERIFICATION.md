@@ -329,3 +329,13 @@ Tests recon + typecheck/lint PASS. Reensayo founder sigue OPEN.
 Cierre PASS código: `docs/ASSET_RELATIONSHIP_REVIEW_V0_1.md`. Preview evidencia en
 Admin Verificación; review exige fichero; tests `asset-relationship-review` PASS.
 Ensayo humano founder opcional para marcar gate operativo.
+
+## Storage + malware scan v0.1 — 2026-09-10
+
+Cierre PASS sandbox: `docs/STORAGE_SCAN_V0_1.md`. Puertos local store + scanner EICAR;
+submit/review/extract exigen `clean`. S3/ClamAV reales fuera.
+
+## DB roles / tenancy v0.1 — 2026-09-10
+
+Cierre PASS roles: `docs/DB_ROLES_TENANCY_V0_1.md`. Migración 033; `MIGRATE_DATABASE_URL`;
+test niega DDL a `rightsnet_app`. RLS pleno pendiente.

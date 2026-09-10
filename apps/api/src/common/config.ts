@@ -64,6 +64,17 @@ export const config = {
    * creators.location has no AT/DE/ES suffix. Test/pilot default: at.
    */
   connectDefaultCountry: (process.env.CONNECT_DEFAULT_COUNTRY ?? 'at').toLowerCase(),
+  /**
+   * Object storage backend. v0.1: local disk only (`.local/uploads`).
+   * Future: s3 — not implemented yet.
+   */
+  storageProvider: (process.env.STORAGE_PROVIDER === 's3' ? 's3' : 'local') as 'local' | 's3',
+  /**
+   * Malware scan provider. v0.1: sandbox (EICAR reject). Future: clamav.
+   */
+  malwareScanProvider: (process.env.MALWARE_SCAN_PROVIDER === 'clamav' ? 'clamav' : 'sandbox') as
+    | 'sandbox'
+    | 'clamav',
   port: Number(process.env.API_PORT ?? 4000),
 };
 export function assertConfiguration() {

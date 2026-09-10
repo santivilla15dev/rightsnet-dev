@@ -134,3 +134,6 @@ Thin v2 recovery + fees/multi-account: `docs/STRIPE_THIN_FEES_MULTI_V0_1.md`.
 
 Asset relationship review v0.1: preview evidencia admin + tests;
 `docs/ASSET_RELATIONSHIP_REVIEW_V0_1.md`. **PASS** código; ensayo humano founder opcional.
+
+Storage + scan v0.1: `docs/STORAGE_SCAN_V0_1.md`. **PASS** sandbox (local + EICAR).
+DB roles v0.1: `docs/DB_ROLES_TENANCY_V0_1.md`. **PASS** migrator≠`rightsnet_app`; RLS pleno OPEN.

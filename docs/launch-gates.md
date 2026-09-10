@@ -26,8 +26,8 @@ Piloto comercial propuesto: **Austria + Alemania** (constitución §5). No impli
 | Relación con activo (review humana) | Sandbox operable v0.1 | Preview evidencia + tests; `docs/ASSET_RELATIONSHIP_REVIEW_V0_1.md`. Ensayo humano founder pendiente |
 | Stripe Connect (cobros creador) | Implementado test | Live gated por flag; país cuentas nuevas AT/DE/ES vía location / `CONNECT_DEFAULT_COUNTRY` |
 | Orgs buyer AT | PASS | Domicilio `AT\|DE\|ES`; `docs/ORG_BUYERS_AT_V0_1.md`. ES legacy permitido; sin remap |
-| Storage y malware scan | Sandbox local | Disco privado; integrar storage/scanner real |
-| Roles DB y RLS | Pendiente | Migrator separado; ensayar tenancy |
+| Storage y malware scan | Sandbox v0.1 PASS | `docs/STORAGE_SCAN_V0_1.md`; S3/ClamAV reales pendientes |
+| Roles DB y RLS | Roles SQL v0.1 PASS | `docs/DB_ROLES_TENANCY_V0_1.md`; RLS pleno pendiente |
 | KMS/rotación | Parcial | Ed25519 local; gestión remota pendiente |
 | Auditoría resistente a admin | Parcial | Triggers append-only; archivo retenido pendiente |
 | Notificaciones y alertas | Pendiente | Email / métricas / cola |

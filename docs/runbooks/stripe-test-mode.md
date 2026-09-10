@@ -145,7 +145,8 @@ No marcar PASS hasta completar contra Dashboard/CLI. `LIVE_COMMERCE_ENABLED=fals
    - Si hay varios `acct_*`, el worker también importa sus BT (hasta 10).
 
 7. **Cerrar**  
-   - Marca cada fila R1–R5 PASS/FAIL en `docs/VERIFICATION.md` con fecha y “test mode”.  
+   - Marca cada fila R1–R5 PASS/FAIL con la plantilla `docs/runbooks/stripe-reensayo-checklist.md`.  
+   - Copia el resultado a `docs/VERIFICATION.md` con fecha y “test mode”.  
    - No actives `LIVE_COMMERCE_ENABLED`.
 
 ## Dónde mirar en RightsNet
