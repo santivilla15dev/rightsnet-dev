@@ -413,6 +413,11 @@ por defecto; CI/E2E `DEMO_UI_ENABLED=true`. Test demo-ui-gate.
 Cierre PASS: `docs/PRODUCT_COPY_SANDBOX_TONE_V0_1.md`. Notas UI y home/help
 sin etiqueta «Sandbox:»; AuthRequired → login producto.
 
+## Product ready local v0.1 — 2026-09-10
+
+Cierre PASS: `docs/PRODUCT_READY_LOCAL_V0_1.md`. `pnpm product:ready`
+valida `.env` founder; tests product-ready. Live/staging cloud OPEN.
+
 ## DB roles / tenancy v0.1 — 2026-09-10
 
 Cierre PASS roles: `docs/DB_ROLES_TENANCY_V0_1.md`. Migración 033; `MIGRATE_DATABASE_URL`;

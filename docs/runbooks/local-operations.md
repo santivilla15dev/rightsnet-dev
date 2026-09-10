@@ -52,6 +52,14 @@ pnpm staging:health
 
 Runbook: [`staging-health-smoke.md`](staging-health-smoke.md).
 
+Uso de producto (Supabase, demo off):
+
+```bash
+pnpm product:ready
+```
+
+Runbook: [`product-ready-local.md`](product-ready-local.md).
+
 Ejemplo manual adicional:
 
 ```bash

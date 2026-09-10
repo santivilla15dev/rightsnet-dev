@@ -12,6 +12,7 @@
     "db:backup-drill": "node scripts/backup-restore-drill.mjs",
     "staging:security": "node scripts/staging-security-checklist.mjs",
     "staging:health": "node scripts/staging-health-smoke.mjs",
+    "product:ready": "node scripts/product-ready.mjs",
     "db:migrate": "tsx packages/db/migrate.ts",
     "db:seed": "tsx packages/db/seed.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json && pnpm --filter @rightsnet/web typecheck",

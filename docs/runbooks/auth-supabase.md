@@ -31,6 +31,12 @@ WEB_URL=http://localhost:3000
 
 Reinicia `pnpm dev`.
 
+Comprueba perfil producto:
+
+```bash
+pnpm product:ready
+```
+
 ## Primer usuario (email, local)
 
 1. En Supabase Dashboard → **Authentication → Providers → Email**: ON.

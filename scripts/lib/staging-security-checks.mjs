@@ -71,6 +71,11 @@ export function runStagingSecurityChecks(root) {
     ok: /(?:^|\n)MFA_ENABLED=false(?:\n|$)/.test(envExample),
     detail: 'MFA_ENABLED=false en .env.example (opt-in)',
   });
+  findings.push({
+    id: 'env.example.demo_ui_off',
+    ok: /(?:^|\n)DEMO_UI_ENABLED=false(?:\n|$)/.test(envExample),
+    detail: 'DEMO_UI_ENABLED=false en .env.example (producto)',
+  });
 
   const ciPath = path.join(root, '.github/workflows/ci.yml');
   const ci = existsSync(ciPath) ? readFileSync(ciPath, 'utf8') : '';
@@ -98,6 +103,11 @@ export function runStagingSecurityChecks(root) {
     id: 'ci.staging_security_step',
     ok: /pnpm staging:security/.test(ci),
     detail: 'CI ejecuta pnpm staging:security',
+  });
+  findings.push({
+    id: 'ci.demo_ui_on',
+    ok: /DEMO_UI_ENABLED:\s*['"]?true['"]?/.test(ci),
+    detail: "CI fija DEMO_UI_ENABLED: 'true' (E2E)",
   });
 
   const liveKeys = scanTrackedForLiveStripeKeys(root);
