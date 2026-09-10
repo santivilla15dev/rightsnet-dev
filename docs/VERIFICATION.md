@@ -288,4 +288,5 @@ Ningún gate live o autoridad ejecutable cambia. H5 Deal Builder cerrado abajo.
 Cierre funcional PASS y STOP H5: `docs/CAMPAIGN_DEAL_BUILDER_V0_1.md`. Migración 030
 local/test aplicada. H1–H5: 32/32 tests focalizados y 5/5 E2E PASS; typecheck/lint PASS.
 UI Solicitudes: borrador → enviar → retirar; sin mutación de grants. Capturas
-`docs/screenshots/campaign-deal-builder-*`. H6 Passport no abierto.
+`docs/screenshots/campaign-deal-builder-*`. H6 Passport: SPECIFY PASS
+(`docs/CAMPAIGN_PASSPORT_V0_1.md`); IMPLEMENT no abierto.

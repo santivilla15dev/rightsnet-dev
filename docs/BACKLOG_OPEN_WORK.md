@@ -72,7 +72,7 @@ El founder elige **uno**. Cada fila es un posible SPECIFY → STOP.
 
 | Prioridad sugerida | Ítem | Detalle |
 |--------------------|------|---------|
-| Baja (Campaigns) | **H6 Campaign Passport** | Allowlist compartible, revocable, caducidad, reevaluación; solo tras STOP H5 |
+| Baja (Campaigns) | **H6 Campaign Passport IMPLEMENT** | SPECIFY PASS (`docs/CAMPAIGN_PASSPORT_V0_1.md`); falta IMPLEMENT → TEST → DOCUMENT → STOP |
 | Alta (piloto AT) | **Org buyers AT** | CHECK org country legacy `ES\|DE` — alinear para buyers AT antes del piloto |
 | Alta (piloto AT) | Connect país sesgado a test **ES** | Alinear onboarding Connect con alcance AT/DE cuando toque |
 | Media | Review humana relación con activo | Sandbox hoy; validación operativa pendiente |
