@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { beforeAll, afterAll, describe, it, expect } from 'vitest';
 import pg from 'pg';
 import { pool } from '../packages/db/index.js';
@@ -6,10 +7,15 @@ import { seed, demoIds } from '../packages/db/seed.js';
 import { DomainError } from '../packages/domain/src/index.js';
 import { mintRnAuthToken } from '../apps/api/src/modules/generation-auth.js';
 import { platformReportOutput } from '../apps/api/src/modules/report-output.js';
-import { listPlatformGenerations, getPlatformGeneration } from '../apps/api/src/modules/generations.js';
+import {
+  listPlatformGenerations,
+  getPlatformGeneration,
+} from '../apps/api/src/modules/generations.js';
 import { publicVerifyGeneration } from '../apps/api/src/modules/generation-verify.js';
 
 describe('generation read + public verify', () => {
+  const orgId = randomUUID();
+  const otherOrgId = randomUUID();
   let grantId: string;
 
   beforeAll(async () => {
@@ -25,8 +31,12 @@ describe('generation read + public verify', () => {
     await management.end();
     await migrate();
     await seed();
+    await pool.query(
+      "INSERT INTO organizations(id,legal_name,country,verified) VALUES($1,'List fixture','AT',true),($2,'Other list fixture','AT',true)",
+      [orgId, otherOrgId],
+    );
 
-    grantId = '60000000-0000-4000-8000-000000000071';
+    grantId = randomUUID();
     await pool.query(
       `INSERT INTO rights_grants(
          id, source_type, source_id, grantee_organization_id, asset_id, grantor_user_id,
@@ -37,8 +47,8 @@ describe('generation read + public verify', () => {
        ON CONFLICT (id) DO UPDATE SET status='ACTIVE'`,
       [
         grantId,
-        '60000000-0000-4000-8000-000000000070',
-        demoIds.org,
+        randomUUID(),
+        orgId,
         demoIds.rightsCoreAsset,
         demoIds.rightsCoreCreatorUser,
         JSON.stringify({
@@ -58,7 +68,7 @@ describe('generation read + public verify', () => {
   async function reportOne(suffix: string, nowIso: string) {
     const token = await mintRnAuthToken({
       grantId,
-      organizationId: demoIds.org,
+      organizationId: orgId,
       assetId: demoIds.rightsCoreAsset,
       provider: 'higgsfield',
       use: {
@@ -72,7 +82,7 @@ describe('generation read + public verify', () => {
     return platformReportOutput(
       {
         auth_id: token.payload.auth_id,
-        organization_id: demoIds.org,
+        organization_id: orgId,
         provider: 'higgsfield',
         idempotency_key: `read-${suffix}`,
         output: {
@@ -91,23 +101,33 @@ describe('generation read + public verify', () => {
     const b = await reportOne('b', '2026-07-02T12:00:00.000Z');
 
     const listed = await listPlatformGenerations({
-      organization_id: demoIds.org,
+      organization_id: orgId,
       provider: 'higgsfield',
       limit: 10,
     });
+    const firstPage = await listPlatformGenerations({ organization_id: orgId, limit: 1 });
+    expect(firstPage.items.map((i) => i.generation_id)).toEqual([b.generation_id]);
+    expect(firstPage.next_cursor).toBeTruthy();
+    const secondPage = await listPlatformGenerations({
+      organization_id: orgId,
+      limit: 1,
+      cursor: firstPage.next_cursor,
+    });
+    expect(secondPage.items.map((i) => i.generation_id)).toEqual([a.generation_id]);
+    expect(secondPage.next_cursor).toBeNull();
     expect(listed.surface).toBe('platform');
     expect(listed.items.some((i) => i.generation_id === a.generation_id)).toBe(true);
     expect(listed.items.some((i) => i.generation_id === b.generation_id)).toBe(true);
 
-    const empty = await listPlatformGenerations({ organization_id: demoIds.otherOrg });
+    const empty = await listPlatformGenerations({ organization_id: otherOrgId });
     expect(empty.items).toHaveLength(0);
 
-    const one = await getPlatformGeneration(a.generation_id!, demoIds.org);
+    const one = await getPlatformGeneration(a.generation_id!, orgId);
     expect(one.public_token).toBe(a.public_token);
     expect(one.output).toMatchObject({ external_job_id: 'job-a' });
 
     try {
-      await getPlatformGeneration(a.generation_id!, demoIds.otherOrg);
+      await getPlatformGeneration(a.generation_id!, otherOrgId);
       expect.unreachable('expected NOT_FOUND');
     } catch (e) {
       expect((e as DomainError).code).toBe('NOT_FOUND');

@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { beforeAll, afterAll, describe, it, expect } from 'vitest';
 import pg from 'pg';
 import { pool } from '../packages/db/index.js';
@@ -11,6 +12,8 @@ import {
 import { transaction } from '../packages/db/index.js';
 
 describe('RN-AUTH list generation-auths', () => {
+  const orgId = randomUUID();
+  const otherOrgId = randomUUID();
   let grantId: string;
 
   beforeAll(async () => {
@@ -26,8 +29,12 @@ describe('RN-AUTH list generation-auths', () => {
     await management.end();
     await migrate();
     await seed();
+    await pool.query(
+      "INSERT INTO organizations(id,legal_name,country,verified) VALUES($1,'List fixture','AT',true),($2,'Other list fixture','AT',true)",
+      [orgId, otherOrgId],
+    );
 
-    grantId = '60000000-0000-4000-8000-000000000096';
+    grantId = randomUUID();
     await pool.query(
       `INSERT INTO rights_grants(
          id, source_type, source_id, grantee_organization_id, asset_id, grantor_user_id,
@@ -38,8 +45,8 @@ describe('RN-AUTH list generation-auths', () => {
        ON CONFLICT (id) DO UPDATE SET status='ACTIVE'`,
       [
         grantId,
-        '60000000-0000-4000-8000-000000000097',
-        demoIds.org,
+        randomUUID(),
+        orgId,
         demoIds.rightsCoreAsset,
         demoIds.rightsCoreCreatorUser,
         JSON.stringify({
@@ -59,7 +66,7 @@ describe('RN-AUTH list generation-auths', () => {
   it('lists by org; filters status; never returns signature', async () => {
     const a = await mintRnAuthToken({
       grantId,
-      organizationId: demoIds.org,
+      organizationId: orgId,
       assetId: demoIds.rightsCoreAsset,
       provider: 'higgsfield',
       use: {
@@ -72,7 +79,7 @@ describe('RN-AUTH list generation-auths', () => {
     });
     const b = await mintRnAuthToken({
       grantId,
-      organizationId: demoIds.org,
+      organizationId: orgId,
       assetId: demoIds.rightsCoreAsset,
       provider: 'higgsfield',
       use: {
@@ -84,14 +91,24 @@ describe('RN-AUTH list generation-auths', () => {
       now: new Date('2026-08-01T11:00:00.000Z'),
     });
     await transaction((db) =>
-      revokeRnAuthToken({ authId: b.payload.auth_id, organizationId: demoIds.org }, db),
+      revokeRnAuthToken({ authId: b.payload.auth_id, organizationId: orgId }, db),
     );
 
     const all = await listPlatformGenerationAuths({
-      organization_id: demoIds.org,
+      organization_id: orgId,
       asset_id: demoIds.rightsCoreAsset,
       limit: 50,
     });
+    const firstPage = await listPlatformGenerationAuths({ organization_id: orgId, limit: 1 });
+    expect(firstPage.items.map((i) => i.auth_id)).toEqual([b.payload.auth_id]);
+    expect(firstPage.next_cursor).toBeTruthy();
+    const secondPage = await listPlatformGenerationAuths({
+      organization_id: orgId,
+      limit: 1,
+      cursor: firstPage.next_cursor,
+    });
+    expect(secondPage.items.map((i) => i.auth_id)).toEqual([a.payload.auth_id]);
+    expect(secondPage.next_cursor).toBeNull();
     const ids = all.items.map((i) => i.auth_id);
     expect(ids).toContain(a.payload.auth_id);
     expect(ids).toContain(b.payload.auth_id);
@@ -101,7 +118,7 @@ describe('RN-AUTH list generation-auths', () => {
     }
 
     const revoked = await listPlatformGenerationAuths({
-      organization_id: demoIds.org,
+      organization_id: orgId,
       status: 'REVOKED',
       limit: 50,
     });
@@ -109,10 +126,10 @@ describe('RN-AUTH list generation-auths', () => {
     expect(revoked.items.every((i) => i.status === 'REVOKED')).toBe(true);
 
     const other = await listPlatformGenerationAuths({
-      organization_id: demoIds.otherOrg,
+      organization_id: otherOrgId,
       limit: 20,
     });
-    expect(other.items.every((i) => i.organization_id === demoIds.otherOrg)).toBe(true);
+    expect(other.items.every((i) => i.organization_id === otherOrgId)).toBe(true);
     expect(other.items.some((i) => i.auth_id === a.payload.auth_id)).toBe(false);
   });
 
@@ -121,12 +138,11 @@ describe('RN-AUTH list generation-auths', () => {
   });
 
   it('GET one by id; org mismatch 404; no signature', async () => {
-    const { getPlatformGenerationAuth } = await import(
-      '../apps/api/src/modules/generation-auth.js'
-    );
+    const { getPlatformGenerationAuth } =
+      await import('../apps/api/src/modules/generation-auth.js');
     const token = await mintRnAuthToken({
       grantId,
-      organizationId: demoIds.org,
+      organizationId: orgId,
       assetId: demoIds.rightsCoreAsset,
       provider: 'higgsfield',
       use: {
@@ -137,13 +153,13 @@ describe('RN-AUTH list generation-auths', () => {
       grantValidUntil: '2027-12-31T23:59:59.000Z',
       now: new Date('2026-08-02T10:00:00.000Z'),
     });
-    const one = await getPlatformGenerationAuth(token.payload.auth_id, demoIds.org);
+    const one = await getPlatformGenerationAuth(token.payload.auth_id, orgId);
     expect(one.auth_id).toBe(token.payload.auth_id);
     expect(one.status).toBe('ISSUED');
     expect(one).not.toHaveProperty('signature');
 
     await expect(
-      getPlatformGenerationAuth(token.payload.auth_id, demoIds.otherOrg),
+      getPlatformGenerationAuth(token.payload.auth_id, otherOrgId),
     ).rejects.toMatchObject({ code: 'NOT_FOUND' });
   });
 });

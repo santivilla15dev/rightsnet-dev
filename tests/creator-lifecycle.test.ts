@@ -62,7 +62,9 @@ describe('creator lifecycle', () => {
         asset: asset({ relationship_status: 'reviewed', status: 'draft' }),
       }),
     ).toBe('APPROVED');
-    expect(canAccessCreatorDashboard('APPROVED')).toBe(true);
+    expect(canAccessCreatorDashboard('APPROVED')).toBe(false);
+    expect(creatorHomePath('APPROVED')).toBe('/application');
+    expect(canAccessCreatorDashboard('PUBLISHED')).toBe(true);
     expect(
       getCreatorLifecycleState({
         asset: asset({ status: 'published', relationship_status: 'reviewed' }),
@@ -86,9 +88,15 @@ describe('creator lifecycle', () => {
     expect(p.review).toBe(true);
   });
 
-  it('blocks creators from purchasing', () => {
+  it('requires an organization, supports dual-role creators and excludes admins', () => {
     expect(canPurchaseLicense(null).ok).toBe(false);
-    expect(canPurchaseLicense({ role: 'creator', organizations: [] }).reason).toBe('not_buyer');
+    expect(canPurchaseLicense({ role: 'creator', organizations: [] }).reason).toBe(
+      'no_organization',
+    );
+    expect(canPurchaseLicense({ role: 'creator', organizations: [{ id: 'o1' }] }).ok).toBe(true);
+    expect(canPurchaseLicense({ role: 'admin', organizations: [{ id: 'o1' }] }).reason).toBe(
+      'not_buyer',
+    );
     expect(
       canPurchaseLicense({
         role: 'buyer',

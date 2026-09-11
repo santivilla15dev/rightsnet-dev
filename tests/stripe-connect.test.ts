@@ -114,7 +114,13 @@ beforeAll(async () => {
   await migrate();
   await seed();
   creator = (await pool.query('SELECT * FROM users WHERE id=$1', [demoIds.creator])).rows[0];
-  other = (await pool.query('SELECT * FROM users WHERE id=$1', [demoIds.other])).rows[0];
+  const otherId = randomUUID();
+  other = (
+    await pool.query(
+      "INSERT INTO users(id,email,display_name,role) VALUES($1,$2,'No creator fixture','buyer') RETURNING *",
+      [otherId, `connect-no-profile-${otherId}@example.test`],
+    )
+  ).rows[0];
   previousPayments = config.payments;
   process.env.STRIPE_SECRET_KEY = 'sk_test_rightsnet_connect_only';
 });
@@ -174,7 +180,7 @@ describe.sequential('Stripe Connect onboarding (mocked)', () => {
     expect(lastCreateCountry).toBe('at');
     expect(linkCalls).toBe(2);
     const rows = await pool.query(
-      "SELECT * FROM connect_accounts WHERE creator_id=(SELECT id FROM creators WHERE user_id=$1)",
+      'SELECT * FROM connect_accounts WHERE creator_id=(SELECT id FROM creators WHERE user_id=$1)',
       [creator.id],
     );
     expect(rows.rowCount).toBe(1);
@@ -192,7 +198,7 @@ describe.sequential('Stripe Connect onboarding (mocked)', () => {
     expect(lastCreateCountry).toBe('de');
   });
 
-  it('blocks cross-creator access to another creator connect status path via missing profile', async () => {
+  it('rejects Connect status for an actor without a creator profile', async () => {
     await expect(getConnectStatus(other)).rejects.toMatchObject({ code: 'CREATOR_REQUIRED' });
   });
 
@@ -232,14 +238,15 @@ describe.sequential('Stripe Connect onboarding (mocked)', () => {
       data: { object: { id: row.stripe_account_id } },
     } as never);
     const synced = (
-      await pool.query('SELECT transfers_status, requirements_due FROM connect_accounts WHERE id=$1', [
-        row.id,
-      ])
+      await pool.query(
+        'SELECT transfers_status, requirements_due FROM connect_accounts WHERE id=$1',
+        [row.id],
+      )
     ).rows[0];
     expect(synced.transfers_status).toBe('active');
     expect(synced.requirements_due).toBe(false);
     expect(
-      (await pool.query("SELECT * FROM provider_events WHERE event_id=$1", [eventId])).rowCount,
+      (await pool.query('SELECT * FROM provider_events WHERE event_id=$1', [eventId])).rowCount,
     ).toBe(1);
     const status = await getConnectStatus(creator);
     expect(status.payouts_ready).toBe(true);
@@ -322,9 +329,10 @@ describe.sequential('Stripe Connect onboarding (mocked)', () => {
     expect(capResult.handled).toBe('capability');
 
     const synced = (
-      await pool.query('SELECT transfers_status, requirements_due FROM connect_accounts WHERE id=$1', [
-        row.id,
-      ])
+      await pool.query(
+        'SELECT transfers_status, requirements_due FROM connect_accounts WHERE id=$1',
+        [row.id],
+      )
     ).rows[0];
     expect(synced.transfers_status).toBe('active');
     expect(synced.requirements_due).toBe(false);
@@ -339,7 +347,9 @@ describe.sequential('Stripe Connect onboarding (mocked)', () => {
   it('rejects thin notifications with invalid signature', async () => {
     await expect(
       ingestThinConnectNotification(
-        Buffer.from(JSON.stringify({ id: 'x', type: 'v2.core.account.updated', fail_signature: true })),
+        Buffer.from(
+          JSON.stringify({ id: 'x', type: 'v2.core.account.updated', fail_signature: true }),
+        ),
         'bad',
         'whsec_test',
       ),
