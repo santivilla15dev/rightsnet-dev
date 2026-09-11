@@ -20,6 +20,7 @@ import {
   Inbox,
   Wallet,
   Scale,
+  Newspaper,
 } from 'lucide-react';
 import { useSession } from './session';
 import { api } from '@/lib/api';
@@ -108,7 +109,8 @@ export function Shell({ children }: { children: ReactNode }) {
     (activeSpace === 'creator'
       ? hasCreator || path === '/onboarding' || path === '/application'
       : false);
-  const isBuyer = !isAdmin && !isCreator && (hasOrg || user?.role === 'buyer' || !user);
+  const isAnonymous = !user;
+  const isBuyer = !isAdmin && !isCreator && !isAnonymous && (hasOrg || user?.role === 'buyer');
 
   function switchSpace(next: AccountSpace) {
     setPreferredSpace(next);
@@ -137,6 +139,8 @@ export function Shell({ children }: { children: ReactNode }) {
     { href: '/company', label: 'Compras', icon: FileCheck2 },
     { href: '/company/licenses', label: 'Licencias', icon: FileCheck2 },
     { href: '/ops/rights', label: 'Derechos', icon: Scale },
+    { href: '/blog', label: 'Blog', icon: Newspaper },
+    { href: '/help', label: 'Guía', icon: LifeBuoy },
   ];
 
   const creatorLinks = [
@@ -147,11 +151,14 @@ export function Shell({ children }: { children: ReactNode }) {
     { href: '/dashboard#licenses', label: 'Licencias', icon: FileCheck2 },
     { href: '/dashboard#earnings', label: 'Ingresos', icon: Wallet },
     { href: '/dashboard#usage', label: 'Uso', icon: Compass },
+    { href: '/blog', label: 'Blog', icon: Newspaper },
     { href: '/dashboard#settings', label: 'Ajustes', icon: LifeBuoy },
   ];
 
   const publicLinks = [
+    { href: '/trust', label: 'Confianza', icon: ShieldCheck },
     { href: '/discover', label: 'Descubrir', icon: Compass },
+    { href: '/blog', label: 'Blog', icon: Newspaper },
     { href: '/help', label: 'Guía', icon: LifeBuoy },
   ];
 
@@ -176,6 +183,7 @@ export function Shell({ children }: { children: ReactNode }) {
       path === '/demo' ||
       path === '/onboarding' ||
       path === '/application';
+    const isHome = path === '/';
     return (
       <div className={'home-shell' + (isAuthSurface ? ' login-shell' : '')}>
         {demoUi && demo ? <DemoBanner demo={demo} onExit={() => void exitDemo()} /> : null}
@@ -186,24 +194,31 @@ export function Shell({ children }: { children: ReactNode }) {
             </span>
             RightsNet<span className="brand-dot">.</span>
           </Link>
+          {isHome ? (
+            <nav className="home-topbar-nav" aria-label="Secciones públicas">
+              <Link href="/discover">Descubrir</Link>
+              <Link href="/blog">Blog</Link>
+              <Link href="/help">Guía</Link>
+              <Link href="/trust">Confianza</Link>
+            </nav>
+          ) : null}
           <div className="home-topbar-actions">
-            {path === '/login' ||
-            path === '/signup' ||
-            path === '/welcome' ||
-            path === '/company/setup' ||
-            path === '/company/ready' ||
-            path === '/auth/callback' ||
-            path === '/forgot-password' ||
-            path === '/reset-password' ||
-            path === '/demo' ? (
+            {isAuthSurface ? (
               <Link className="profile-switch" href="/">
                 Inicio
               </Link>
             ) : (
-              <Link className="profile-switch" href="/login">
-                <span className="avatar-small">{user?.display_name?.slice(0, 1) ?? 'G'}</span>
-                <span>{user?.display_name?.split(' · ')[0] ?? 'Entrar'}</span>
-              </Link>
+              <>
+                <Link className="profile-switch" href="/login">
+                  <span className="avatar-small">{user?.display_name?.slice(0, 1) ?? 'G'}</span>
+                  <span>{user?.display_name?.split(' · ')[0] ?? 'Entrar'}</span>
+                </Link>
+                {isHome ? (
+                  <Link className="home-topbar-cta" href="/discover">
+                    Encontrar creadores
+                  </Link>
+                ) : null}
+              </>
             )}
           </div>
         </header>
@@ -234,14 +249,18 @@ export function Shell({ children }: { children: ReactNode }) {
             <b>
               {isCreator
                 ? (user?.display_name?.split(' · ')[0] ?? 'Creador')
-                : (org?.legal_name?.split(' · ')[0] ?? 'Explorar')}
+                : isAnonymous
+                  ? 'RightsNet'
+                  : (org?.legal_name?.split(' · ')[0] ?? 'Explorar')}
             </b>
             <small>
               {isCreator
                 ? 'Espacio creador'
-                : org
-                  ? `${user?.display_name?.split(' · ')[0] ?? 'Usuario'} · ${org.role}`
-                  : 'Sin organización'}
+                : isAnonymous
+                  ? 'Explorar sin cuenta'
+                  : org
+                    ? `${user?.display_name?.split(' · ')[0] ?? 'Usuario'} · ${org.role}`
+                    : 'Sin organización'}
             </small>
           </div>
           <ChevronDown size={15} />
@@ -278,7 +297,9 @@ export function Shell({ children }: { children: ReactNode }) {
             </Link>
           </div>
         ) : null}
-        <div className="nav-label">{isCreator ? 'CREADOR' : isBuyer ? 'MARCA' : 'WORKSPACE'}</div>
+        <div className="nav-label">
+          {isCreator ? 'CREADOR' : isBuyer ? 'MARCA' : isAnonymous ? 'PÚBLICO' : 'WORKSPACE'}
+        </div>
         <nav>
           {links.map((l) => (
             <Link
@@ -361,7 +382,9 @@ export function Shell({ children }: { children: ReactNode }) {
                 ? 'Creador'
                 : isBuyer
                   ? (org?.legal_name?.split(' · ')[0] ?? 'Marca')
-                  : 'Workspace'}{' '}
+                  : isAnonymous
+                    ? 'Público'
+                    : 'Workspace'}{' '}
               <span>/</span>{' '}
               <b>
                 {path.startsWith('/ops') || path.startsWith('/admin')
@@ -374,9 +397,13 @@ export function Shell({ children }: { children: ReactNode }) {
                         ? 'Mi talento'
                         : path.startsWith('/company')
                           ? 'Campañas'
-                          : path.startsWith('/help')
-                            ? 'Guía'
-                            : 'Descubrir'}
+                          : path.startsWith('/legal') || path === '/trust'
+                            ? 'Legal'
+                            : path.startsWith('/blog')
+                              ? 'Blog'
+                              : path.startsWith('/help')
+                                ? 'Guía'
+                                : 'Descubrir'}
               </b>
             </span>
           </div>
@@ -398,9 +425,23 @@ export function Shell({ children }: { children: ReactNode }) {
         </main>
         <footer className="main-footer">
           <span>© 2026 RightsNet · Derechos claros. Posibilidades nuevas.</span>
-          <Link href="/help">
-            Guía <ArrowUpRight size={13} />
-          </Link>
+          <span className="main-footer-links">
+            <Link href="/discover">
+              Descubrir <ArrowUpRight size={13} />
+            </Link>
+            <Link href="/blog">
+              Blog <ArrowUpRight size={13} />
+            </Link>
+            <Link href="/help">
+              Guía <ArrowUpRight size={13} />
+            </Link>
+            <Link href="/signup">
+              Crear cuenta <ArrowUpRight size={13} />
+            </Link>
+            <Link href="/trust">Confianza y alcance</Link>
+            <Link href="/legal/privacy">Privacidad</Link>
+            <Link href="/legal/terms">Términos</Link>
+          </span>
         </footer>
       </div>
     </div>

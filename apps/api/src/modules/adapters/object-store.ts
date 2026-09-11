@@ -197,7 +197,7 @@ export function s3Store(cfg: S3StoreConfig): ObjectStorePort {
       body: bytes,
       query: { partNumber: String(partNumber), uploadId },
     });
-    const res = await fetchImpl(req.url, { method: 'PUT', headers: req.headers, body: req.body });
+    const res = await fetchImpl(req.url, { method: 'PUT', headers: req.headers, body: req.body === undefined ? undefined : new Uint8Array(req.body) });
     if (!res.ok) throw new Error(`S3_UPLOAD_PART_FAILED ${res.status}`);
     const etag = res.headers.get('etag') ?? res.headers.get('ETag');
     if (!etag) throw new Error('S3_UPLOAD_PART_NO_ETAG');
@@ -222,7 +222,7 @@ export function s3Store(cfg: S3StoreConfig): ObjectStorePort {
       query: { uploadId },
       contentType: 'application/xml',
     });
-    const res = await fetchImpl(req.url, { method: 'POST', headers: req.headers, body: req.body });
+    const res = await fetchImpl(req.url, { method: 'POST', headers: req.headers, body: req.body === undefined ? undefined : new Uint8Array(req.body) });
     if (!res.ok) throw new Error(`S3_COMPLETE_MULTIPART_FAILED ${res.status}`);
   }
 
@@ -234,7 +234,7 @@ export function s3Store(cfg: S3StoreConfig): ObjectStorePort {
 
   async function putSimple(key: string, bytes: Buffer) {
     const req = await signed('PUT', key, { body: bytes });
-    const res = await fetchImpl(req.url, { method: 'PUT', headers: req.headers, body: req.body });
+    const res = await fetchImpl(req.url, { method: 'PUT', headers: req.headers, body: req.body === undefined ? undefined : new Uint8Array(req.body) });
     if (!res.ok) throw new Error(`S3_PUT_FAILED ${res.status}`);
   }
 

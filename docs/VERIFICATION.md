@@ -22,6 +22,7 @@ Historia: una marca elige un creador, configura el uso, obtiene una decisión de
 | Auth MFA v0.1 (TOTP)                           | PASS             | `MFA_ENABLED`; `docs/AUTH_MFA_V0_1.md`; `tests/supabase-mfa.test.ts`                                                                        |
 | Home pública + E2E §28                         | PASS             | `/` bare shell; `pnpm test:e2e` **9 PASS**; `docs/HOME_AND_E2E_V0_1.md`                                                                     |
 | Marketplace UX v0.1                            | PASS             | Home producto + pasos licencia; `docs/MARKETPLACE_UX_V0_1.md`                                                                               |
+| Public polish / Home trust v0.1                | PASS             | Hero + nav anónima + tipografía + trust/FAQ + legal stubs; `docs/PUBLIC_POLISH_V0_1.md`                                                     |
 | Identity KYC v0.1.1                            | PASS             | Port sandbox/stripe + selfie matching; `docs/IDENTITY_KYC_V0_1.md`; tests `identity-kyc.test.ts`                                            |
 | Identity KYC live v0.1                         | PASS             | `IDENTITY_LIVE_ENABLED`; `docs/IDENTITY_KYC_LIVE_V0_1.md`; livemode gated                                                                   |
 | Live commerce L1 (técnico)                     | PASS             | `LIVE_COMMERCE_ENABLED`; `docs/LIVE_COMMERCE_V0_1.md`; CI flag off                                                                          |
@@ -560,3 +561,60 @@ Helpers `app_can_see_order` / `app_owns_connected_account`. Tests `db-rls` 9/9
 | Suite completa | **27/27 PASS** | ~50 s, :3010/:4010 |
 
 **STOP.** No live commerce.
+
+## Blog v0.1 — 2026-09-10
+
+| Entrega | Resultado | Evidencia |
+| --- | --- | --- |
+| Spec | PASS | `docs/BLOG_V0_1.md` |
+| Rutas `/blog` + `/blog/:slug` | PASS | catch-all + `notFound` |
+| 4 artículos ES | PASS | `apps/web/src/content/blog/posts.ts` |
+| Nav + pie home | PASS | `shell` publicLinks + `home` footer |
+| E2E | PASS | `tests/e2e/blog.spec.ts` |
+
+**STOP.** Sin CMS / RSS / i18n EN. `/help` intacta. Live/legal OPEN.
+
+## Public polish / Home trust v0.1 — 2026-09-10
+
+| Entrega | Resultado | Evidencia |
+| --- | --- | --- |
+| Spec | PASS | `docs/PUBLIC_POLISH_V0_1.md` |
+| Hero asset | PASS | `apps/web/public/home/hero-atmosphere.jpg` |
+| Nav anónima pública | PASS | `shell.tsx` `isAnonymous` → `publicLinks` |
+| Tipografía | PASS | Source Sans 3 + Fraunces en `layout.tsx` |
+| Home trust / FAQ | PASS | `home.tsx` secciones Confianza + FAQ |
+| Stubs legales | PASS | `/legal/privacy`, `/legal/terms` |
+| Pasos licencia ficha | PASS | `.license-steps` en `creator-detail.tsx` |
+| E2E | PASS | `tests/e2e/home.spec.ts` (home + nav + legal) |
+
+**STOP.** Counsel legal OPEN. Sin claims de clientes pagados.
+
+## Commercial trust v0.1 — 11 septiembre 2026
+
+`docs/COMMERCIAL_TRUST_V0_1.md`: /trust + navegación + mensajes de imagen humana y
+escenarios explícitos. 5/5 E2E home/trust PASS; web typecheck y lint focal PASS.
+Captura móvil revisada; desbordamiento del footer corregido. Sin migración ni live.
+Global typecheck FAIL en object-store y tests storage/staging/stripe-money;
+global lint FAIL en storage-scan.test.ts:148. No se declara PASS global.
+Operador no registrado confirmado por fundador; expediente jurídico/comercial OPEN.
+
+## Typecheck recovery v0.1 — 11 septiembre 2026
+
+`docs/TYPECHECK_RECOVERY_V0_1.md`: global typecheck/lint/build now PASS (supersedes
+prior commercial-trust check blockers). Focused storage/staging/product-ready/money:
+26/26 PASS; exact multipart bytes/hash regression checked. Full suite 307 PASS / 5 FAIL;
+creator-lifecycle, rn-auth-list, generation-read-verify and stripe-connect follow-up
+remains OPEN. No change to legal/ops gates, product contracts or live flags.
+
+## Test isolation recovery v0.1 — 11 septiembre 2026
+
+| Entrega | Resultado | Evidencia |
+| --- | --- | --- |
+| Spec | PASS | `docs/TEST_ISOLATION_RECOVERY_V0_1.md` |
+| Dual-role / Approved≠Published lifecycle asserts | PASS | `tests/creator-lifecycle.test.ts` |
+| Unique org fixtures + cursor pages | PASS | `rn-auth-list`, `generation-read-verify` |
+| Unique no-creator Connect user | PASS | `tests/stripe-connect.test.ts` |
+| Suite ×2 same `*_test` | **312/312 PASS** | `work/isolation-suite1.log`, `work/isolation-suite2.log` |
+| typecheck / lint | PASS | |
+
+**STOP.** Sin cambios de autorización de producto ni límites de paginación. Live/legal OPEN.

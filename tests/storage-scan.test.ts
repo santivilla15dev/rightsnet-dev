@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { createServer } from 'node:net';
 import { rm } from 'node:fs/promises';
 import path from 'node:path';
@@ -74,7 +74,7 @@ describe('Storage S3 + ClamAV v0.1', () => {
         if (method === 'GET') {
           const b = blobs.get(key);
           if (!b) return new Response(null, { status: 404 });
-          return new Response(b, { status: 200 });
+          return new Response(new Uint8Array(b), { status: 200 });
         }
         if (method === 'DELETE') {
           blobs.delete(key);
@@ -145,7 +145,8 @@ describe('Storage S3 + ClamAV v0.1', () => {
 
   it('s3Store.put usa multipart cuando supera el umbral', async () => {
     const calls: { method: string; url: string }[] = [];
-    let uploadId = 'uid-1';
+    const uploadId = 'uid-1';
+    const payload = Buffer.from(Array.from({ length: 122 }, (_, i) => i)).subarray(1, 121);
     const store = s3Store({
       bucket: 'rn-test',
       region: 'eu-central-1',
@@ -167,6 +168,12 @@ describe('Storage S3 + ClamAV v0.1', () => {
         }
         if (method === 'PUT' && url.includes('partNumber=')) {
           const n = new URL(url).searchParams.get('partNumber');
+          const sent = Buffer.from(init?.body as Uint8Array);
+          const offset = (Number(n) - 1) * 60;
+          expect(sent).toEqual(payload.subarray(offset, offset + 60));
+          expect((init?.headers as Record<string, string>)['x-amz-content-sha256']).toBe(
+            createHash('sha256').update(sent).digest('hex'),
+          );
           return new Response(null, { status: 200, headers: { etag: `"etag-${n}"` } });
         }
         if (method === 'POST' && url.includes('uploadId=')) {
@@ -179,7 +186,7 @@ describe('Storage S3 + ClamAV v0.1', () => {
         return new Response('unexpected', { status: 500 });
       }) as typeof fetch,
     });
-    await store.put('big/' + randomUUID(), Buffer.alloc(120, 7));
+    await store.put('big/' + randomUUID(), payload);
     expect(calls.some((c) => c.method === 'POST' && c.url.includes('uploads'))).toBe(true);
     expect(calls.filter((c) => c.method === 'PUT' && c.url.includes('partNumber=')).length).toBe(2);
     expect(calls.some((c) => c.method === 'POST' && c.url.includes('uploadId='))).toBe(true);

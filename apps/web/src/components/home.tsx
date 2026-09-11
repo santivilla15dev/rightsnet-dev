@@ -11,6 +11,49 @@ import {
 } from 'lucide-react';
 import { Button } from './ui/button';
 
+const ILLUSTRATIVE_QUOTES = [
+  {
+    role: 'Marca',
+    quote:
+      'Consultar qué usos de imagen están permitidos antes de preparar el brief de una campaña.',
+    label: 'Ejemplo de caso · comprador',
+  },
+  {
+    role: 'Creador',
+    quote: 'Definir territorios y canales y dejar registrados los usos aprobados en cada licencia.',
+    label: 'Ejemplo de caso · talento',
+  },
+  {
+    role: 'Agencia',
+    quote:
+      'Compartir con el cliente el alcance registrado y los resultados vinculados a su campaña.',
+    label: 'Ejemplo de caso · agencia',
+  },
+] as const;
+
+const HOME_FAQ = [
+  {
+    q: '¿Qué licencia obtengo?',
+    a: 'Una licencia no exclusiva con territorios, canales y duración acordados, más un certificado firmado verificable en público.',
+    href: '/help#licensing',
+  },
+  {
+    q: '¿Quién paga?',
+    a: 'La marca u organización compradora. El creador fija precios y reglas; el cobro live sigue desactivado hasta las condiciones de lanzamiento.',
+    href: '/help#payments',
+  },
+  {
+    q: '¿Cómo verifico una licencia?',
+    a: 'Tras emitirla, el certificado incluye un enlace público. La guía explica el recorrido de verificación.',
+    href: '/help#verification',
+  },
+  {
+    q: '¿Hace falta cuenta para explorar?',
+    a: 'No. Descubrir perfiles es público; la cuenta entra al configurar o comprar una licencia.',
+    href: '/help#getting-started',
+  },
+] as const;
+
 export function Home() {
   return (
     <div className="home-page">
@@ -30,9 +73,9 @@ export function Home() {
           <p className="home-brand">
             RightsNet<span>.</span>
           </p>
-          <h1>Licencia talento IA con derechos claros.</h1>
+          <h1>Licencia la imagen de personas reales para campañas con IA.</h1>
           <p className="home-lead">
-            Marketplace para licenciar likeness en campañas con IA: permiso claro, límites
+            Organiza talento y derechos para tus campañas con IA: permisos registrados, límites
             acordados y certificado verificable.
           </p>
           <div className="home-cta">
@@ -175,6 +218,67 @@ export function Home() {
               <span>Firma criptográfica y página pública para comprobar el estado.</span>
             </li>
           </ul>
+          <div className="home-includes-cta">
+            <Button asChild>
+              <Link href="/discover">
+                Ver talento disponible
+                <ArrowRight size={16} />
+              </Link>
+            </Button>
+            <p className="home-territory-note">
+              Piloto comercial propuesto en Austria y Alemania, pendiente de revisión jurídica y
+              preparación operativa.{' '}
+              <Link className="home-text-link" href="/help#verification">
+                Cómo verificar una licencia
+              </Link>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="home-band home-band-mist" aria-labelledby="home-quotes-title">
+        <div className="home-wrap">
+          <p className="home-kicker">Confianza</p>
+          <h2 id="home-quotes-title">Qué buscan marcas y creadores</h2>
+          <p className="home-section-lead">
+            Escenarios de ejemplo para explicar el producto. No son testimonios de clientes.
+          </p>
+          <ul className="home-quotes-grid">
+            {ILLUSTRATIVE_QUOTES.map((item) => (
+              <li key={item.role} className="home-panel home-quote">
+                <p className="home-quote-role">{item.role}</p>
+                <p>{item.quote}</p>
+                <p className="home-quote-label">{item.label}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section className="home-band home-band-light" aria-labelledby="home-faq-title">
+        <div className="home-wrap">
+          <p className="home-kicker">Preguntas</p>
+          <h2 id="home-faq-title">FAQ rápido</h2>
+          <p className="home-section-lead">
+            Respuestas cortas. La guía completa está en{' '}
+            <Link className="home-text-link" href="/help">
+              /help
+            </Link>
+            .
+          </p>
+          <dl className="home-faq-list">
+            {HOME_FAQ.map((item) => (
+              <div key={item.q} className="home-faq-item">
+                <dt>{item.q}</dt>
+                <dd>
+                  {item.a}{' '}
+                  <Link className="home-text-link" href={item.href}>
+                    Más en la guía <ArrowRight size={14} />
+                  </Link>
+                </dd>
+              </div>
+            ))}
+          </dl>
         </div>
       </section>
 
@@ -199,9 +303,13 @@ export function Home() {
 
       <footer className="home-foot" aria-label="Pie">
         <div className="home-wrap home-foot-inner">
+          <Link href="/blog">Blog</Link>
           <Link href="/help">Guía del producto</Link>
           <Link href="/discover">Encontrar creadores</Link>
           <Link href="/signup">Crear cuenta</Link>
+          <Link href="/trust">Confianza y alcance</Link>
+          <Link href="/legal/privacy">Privacidad</Link>
+          <Link href="/legal/terms">Términos</Link>
           <span>Sin comercio live · plantillas contractuales provisionales</span>
         </div>
       </footer>

@@ -64,6 +64,7 @@ export async function fetchJson(url, opts = {}) {
     signal: AbortSignal.timeout(timeoutMs),
   });
   const text = await res.text();
+  /** @type {unknown} */
   let body = null;
   try {
     body = text ? JSON.parse(text) : null;

@@ -11,6 +11,10 @@ IMPLEMENT **PASS** (CI flag off; no live commerce).
 Home pública + E2E §28 is **PASS**.
 Marketplace UX v0.1 (product home + buyer path feel) is **PASS** —
 see `docs/MARKETPLACE_UX_V0_1.md`.
+Blog v0.1 (narrativa pública `/blog`, ES, sin CMS) is **PASS** —
+see `docs/BLOG_V0_1.md`.
+Public polish / Home trust v0.1 is **PASS** —
+see `docs/PUBLIC_POLISH_V0_1.md` (hero asset, nav anónima, tipografía, trust/FAQ, stubs legales).
 Identity KYC v0.1 (sandbox + Stripe Identity port; test by default) is **PASS** —
 see `docs/IDENTITY_KYC_V0_1.md` (v0.1.1 adds document + matching selfie on Stripe hosted UI).
 Identity KYC **live** v0.1: `docs/IDENTITY_KYC_LIVE_V0_1.md` — SPECIFY **PASS**; IMPLEMENT **PASS**

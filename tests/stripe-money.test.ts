@@ -199,7 +199,7 @@ describe.sequential('Stripe transfers, disputes and payouts (mocked)', () => {
       livemode: false,
       type: 'transfer.created',
       data: { object: { id: transferId, object: 'transfer' } },
-    } as never;
+    } as unknown as Stripe.Event;
     await ingestMoneyMovementEvent(evt);
     await ingestMoneyMovementEvent({
       ...evt,

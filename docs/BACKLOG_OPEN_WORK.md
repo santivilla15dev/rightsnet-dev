@@ -31,6 +31,8 @@ Este documento lista lo que **aún falta**. No reabrir hitos ya **PASS**. Un hit
 | Auth MFA v0.1 TOTP (`MFA_ENABLED`, CI off) | `docs/AUTH_MFA_V0_1.md` |
 | Home pública + E2E §28 | `docs/HOME_AND_E2E_V0_1.md` |
 | Marketplace UX v0.1 | `docs/MARKETPLACE_UX_V0_1.md` |
+| **Blog v0.1** (`/blog` narrativo ES) | `docs/BLOG_V0_1.md` |
+| **Public polish / Home trust v0.1** | `docs/PUBLIC_POLISH_V0_1.md` |
 | Identity KYC v0.1 / v0.1.1 (sandbox + Stripe test + selfie) | `docs/IDENTITY_KYC_V0_1.md` |
 | Identity KYC live gate (`IDENTITY_LIVE_ENABLED`) | `docs/IDENTITY_KYC_LIVE_V0_1.md` |
 | Creator publish Rights Core AT/DE | `docs/CREATOR_PUBLISH_RIGHTS_CORE_V0_1.md` |
@@ -115,3 +117,10 @@ Plantillas legales cableadas en producto: solo cuando §3 entregue textos aproba
 Lista corta para el founder (prioridad): `docs/FOUNDER_PREP_NEXT_V0_1.md`.
 
 Checklist piloto AT–DE (referencia): `docs/launch-gates.md`.
+
+## Global test reliability — 2026-09-11
+
+Typecheck/lint/build recovered: `TYPECHECK_RECOVERY_V0_1.md` **PASS**.
+Test isolation recovery: `TEST_ISOLATION_RECOVERY_V0_1.md` **PASS** — suite
+**312/312** ×2 on shared `*_test`; dual-role lifecycle asserts + unique
+list/Connect fixtures. Authorization contracts unchanged.

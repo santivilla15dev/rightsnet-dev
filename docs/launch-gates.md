@@ -47,3 +47,15 @@ Piloto comercial propuesto: **Austria + Alemania** (constitución §5). No impli
 6. Gate técnico `LIVE_COMMERCE_ENABLED` **implementado**; permanece `false` hasta readiness legal/ops del founder.
 
 Activar el flag es decisión operativa del founder tras checklist — **no** sustituye clearance legal.
+
+## Commercial trust — 11 septiembre 2026
+
+Transparencia pública `/trust` implementada y verificada; no cierra gates legales.
+El fundador confirma que todavía no existe operador registrado. Datos y decisiones
+pendientes en `COMMERCIAL_LAUNCH_HANDOFF.md`, con responsables, entregables y fuentes.
+`COMMERCIAL_TRUST_V0_1.md`: checks web focales PASS; typecheck/lint globales con
+fallos en backend/tests sin cambios en ese hito, pendientes antes de lanzamiento.
+
+Technical update 2026-09-11: typecheck/lint/build recovered in
+`TYPECHECK_RECOVERY_V0_1.md`; five full-suite test failures still OPEN. This supersedes
+the global compilation/lint blockers above, not the legal or operational requirements.

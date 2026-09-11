@@ -532,6 +532,17 @@ export function CreatorDetail({ id }: { id: string }) {
               <span className="eyebrow">LICENCIAR ESTE TALENTO</span>
               <h2>Todavía no estás comprando</h2>
               <p>Primero define qué quieres hacer. Luego comprobarás los derechos.</p>
+              <ol className="license-steps" aria-label="Pasos de licencia">
+                <li className="active">
+                  <span>1</span> Configura el uso
+                </li>
+                <li>
+                  <span>2</span> Rights Check
+                </li>
+                <li>
+                  <span>3</span> Contrato y pago
+                </li>
+              </ol>
               <Button className="full-width" type="button" onClick={startConfiguring}>
                 Configurar licencia
                 <ArrowRight size={17} />
@@ -545,6 +556,17 @@ export function CreatorDetail({ id }: { id: string }) {
                 <p>
                   Esto define una intención de licencia estructurada. Todavía no compras.
                 </p>
+                <ol className="license-steps" aria-label="Pasos de licencia">
+                  <li>
+                    <span>1</span> Configura el uso
+                  </li>
+                  <li className={!result ? 'active' : undefined}>
+                    <span>2</span> Rights Check
+                  </li>
+                  <li className={result ? 'active' : undefined}>
+                    <span>3</span> Contrato y pago
+                  </li>
+                </ol>
               </div>
               <dl className="intent-readonly">
                 <div>

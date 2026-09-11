@@ -157,6 +157,19 @@ export function Help() {
       <section id="faq" className="panel help-panel">
         <h2>FAQ</h2>
         <p>
+          <strong>¿Qué es una licencia en RightsNet?</strong> Un permiso estructurado (territorios,
+          canales, duración) con certificado firmado verificable. No es un contrato legal final
+          hasta que counsel apruebe las plantillas de lanzamiento.
+        </p>
+        <p>
+          <strong>¿Quién paga?</strong> La organización compradora. El creador define precios y
+          reglas. El comercio live permanece desactivado por defecto.
+        </p>
+        <p>
+          <strong>¿Cómo verifico una licencia?</strong> El certificado incluye un enlace público
+          bajo <code>/verify/…</code>. Ver también la sección Verificación arriba.
+        </p>
+        <p>
           <strong>¿Dónde está Ops?</strong> Solo para usuarios con rol admin (cuenta provisionada
           con ese rol). No hay entrada de producto desde la guía.
         </p>

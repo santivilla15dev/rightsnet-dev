@@ -2,16 +2,14 @@ import { MyTalent } from '@/components/talent-inventory';
 import { Campaigns } from '@/components/campaigns';
 import { Suspense } from 'react';
 import { notFound, redirect } from 'next/navigation';
+import { Trust } from '@/components/trust';
 import { Home } from '@/components/home';
 import { Discover } from '@/components/discover';
 import { CreatorDetail } from '@/components/creator-detail';
 import { Company, OrderDetail } from '@/components/company';
 import { CreatorDashboard } from '@/components/creator-dashboard';
 import { Admin } from '@/components/admin';
-import {
-  RightsOperationsOverview,
-  RightsOperationsCampaign,
-} from '@/components/rights-operations';
+import { RightsOperationsOverview, RightsOperationsCampaign } from '@/components/rights-operations';
 import { ExistingDealOcrIngest } from '@/components/existing-deal-ocr';
 import { Verify } from '@/components/verify';
 import { GenerationVerify } from '@/components/generation-verify';
@@ -26,11 +24,14 @@ import { AuthCallback } from '@/components/auth-callback';
 import { ForgotPassword } from '@/components/forgot-password';
 import { ResetPassword } from '@/components/reset-password';
 import { Help } from '@/components/help';
+import { Legal } from '@/components/legal';
+import { BlogIndex, BlogPostView } from '@/components/blog';
 import { Demo } from '@/components/demo';
 import { DemoUiGate } from '@/components/demo-ui-gate';
 import { Onboarding } from '@/components/onboarding';
 import { Application } from '@/components/application';
 import { Loading } from '@/components/common';
+import { getPost } from '@/content/blog/posts';
 
 export default async function Page({ params }: { params: Promise<{ path?: string[] }> }) {
   const { path = [] } = await params;
@@ -99,7 +100,15 @@ export default async function Page({ params }: { params: Promise<{ path?: string
         <ExistingDealOcrIngest />
       </Suspense>
     );
+  if (route === 'trust') return <Trust />;
   if (route === 'help') return <Help />;
+  if (route === 'legal/privacy') return <Legal page="privacy" />;
+  if (route === 'legal/terms') return <Legal page="terms" />;
+  if (route === 'blog') return <BlogIndex />;
+  if (path.length === 2 && path[0] === 'blog') {
+    if (!getPost(path[1])) notFound();
+    return <BlogPostView slug={path[1]} />;
+  }
   if (path.length === 2 && path[0] === 'creators') return <CreatorDetail id={path[1]} />;
   if (path.length === 2 && path[0] === 'verify') {
     if (path[1].startsWith('RN-GEN-')) return <GenerationVerify token={path[1]} />;
