@@ -30,7 +30,7 @@ Piloto comercial propuesto: **Austria + Alemania** (constitución §5). No impli
 | Roles DB y RLS | FORCE commerce+campaigns PASS | Bypass default on; `DB_RLS_BYPASS_DEFAULT=false` OPEN |
 | KMS/rotación | Rotación local PASS | `docs/SIGNING_KEY_ROTATION_V0_1.md`; KMS remoto OPEN |
 | Auditoría resistente a admin | PASS v0.1 | Trigger + JSONL hash-chain `docs/AUDIT_ARCHIVE_V0_1.md`; WORM cloud OPEN |
-| Notificaciones y alertas | PASS sandbox + email_outbox | JSONL + outbox local; SMTP OPEN `docs/NOTIFICATIONS_*` |
+| Notificaciones y alertas | PASS sandbox + email_outbox + SMTP opt-in | JSONL + outbox; SMTP `docs/NOTIFICATIONS_SMTP_V0_1.md` (CI off) |
 | Rate limiting distribuido | PASS v0.1 | Memory default; Redis opt-in `docs/RATE_LIMIT_DISTRIBUTED_V0_1.md` |
 | Backups/PITR/restore | Ensayo local PASS | `pnpm db:backup-drill` + runbook; PITR cloud OPEN |
 | Despliegue staging y seguridad | PASS higiene + scaffold web/API | Docker/Fly fra + Vercel; host cloud OPEN |

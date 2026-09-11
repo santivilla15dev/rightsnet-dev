@@ -23,7 +23,7 @@ pnpm product:smoke
 | 1 | **Ensayo humano** del flujo oficial | Valida producto real con tu cuenta Supabase | Runbook: `docs/runbooks/founder-human-trial.md` |
 | 2 | **Host staging** (Vercel web + Fly/Docker API + Postgres EU) | URL compartible; scaffold ya escrito | Cuenta cloud + secretos |
 | 3 | **Textos legales / IVA** (asesoría) | Sustituir plantillas DEMO | Founder + counsel |
-| 4 | SMTP / email real | Tras outbox sandbox | Proveedor email |
+| 4 | ~~SMTP / email real~~ | Opt-in `NOTIFY_PROVIDER=email` **PASS** | Credenciales del proveedor (Mailpit/SES/…) |
 | 5 | `LIVE_COMMERCE` / production | Solo tras gates en `launch-gates.md` | Legal + ops |
 
 No hace falta más scaffolding de Docker/Vercel en código hasta que elijas **2**.

@@ -12,7 +12,7 @@ muere un job de outbox (`launch-gates` / backlog).
 1. Puerto `NotificationPort` (`notify` + `listRecent`).
 2. Provider `sandbox` (default): JSONL en `.local/notifications/YYYY-MM-DD.jsonl`.
 3. Provider `log`: solo `console.info` (útil en worker).
-4. Provider `email`: fail-closed (no SMTP en v0.1).
+4. Provider `email`: SMTP opt-in (`docs/NOTIFICATIONS_SMTP_V0_1.md`; CI off).
 5. Emite alertas ops en:
    - `license.issued`
    - `payment.confirmed`

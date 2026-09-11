@@ -86,8 +86,9 @@ export const config = {
   /**
    * Notifications. Default `sandbox` (JSONL). `log` = console;
    * `email_outbox` = sandbox + local mail queue (no SMTP);
-   * `email` = SMTP fail-closed.
-   * docs/NOTIFICATIONS_V0_1.md · docs/NOTIFICATIONS_EMAIL_OUTBOX_V0_1.md
+   * `email` = SMTP opt-in (Mailpit/SES/SendGrid SMTP).
+   * docs/NOTIFICATIONS_V0_1.md · docs/NOTIFICATIONS_EMAIL_OUTBOX_V0_1.md ·
+   * docs/NOTIFICATIONS_SMTP_V0_1.md
    */
   notifyProvider: (process.env.NOTIFY_PROVIDER === 'log'
     ? 'log'
@@ -119,10 +120,14 @@ export function assertConfiguration() {
     throw new Error('MALWARE_SCAN_PROVIDER=clamav requires CLAMAV_HOST.');
   if (config.rateLimitProvider === 'redis' && !process.env.REDIS_URL)
     throw new Error('RATE_LIMIT_PROVIDER=redis requires REDIS_URL.');
-  if (config.notifyProvider === 'email')
-    throw new Error(
-      'NOTIFY_PROVIDER=email (SMTP) is not implemented (use sandbox|log|email_outbox; see docs/NOTIFICATIONS_EMAIL_OUTBOX_V0_1.md).',
-    );
+  if (config.notifyProvider === 'email') {
+    const host = process.env.SMTP_HOST?.trim();
+    const port = Number(process.env.SMTP_PORT ?? 0);
+    if (!host || !Number.isFinite(port) || port <= 0)
+      throw new Error(
+        'NOTIFY_PROVIDER=email requires SMTP_HOST and SMTP_PORT (see docs/NOTIFICATIONS_SMTP_V0_1.md).',
+      );
+  }
   const signingProvider = (process.env.SIGNING_PROVIDER ?? 'local').toLowerCase();
   if (signingProvider !== 'local')
     throw new Error(

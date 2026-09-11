@@ -971,7 +971,7 @@ export class AdminController {
     const items = port.listEmailOutbox ? await port.listEmailOutbox(limit) : [];
     return {
       provider: process.env.NOTIFY_PROVIDER ?? 'sandbox',
-      note: 'sandbox_queued rows are never transmitted (no SMTP)',
+      note: 'sandbox_queued never hits the network; sent/failed are SMTP audit rows (NOTIFY_PROVIDER=email)',
       items,
     };
   }

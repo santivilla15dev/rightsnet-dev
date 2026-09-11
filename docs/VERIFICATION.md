@@ -397,7 +397,7 @@ Host cloud staging OPEN.
 
 Cierre PASS sandbox: `docs/NOTIFICATIONS_EMAIL_OUTBOX_V0_1.md`.
 `NOTIFY_PROVIDER=email_outbox` encola a JSONL; admin email-outbox.
-Tests notifications 4/4. SMTP OPEN.
+Tests notifications 4/4. SMTP → `docs/NOTIFICATIONS_SMTP_V0_1.md`.
 
 ## Staging health smoke v0.1 — 2026-09-10
 
@@ -618,3 +618,16 @@ remains OPEN. No change to legal/ops gates, product contracts or live flags.
 | typecheck / lint | PASS | |
 
 **STOP.** Sin cambios de autorización de producto ni límites de paginación. Live/legal OPEN.
+
+## Notifications SMTP v0.1 — 2026-09-11
+
+| Entrega | Resultado | Evidencia |
+| --- | --- | --- |
+| Spec | PASS | `docs/NOTIFICATIONS_SMTP_V0_1.md` |
+| `NOTIFY_PROVIDER=email` + nodemailer | PASS | `apps/api/src/common/notifications.ts` |
+| assert SMTP_HOST/PORT | PASS | `config.assertConfiguration` |
+| Outbox `sent`/`failed` | PASS | email-outbox.jsonl |
+| Tests | **7/7 PASS** | `tests/notifications.test.ts` |
+| CI default | sandbox | sin red |
+
+**STOP.** SMTP opt-in; no default CI; no live commerce.

@@ -159,7 +159,9 @@ IMPLEMENT **PASS** (sandbox JSONL; email OPEN).
 Staging deploy security v0.1: `docs/STAGING_DEPLOY_SECURITY_V0_1.md` —
 SPECIFY **PASS**; IMPLEMENT **PASS** (higiene repo + runbook + CI step; cloud host OPEN).
 Notifications email outbox v0.1: `docs/NOTIFICATIONS_EMAIL_OUTBOX_V0_1.md` —
-SPECIFY **PASS**; IMPLEMENT **PASS** (`email_outbox` local; SMTP OPEN).
+SPECIFY **PASS**; IMPLEMENT **PASS** (`email_outbox` local).
+Notifications SMTP v0.1: `docs/NOTIFICATIONS_SMTP_V0_1.md` — SPECIFY **PASS**;
+IMPLEMENT **PASS** (`NOTIFY_PROVIDER=email` opt-in; CI default sandbox).
 Staging health smoke v0.1: `docs/STAGING_HEALTH_SMOKE_V0_1.md` — SPECIFY **PASS**;
 IMPLEMENT **PASS** (`pnpm staging:health`; host cloud OPEN).
 Demo UI gate v0.1: `docs/DEMO_UI_GATE_V0_1.md` — SPECIFY **PASS**;

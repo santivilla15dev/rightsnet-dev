@@ -1,6 +1,7 @@
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
+import nodemailer from 'nodemailer';
 import { config } from './config.js';
 
 export type NotificationChannel = 'ops' | 'user';
@@ -15,7 +16,7 @@ export type NotificationRecord = {
   created_at: string;
 };
 
-/** Sandbox-only; never transmitted over the network. */
+/** Local audit of mail attempts; sandbox_queued never hits the network. */
 export type EmailOutboxRecord = {
   id: string;
   to: string;
@@ -24,7 +25,8 @@ export type EmailOutboxRecord = {
   kind: string;
   resource_id?: string;
   notification_id: string;
-  status: 'sandbox_queued';
+  status: 'sandbox_queued' | 'sent' | 'failed';
+  error?: string;
   created_at: string;
 };
 
@@ -40,10 +42,24 @@ export type NotificationPort = {
   listEmailOutbox?: (limit?: number) => Promise<EmailOutboxRecord[]>;
 };
 
+export type SmtpSendPort = {
+  sendMail: (msg: {
+    from: string;
+    to: string;
+    subject: string;
+    text: string;
+  }) => Promise<{ messageId?: string }>;
+};
+
 let testPort: NotificationPort | null = null;
+let testSmtp: SmtpSendPort | null = null;
 
 export function setNotificationPortForTests(port: NotificationPort | null) {
   testPort = port;
+}
+
+export function setSmtpSendPortForTests(port: SmtpSendPort | null) {
+  testSmtp = port;
 }
 
 function rootDir() {
@@ -52,6 +68,10 @@ function rootDir() {
 
 function opsEmail() {
   return process.env.NOTIFY_OPS_EMAIL?.trim() || 'ops@localhost.invalid';
+}
+
+function smtpFrom() {
+  return process.env.SMTP_FROM?.trim() || opsEmail();
 }
 
 function appendJsonl(filePath: string, row: unknown) {
@@ -141,6 +161,87 @@ function emailOutboxPort(): NotificationPort {
   };
 }
 
+function nodemailerSmtpPort(): SmtpSendPort {
+  const host = process.env.SMTP_HOST?.trim();
+  const port = Number(process.env.SMTP_PORT ?? 0);
+  if (!host || !Number.isFinite(port) || port <= 0) {
+    throw new Error('SMTP_HOST and SMTP_PORT are required for NOTIFY_PROVIDER=email');
+  }
+  const user = process.env.SMTP_USER?.trim();
+  const pass = process.env.SMTP_PASS ?? '';
+  const secure =
+    process.env.SMTP_SECURE === 'true' || process.env.SMTP_SECURE === '1' || port === 465;
+  const transport = nodemailer.createTransport({
+    host,
+    port,
+    secure,
+    auth: user ? { user, pass } : undefined,
+  });
+  return {
+    sendMail: async (msg) => {
+      const info = await transport.sendMail(msg);
+      return { messageId: typeof info.messageId === 'string' ? info.messageId : undefined };
+    },
+  };
+}
+
+function resolveSmtpSendPort(): SmtpSendPort {
+  if (testSmtp) return testSmtp;
+  return nodemailerSmtpPort();
+}
+
+function emailSmtpPort(): NotificationPort {
+  const base = sandboxPort();
+  const outboxPath = () => path.join(rootDir(), 'email-outbox.jsonl');
+  return {
+    notify: async (input) => {
+      const record = await base.notify(input);
+      const to = opsEmail();
+      const subject = `[RightsNet] ${record.title}`;
+      const text = record.body;
+      const mailId = randomUUID();
+      try {
+        await resolveSmtpSendPort().sendMail({
+          from: smtpFrom(),
+          to,
+          subject,
+          text,
+        });
+        const mail: EmailOutboxRecord = {
+          id: mailId,
+          to,
+          subject,
+          text,
+          kind: record.kind,
+          resource_id: record.resource_id,
+          notification_id: record.id,
+          status: 'sent',
+          created_at: new Date().toISOString(),
+        };
+        appendJsonl(outboxPath(), mail);
+      } catch (err) {
+        const mail: EmailOutboxRecord = {
+          id: mailId,
+          to,
+          subject,
+          text,
+          kind: record.kind,
+          resource_id: record.resource_id,
+          notification_id: record.id,
+          status: 'failed',
+          error: err instanceof Error ? err.message : String(err),
+          created_at: new Date().toISOString(),
+        };
+        appendJsonl(outboxPath(), mail);
+        throw err;
+      }
+      return record;
+    },
+    listRecent: async (limit = 50) => base.listRecent(limit),
+    listEmailOutbox: async (limit = 50) => readJsonlRecent<EmailOutboxRecord>(outboxPath(), limit),
+  };
+}
+
 function logPort(): NotificationPort {
   const mem: NotificationRecord[] = [];
   return {
@@ -172,11 +273,7 @@ export function notificationPort(): NotificationPort {
     process.env.NOTIFY_PROVIDER === 'sandbox'
       ? process.env.NOTIFY_PROVIDER
       : config.notifyProvider;
-  if (provider === 'email') {
-    throw new Error(
-      'NOTIFY_PROVIDER=email (SMTP) is not implemented (use sandbox|log|email_outbox; see docs/NOTIFICATIONS_EMAIL_OUTBOX_V0_1.md)',
-    );
-  }
+  if (provider === 'email') return emailSmtpPort();
   if (provider === 'email_outbox') return emailOutboxPort();
   if (provider === 'log') return logPort();
   return sandboxPort();

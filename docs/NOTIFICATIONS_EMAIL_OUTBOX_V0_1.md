@@ -14,7 +14,7 @@ puede ensayar la forma de un “correo ops” sin SMTP real.
    `to` / `subject` / `text` / `status=sandbox_queued` (nunca se envía).
 2. Destinatario: `NOTIFY_OPS_EMAIL` (default `ops@localhost.invalid`).
 3. Admin: `GET /v1/admin/notifications/email-outbox?limit=50`.
-4. `NOTIFY_PROVIDER=email` (SMTP) sigue fail-closed.
+4. `NOTIFY_PROVIDER=email` (SMTP) → `docs/NOTIFICATIONS_SMTP_V0_1.md` (opt-in).
 
 ## Fuera de alcance
 
@@ -23,7 +23,7 @@ entrega real.
 
 ## STOP
 
-Outbox sandbox PASS; SMTP real OPEN.
+Outbox sandbox PASS; SMTP real → `docs/NOTIFICATIONS_SMTP_V0_1.md`.
 
 ## Cierre IMPLEMENT
 
